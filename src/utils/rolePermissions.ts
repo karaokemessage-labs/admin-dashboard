@@ -1,7 +1,7 @@
 import { UserRole } from '../contexts/AuthContext';
 import { 
   Home, 
-  Gamepad2,
+  Building2 as VenueIcon,
   CreditCard,
   Users,
   UserCog,
@@ -34,11 +34,11 @@ export interface MenuItem {
  */
 export const ALL_MENU_ITEMS: MenuItem[] = [
   { id: 'dashboard', label: 'Dashboard', path: '/dashboard', roles: ['provider', 'operator'], icon: Home, translationKey: 'menu.dashboard' },
-  { id: 'games', label: 'Games Management', path: '/dashboard/games', roles: ['provider'], icon: Gamepad2, translationKey: 'menu.gamesManagement' },
+  { id: 'venues', label: 'Venues Management', path: '/dashboard/venues', roles: ['provider'], icon: VenueIcon, translationKey: 'menu.venuesManagement' },
   { id: 'operators', label: 'Operators Management', path: '/dashboard/operators', roles: ['provider'], icon: UserCog, translationKey: 'menu.operatorsManagement' },
   { id: 'provider-accounts', label: 'Provider Accounts Management', path: '/dashboard/provider-accounts', roles: ['provider'], icon: Building2, translationKey: 'menu.providerAccountsManagement' },
   { id: 'roles-permissions', label: 'Roles & Permissions Management', path: '/dashboard/roles-permissions', roles: ['provider'], icon: Shield, translationKey: 'menu.rolesPermissionsManagement' },
-  { id: 'players', label: 'Players Management', path: '/dashboard/players', roles: ['operator'], icon: Users, translationKey: 'menu.playersManagement' },
+  { id: 'customers', label: 'Customers Management', path: '/dashboard/customers', roles: ['operator'], icon: Users, translationKey: 'menu.customersManagement' },
   { id: 'transactions', label: 'Transactions', path: '/dashboard/transactions', roles: ['provider', 'operator'], icon: CreditCard, translationKey: 'menu.transactions' },
   { id: 'wallet', label: 'Wallet & Payment', path: '/dashboard/wallet', roles: ['provider', 'operator'], icon: Wallet, translationKey: 'menu.walletPayment' },
   { id: 'promotions', label: 'Promotions & Bonus', path: '/dashboard/promotions', roles: ['provider', 'operator'], icon: Gift, translationKey: 'menu.promotionsBonus' },

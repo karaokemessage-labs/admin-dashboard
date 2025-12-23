@@ -469,6 +469,7 @@ export interface Translations {
   };
   menu: {
     dashboard: string;
+    venuesManagement: string;
     gamesManagement: string;
     operatorsManagement: string;
     providerAccountsManagement: string;
@@ -964,13 +965,14 @@ const translations: Record<SupportedLanguage, Translations> = {
       },
     },
     header: {
-      providerPortal: 'Provider Portal',
+      providerPortal: 'KaKa Club',
       operatorPortal: 'Operator Portal',
       myProfile: 'My Profile',
       helpSupport: 'Help & Support',
     },
     menu: {
       dashboard: 'Dashboard',
+      venuesManagement: 'Venues Management',
       gamesManagement: 'Games Management',
       operatorsManagement: 'Operators Management',
       providerAccountsManagement: 'Provider Accounts Management',
@@ -1460,16 +1462,17 @@ const translations: Record<SupportedLanguage, Translations> = {
       },
     },
     header: {
-      providerPortal: 'Provider Portal',
+      providerPortal: 'KaKa Club',
       operatorPortal: 'Operator Portal',
       myProfile: 'Hồ sơ của tôi',
       helpSupport: 'Trợ giúp & Hỗ trợ',
     },
     menu: {
       dashboard: 'Dashboard',
+      venuesManagement: 'Quản lý Cơ sở',
       gamesManagement: 'Quản lý Games',
-      operatorsManagement: 'Quản lý Operator',
-      providerAccountsManagement: 'Quản lý Provider Account',
+      operatorsManagement: 'Quản lý Karaoke',
+      providerAccountsManagement: 'Quản lý Massage',
       rolesPermissionsManagement: 'Quản lý Role & Permission',
       playersManagement: 'Quản lý Players',
       transactions: 'Giao dịch',
@@ -1963,6 +1966,7 @@ const translations: Record<SupportedLanguage, Translations> = {
     },
     menu: {
       dashboard: '仪表板',
+      venuesManagement: '场所管理',
       gamesManagement: '游戏管理',
       operatorsManagement: '运营商管理',
       providerAccountsManagement: '提供商账户管理',
@@ -2459,6 +2463,7 @@ const translations: Record<SupportedLanguage, Translations> = {
     },
     menu: {
       dashboard: 'แดชบอร์ด',
+      venuesManagement: 'การจัดการสถานที่',
       gamesManagement: 'จัดการเกม',
       operatorsManagement: 'จัดการผู้ดำเนินการ',
       providerAccountsManagement: 'จัดการบัญชีผู้ให้บริการ',
@@ -2955,6 +2960,7 @@ const translations: Record<SupportedLanguage, Translations> = {
     },
     menu: {
       dashboard: 'ダッシュボード',
+      venuesManagement: '店舗管理',
       gamesManagement: 'ゲーム管理',
       operatorsManagement: 'オペレーター管理',
       providerAccountsManagement: 'プロバイダーアカウント管理',
@@ -3451,6 +3457,7 @@ const translations: Record<SupportedLanguage, Translations> = {
     },
     menu: {
       dashboard: '대시보드',
+      venuesManagement: '매장 관리',
       gamesManagement: '게임 관리',
       operatorsManagement: '운영자 관리',
       providerAccountsManagement: '제공자 계정 관리',

@@ -4,12 +4,12 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 const AuditLogs = () => {
   const { t } = useLanguage();
   const logs = [
-    { id: 1, user: 'admin001', action: 'login', resource: 'System', ip: '192.168.1.100', timestamp: '2024-05-20 14:30:25', status: 'success' },
-    { id: 2, user: 'admin002', action: 'update_player', resource: 'player001', ip: '192.168.1.101', timestamp: '2024-05-20 14:25:10', status: 'success' },
-    { id: 3, user: 'admin001', action: 'create_promotion', resource: 'Promo Summer 2024', ip: '192.168.1.100', timestamp: '2024-05-20 14:20:05', status: 'success' },
-    { id: 4, user: 'admin003', action: 'delete_game', resource: 'Game ID: 123', ip: '192.168.1.102', timestamp: '2024-05-20 14:15:30', status: 'failed' },
-    { id: 5, user: 'admin001', action: 'change_settings', resource: 'System Settings', ip: '192.168.1.100', timestamp: '2024-05-20 14:10:15', status: 'success' },
-    { id: 6, user: 'admin002', action: 'view_sensitive_data', resource: 'Financial Reports', ip: '192.168.1.101', timestamp: '2024-05-20 14:05:00', status: 'success' },
+    { id: 1, user: 'admin001', action: 'login', resource: 'Hệ thống', ip: '192.168.1.100', timestamp: '2024-05-20 14:30:25', status: 'success' },
+    { id: 2, user: 'admin002', action: 'update_venue', resource: 'Karaoke VIP 201', ip: '192.168.1.101', timestamp: '2024-05-20 14:25:10', status: 'success' },
+    { id: 3, user: 'admin001', action: 'create_booking', resource: 'Đặt phòng BK-12345', ip: '192.168.1.100', timestamp: '2024-05-20 14:20:05', status: 'success' },
+    { id: 4, user: 'admin003', action: 'delete_venue', resource: 'Massage Spa 301', ip: '192.168.1.102', timestamp: '2024-05-20 14:15:30', status: 'failed' },
+    { id: 5, user: 'admin001', action: 'change_settings', resource: 'Cài đặt hệ thống', ip: '192.168.1.100', timestamp: '2024-05-20 14:10:15', status: 'success' },
+    { id: 6, user: 'admin002', action: 'view_reports', resource: 'Báo cáo doanh thu', ip: '192.168.1.101', timestamp: '2024-05-20 14:05:00', status: 'success' },
   ];
 
   const getActionIcon = (action: string) => {
@@ -19,14 +19,20 @@ const AuditLogs = () => {
     if (action.includes('settings') || action.includes('update')) {
       return <Settings className="w-4 h-4 text-purple-600" />;
     }
-    if (action.includes('view') || action.includes('sensitive')) {
+    if (action.includes('view') || action.includes('reports')) {
       return <Shield className="w-4 h-4 text-orange-600" />;
+    }
+    if (action.includes('booking')) {
+      return <FileText className="w-4 h-4 text-green-600" />;
+    }
+    if (action.includes('venue')) {
+      return <Settings className="w-4 h-4 text-purple-600" />;
     }
     return <FileText className="w-4 h-4 text-gray-600" />;
   };
 
   const getActionColor = (action: string) => {
-    if (action.includes('delete') || action.includes('remove')) {
+    if (action.includes('delete') || action.includes('remove') || action.includes('cancel')) {
       return 'text-red-600 bg-red-50';
     }
     if (action.includes('create') || action.includes('add')) {
@@ -40,28 +46,32 @@ const AuditLogs = () => {
 
   const getActionText = (action: string) => {
     const actionMap: { [key: string]: string } = {
-      'login': 'pages.auditLogs.login',
-      'logout': 'pages.auditLogs.logout',
-      'update_player': 'pages.auditLogs.updatePlayer',
-      'create_promotion': 'pages.auditLogs.createPromotion',
-      'delete_game': 'pages.auditLogs.deleteGame',
-      'change_settings': 'pages.auditLogs.changeSettings',
-      'view_sensitive_data': 'pages.auditLogs.viewSensitiveData',
+      'login': 'Đăng nhập',
+      'logout': 'Đăng xuất',
+      'update_venue': 'Cập nhật cơ sở',
+      'create_venue': 'Tạo cơ sở mới',
+      'delete_venue': 'Xóa cơ sở',
+      'create_booking': 'Tạo đặt phòng',
+      'update_booking': 'Cập nhật đặt phòng',
+      'cancel_booking': 'Hủy đặt phòng',
+      'create_promotion': 'Tạo khuyến mãi',
+      'change_settings': 'Thay đổi cài đặt',
+      'view_reports': 'Xem báo cáo',
+      'update_customer': 'Cập nhật khách hàng',
     };
-    const translationKey = actionMap[action];
-    return translationKey ? t(translationKey) : action;
+    return actionMap[action] || action;
   };
 
   return (
     <div className="flex-1 bg-gray-50 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-1">{t('pages.auditLogs.title')}</h1>
-          <p className="text-gray-500 text-sm">{t('pages.auditLogs.description')}</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-1">Nhật ký Hoạt động</h1>
+          <p className="text-gray-500 text-sm">Theo dõi các hoạt động quản lý hệ thống và cơ sở</p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
           <Download className="w-4 h-4" />
-          {t('pages.auditLogs.exportLogs')}
+          Xuất nhật ký
         </button>
       </div>
 
@@ -72,7 +82,7 @@ const AuditLogs = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder={t('pages.auditLogs.searchPlaceholder')}
+              placeholder="Tìm kiếm nhật ký (người dùng, hành động, tài nguyên)..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
@@ -89,11 +99,11 @@ const AuditLogs = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.auditLogs.time')}</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.auditLogs.user')}</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.auditLogs.action')}</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.auditLogs.resource')}</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.auditLogs.ipAddress')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Thời gian</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Người dùng</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Hành động</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tài nguyên</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Địa chỉ IP</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('common.status')}</th>
               </tr>
             </thead>
@@ -121,7 +131,7 @@ const AuditLogs = () => {
                     <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       log.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
-                      {log.status === 'success' ? t('common.success') : t('common.error')}
+                      {log.status === 'success' ? 'Thành công' : 'Thất bại'}
                     </span>
                   </td>
                 </tr>

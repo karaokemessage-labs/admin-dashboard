@@ -23,8 +23,8 @@ const Dashboard = () => {
       {/* Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <MetricCard
-          title="Weekly Sales"
-          value="$ 15,0000"
+          title="Doanh thu tuần"
+          value="₫ 150,000,000"
           change="60%"
           changeType="increase"
           gradientFrom="from-pink-500"
@@ -32,8 +32,8 @@ const Dashboard = () => {
           icon={TrendingUp}
         />
         <MetricCard
-          title="Weekly Orders"
-          value="45,6334"
+          title="Đặt phòng tuần"
+          value="456"
           change="10%"
           changeType="decrease"
           gradientFrom="from-blue-500"
@@ -41,8 +41,8 @@ const Dashboard = () => {
           icon={Bookmark}
         />
         <MetricCard
-          title="Visitors Online"
-          value="95,5741"
+          title="Khách đang sử dụng"
+          value="95"
           change="5%"
           changeType="increase"
           gradientFrom="from-green-500"
@@ -57,7 +57,7 @@ const Dashboard = () => {
         <TrafficSourcesChart />
       </div>
 
-      {/* Recent Tickets */}
+      {/* Recent Bookings */}
       <RecentTickets />
     </div>
   );

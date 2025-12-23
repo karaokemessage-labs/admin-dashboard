@@ -45,7 +45,7 @@ export const getRoutesByRole = (role: UserRole): ReactElement[] => {
   if (role === 'provider') {
     return [
       <Route key="dashboard" path="/" element={<ProviderDashboard />} />,
-      <Route key="games" path="/games" element={<GamesManagement />} />,
+      <Route key="venues" path="/venues" element={<GamesManagement />} />,
       <Route key="operators" path="/operators" element={<OperatorsManagement />} />,
       <Route key="provider-accounts" path="/provider-accounts" element={<ProviderAccountManagement />} />,
       <Route key="roles-permissions" path="/roles-permissions" element={<RolePermissionManagement />} />,
@@ -66,7 +66,7 @@ export const getRoutesByRole = (role: UserRole): ReactElement[] => {
   } else if (role === 'operator') {
     return [
       <Route key="dashboard" path="/" element={<OperatorDashboard />} />,
-      <Route key="players" path="/players" element={<OperatorPlayersManagement />} />,
+      <Route key="customers" path="/customers" element={<OperatorPlayersManagement />} />,
       <Route key="transactions" path="/transactions" element={<OperatorTransactions />} />,
       <Route key="wallet" path="/wallet" element={<OperatorWalletPayment />} />,
       <Route key="promotions" path="/promotions" element={<OperatorPromotionsBonus />} />,

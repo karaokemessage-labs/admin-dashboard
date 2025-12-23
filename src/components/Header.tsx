@@ -82,10 +82,27 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
       <div className="flex items-center gap-4 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-purple-600">{getHeaderTitle()}</span>
+        {/* Logo + Title */}
+        <div className="flex items-center gap-3 min-w-[220px]">
+          <div className="w-10 h-10 rounded-lg overflow-hidden border border-purple-200 shadow-sm bg-white flex items-center justify-center">
+            <img
+              src="https://png.pngtree.com/png-clipart/20191213/ourmid/pngtree-vintage-karaoke-night-party-png-image_2088875.jpg"
+              alt="KaKa Club Logo"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-lg font-extrabold text-purple-700 leading-tight">
+              KaKa Club
+            </span>
+            <span className="text-xs font-medium text-gray-500">
+              {getHeaderTitle()}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2 ml-4">
+
+        {/* Search + Sidebar toggle */}
+        <div className="flex items-center gap-2 ml-4 flex-1">
           <button 
             onClick={onToggleSidebar}
             className="p-2 hover:bg-gray-100 rounded-lg"
@@ -93,7 +110,7 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
           >
             <List className="w-5 h-5 text-gray-600" />
           </button>
-          <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-4 py-2 flex-1 min-w-[300px]">
+          <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-4 py-2 flex-1 min-w-[220px]">
             <Search className="w-5 h-5 text-gray-400" />
             <input
               type="text"

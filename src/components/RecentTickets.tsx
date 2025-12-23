@@ -6,31 +6,52 @@ const RecentTickets = () => {
   const tickets = [
     {
       assignee: {
-        name: 'David Grey',
-        avatar: 'DG',
+        name: 'Phòng VIP 201',
+        avatar: 'VIP',
       },
-      subject: 'Fund is not recieved',
+      subject: 'Đặt phòng Karaoke - 2 giờ',
       status: t('pages.dashboard.done'),
       statusColor: 'bg-green-100 text-green-800',
-      lastUpdate: 'Dec 5, 2017',
-      trackingId: 'WD-12345',
+      lastUpdate: 'Hôm nay, 20:30',
+      trackingId: 'BK-12345',
     },
-    // Add more sample data as needed
+    {
+      assignee: {
+        name: 'Phòng Massage 301',
+        avatar: 'MS',
+      },
+      subject: 'Đặt phòng Massage - 90 phút',
+      status: 'Đang sử dụng',
+      statusColor: 'bg-blue-100 text-blue-800',
+      lastUpdate: 'Hôm nay, 19:15',
+      trackingId: 'BK-12346',
+    },
+    {
+      assignee: {
+        name: 'Club VIP',
+        avatar: 'CL',
+      },
+      subject: 'Đặt bàn Club - 4 người',
+      status: 'Đã xác nhận',
+      statusColor: 'bg-purple-100 text-purple-800',
+      lastUpdate: 'Hôm nay, 18:00',
+      trackingId: 'BK-12347',
+    },
   ];
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-6">{t('pages.dashboard.recentTickets')}</h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-6">Đặt phòng gần đây</h3>
       
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">{t('pages.dashboard.assignee')}</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">{t('pages.dashboard.subject')}</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Phòng/Dịch vụ</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Mô tả</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">{t('common.status')}</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">{t('pages.dashboard.lastUpdate')}</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">{t('pages.dashboard.trackingId')}</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Thời gian</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Mã đặt</th>
             </tr>
           </thead>
           <tbody>

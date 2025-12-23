@@ -31,11 +31,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(() => {
     // Check if user is stored in localStorage
     const storedUser = localStorage.getItem('user');
-    return storedUser ? JSON.parse(storedUser) : null;
+    if (storedUser) {
+      return JSON.parse(storedUser);
+    }
+
+    // Không cần login: tạo sẵn user demo mặc định (provider)
+    const defaultUser: User = {
+      id: 'demo-provider',
+      email: 'demo@kara.club',
+      name: 'Kaka Admin',
+      displayName: 'Kaka Admin',
+      role: 'provider',
+      username: 'demo',
+    };
+
+    localStorage.setItem('user', JSON.stringify(defaultUser));
+    localStorage.setItem('isAuthenticated', 'true');
+
+    return defaultUser;
   });
 
   const [token, setToken] = useState<string | null>(() => {
-    return localStorage.getItem('accessToken') || localStorage.getItem('token') || null;
+    const existingToken = localStorage.getItem('accessToken') || localStorage.getItem('token');
+    if (existingToken) {
+      return existingToken;
+    }
+
+    // Token demo để tránh phụ thuộc vào backend khi không cần auth thực
+    const demoToken = 'demo-token';
+    localStorage.setItem('accessToken', demoToken);
+    localStorage.setItem('token', demoToken);
+    return demoToken;
   });
 
   const [mustSetup2fa, setMustSetup2fa] = useState<boolean>(false);
@@ -273,9 +299,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('isAuthenticated');
   };
 
-  // User is only authenticated if they have user, token, AND 2FA is not required
-  // If mustSetup2fa is true, user cannot access the portal
-  const isAuthenticated = !!user && !!token && !mustSetup2fa;
+  // Với chế độ không cần login, chỉ cần có user và không yêu cầu 2FA là coi như đã đăng nhập
+  const isAuthenticated = !!user && !mustSetup2fa;
 
   return (
     <AuthContext.Provider value={{ user, token, isAuthenticated, mustSetup2fa, login, register, logout, fetchUserInfo, setMustSetup2fa }}>

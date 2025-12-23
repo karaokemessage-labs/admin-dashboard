@@ -34,7 +34,7 @@ const MyProfile = () => {
       try {
         const userData = await authService.getMe();
         setProfileData(userData);
-        
+
         // Update form data with API response
         const data = userData.data || userData;
         setFormData({
@@ -49,7 +49,7 @@ const MyProfile = () => {
         setFetching(false);
       }
     };
-    
+
     fetchProfile();
   }, []);
 
@@ -160,11 +160,10 @@ const MyProfile = () => {
           <div className="flex items-center gap-6">
             <div className="relative">
               <div
-                className={`w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold ${
-                  user?.role === 'provider'
+                className={`w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold ${user?.role === 'provider'
                     ? 'bg-gradient-to-br from-purple-400 to-purple-500'
                     : 'bg-gradient-to-br from-blue-400 to-blue-500'
-                }`}
+                  }`}
               >
                 {getUserInitials()}
               </div>
@@ -185,21 +184,19 @@ const MyProfile = () => {
               <div className="flex items-center gap-2 mb-2">
                 {getRole() && (
                   <span
-                    className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-                      getRole() === 'provider' || getRole() === 'PROVIDER'
+                    className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${getRole() === 'provider' || getRole() === 'PROVIDER'
                         ? 'bg-purple-100 text-purple-800'
                         : 'bg-blue-100 text-blue-800'
-                    }`}
+                      }`}
                   >
                     {getRole() === 'provider' || getRole() === 'PROVIDER' ? t('header.providerPortal') : t('header.operatorPortal')}
                   </span>
                 )}
                 <span
-                  className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-                    getStatus() === 'ACTIVE'
+                  className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${getStatus() === 'ACTIVE'
                       ? 'bg-green-100 text-green-800'
                       : 'bg-gray-100 text-gray-800'
-                  }`}
+                    }`}
                 >
                   {getStatus()}
                 </span>
@@ -262,9 +259,8 @@ const MyProfile = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                    !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
+                    }`}
                 />
               </div>
             </div>
@@ -281,9 +277,8 @@ const MyProfile = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                    !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
+                    }`}
                 />
               </div>
             </div>
@@ -298,9 +293,8 @@ const MyProfile = () => {
                   value={formData.username}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                    !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
+                    }`}
                 />
               </div>
             </div>
@@ -315,9 +309,8 @@ const MyProfile = () => {
                   value={formData.phone}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                    !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
+                    }`}
                 />
               </div>
             </div>
@@ -328,11 +321,10 @@ const MyProfile = () => {
               <div className="relative">
                 <div className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
                   <span
-                    className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-                      getStatus() === 'ACTIVE'
+                    className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${getStatus() === 'ACTIVE'
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
-                    }`}
+                      }`}
                   >
                     {getStatus()}
                   </span>
@@ -362,8 +354,8 @@ const MyProfile = () => {
                     const createdAt = data?.createdAt;
                     if (!createdAt) return 'N/A';
                     // Handle both timestamp (number) and ISO string
-                    const date = typeof createdAt === 'number' 
-                      ? new Date(createdAt * 1000) 
+                    const date = typeof createdAt === 'number'
+                      ? new Date(createdAt * 1000)
                       : new Date(createdAt);
                     return date.toLocaleString('en-US', {
                       year: 'numeric',
@@ -384,8 +376,8 @@ const MyProfile = () => {
                     const updatedAt = data?.updatedAt;
                     if (!updatedAt) return 'N/A';
                     // Handle both timestamp (number) and ISO string
-                    const date = typeof updatedAt === 'number' 
-                      ? new Date(updatedAt * 1000) 
+                    const date = typeof updatedAt === 'number'
+                      ? new Date(updatedAt * 1000)
                       : new Date(updatedAt);
                     return date.toLocaleString('en-US', {
                       year: 'numeric',
@@ -414,7 +406,7 @@ const MyProfile = () => {
                 <p className="font-medium text-gray-900">{t('pages.profile.changePassword')}</p>
                 <p className="text-sm text-gray-500">{t('pages.profile.changePasswordDesc')}</p>
               </div>
-              <button 
+              <button
                 onClick={() => setShowChangePasswordModal(true)}
                 className="px-4 py-2 text-purple-600 border border-purple-600 rounded-lg hover:bg-purple-50 transition-colors"
               >
@@ -430,16 +422,15 @@ const MyProfile = () => {
                   <p className="text-sm text-gray-500">{t('pages.profile.twoFactorAuthDesc')}</p>
                 </div>
                 <span
-                  className={`px-3 py-1 text-sm font-semibold rounded-full ${
-                    get2FAStatus()
+                  className={`px-3 py-1 text-sm font-semibold rounded-full ${get2FAStatus()
                       ? 'bg-green-100 text-green-800'
                       : 'bg-gray-100 text-gray-800'
-                  }`}
+                    }`}
                 >
                   {get2FAStatus() ? 'Enabled' : 'Disabled'}
                 </span>
               </div>
-              
+
               {/* 2FA Configs */}
               {get2FAConfigs().length > 0 && (
                 <div className="mt-4 space-y-2">
@@ -455,11 +446,10 @@ const MyProfile = () => {
                         )}
                       </div>
                       <span
-                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          config.isActive
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${config.isActive
                             ? 'bg-green-100 text-green-800'
                             : 'bg-gray-100 text-gray-800'
-                        }`}
+                          }`}
                       >
                         {config.isActive ? 'Active' : 'Inactive'}
                       </span>

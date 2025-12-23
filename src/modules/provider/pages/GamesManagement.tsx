@@ -2,53 +2,56 @@ import { useState } from 'react';
 import { Search, Filter, Plus, MoreVertical, Play, Pause, X } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 
-interface Game {
+interface Venue {
   id: number;
   name: string;
+  type: 'karaoke' | 'massage' | 'club';
   status: 'active' | 'inactive';
-  players: number;
+  bookings: number;
   revenue: number;
 }
 
 const GamesManagement = () => {
   const { t } = useLanguage();
-  const [games, setGames] = useState<Game[]>([
-    { id: 1, name: 'Baccarat Classic', status: 'active', players: 1234, revenue: 45678900 },
-    { id: 2, name: 'Blackjack VIP', status: 'active', players: 856, revenue: 32456700 },
-    { id: 3, name: 'Roulette Live', status: 'active', players: 2100, revenue: 67890100 },
-    { id: 4, name: 'Dragon Tiger', status: 'inactive', players: 432, revenue: 12345600 },
-    { id: 5, name: 'Slot Fortune', status: 'active', players: 3456, revenue: 89012300 },
+  const [games, setGames] = useState<Venue[]>([
+    { id: 1, name: 'Karaoke VIP 201', type: 'karaoke', status: 'active', bookings: 234, revenue: 45678900 },
+    { id: 2, name: 'Massage Spa 301', type: 'massage', status: 'active', bookings: 156, revenue: 32456700 },
+    { id: 3, name: 'Club VIP Lounge', type: 'club', status: 'active', bookings: 89, revenue: 67890100 },
+    { id: 4, name: 'Karaoke Standard 102', type: 'karaoke', status: 'inactive', bookings: 32, revenue: 12345600 },
+    { id: 5, name: 'Massage Premium 401', type: 'massage', status: 'active', bookings: 245, revenue: 89012300 },
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    type: 'karaoke' as 'karaoke' | 'massage' | 'club',
     status: 'active' as 'active' | 'inactive',
   });
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
-    setFormData({ name: '', status: 'active' });
+    setFormData({ name: '', type: 'karaoke', status: 'active' });
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setFormData({ name: '', status: 'active' });
+    setFormData({ name: '', type: 'karaoke', status: 'active' });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
 
-    const newGame: Game = {
+    const newVenue: Venue = {
       id: games.length + 1,
       name: formData.name,
+      type: formData.type,
       status: formData.status,
-      players: 0,
+      bookings: 0,
       revenue: 0,
     };
 
-    setGames([...games, newGame]);
+    setGames([...games, newVenue]);
     handleCloseModal();
   };
 
@@ -64,15 +67,15 @@ const GamesManagement = () => {
     <div className="flex-1 bg-gray-50 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-1">{t('pages.games.title')}</h1>
-          <p className="text-gray-500 text-sm">{t('pages.games.description')}</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-1">Quản lý Cơ sở</h1>
+          <p className="text-gray-500 text-sm">Quản lý các cơ sở Karaoke, Massage, Club</p>
         </div>
         <button
           onClick={handleOpenModal}
           className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
-          {t('pages.games.addGame')}
+          Thêm cơ sở mới
         </button>
       </div>
 
@@ -83,7 +86,7 @@ const GamesManagement = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder={t('pages.games.searchPlaceholder')}
+              placeholder="Tìm kiếm cơ sở..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
@@ -101,11 +104,11 @@ const GamesManagement = () => {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.tables.id')}</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.tables.gameName')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tên cơ sở</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.tables.players')}</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.tables.revenue')}</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.tables.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Số lượt đặt</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Doanh thu</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Thao tác</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -113,7 +116,16 @@ const GamesManagement = () => {
                 <tr key={game.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{game.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{game.name}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-sm font-medium text-gray-900">{game.name}</div>
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        game.type === 'karaoke' ? 'bg-pink-100 text-pink-800' :
+                        game.type === 'massage' ? 'bg-blue-100 text-blue-800' :
+                        'bg-purple-100 text-purple-800'
+                      }`}>
+                        {game.type === 'karaoke' ? 'Karaoke' : game.type === 'massage' ? 'Massage' : 'Club'}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -134,7 +146,7 @@ const GamesManagement = () => {
                       )}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{game.players.toLocaleString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{game.bookings.toLocaleString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {game.revenue.toLocaleString('vi-VN')} VNĐ
                   </td>
@@ -156,7 +168,7 @@ const GamesManagement = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">{t('pages.games.addGame')}</h2>
+              <h2 className="text-xl font-bold text-gray-900">Thêm cơ sở mới</h2>
               <button
                 onClick={handleCloseModal}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -179,10 +191,26 @@ const GamesManagement = () => {
                   onChange={handleInputChange}
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder={t('common.enterGameName')}
+                  placeholder="Nhập tên cơ sở"
                 />
               </div>
 
+              <div className="mb-4">
+                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
+                  Loại cơ sở <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="karaoke">Karaoke</option>
+                  <option value="massage">Massage</option>
+                  <option value="club">Club</option>
+                </select>
+              </div>
               <div className="mb-6">
                 <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
                   {t('common.status')} <span className="text-red-500">*</span>
@@ -212,7 +240,7 @@ const GamesManagement = () => {
                   type="submit"
                   className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                 >
-                  {t('pages.games.addGame')}
+                  Thêm cơ sở
                 </button>
               </div>
             </form>
