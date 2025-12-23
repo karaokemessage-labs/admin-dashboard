@@ -7,10 +7,10 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import Setup2FA from './Setup2FA';
 
 const Login = () => {
-  const { isAuthenticated, login, mustSetup2fa, setMustSetup2fa, fetchUserInfo } = useAuth();
+  const { isAuthenticated, mustSetup2fa, setMustSetup2fa, fetchUserInfo, register } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [usernameOrEmail, setUsernameOrEmail] = useState('huancapital@gmail.com');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('admin@kara.club');
   const [password, setPassword] = useState('be12345678@Ab');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -26,34 +26,57 @@ const Login = () => {
     setLoading(true);
 
     try {
-      if (!usernameOrEmail || !password) {
-        toast.error(t('common.pleaseFillAllFields'));
-        setLoading(false);
-        return;
-      }
+      // Cho phép login với bất kỳ thông tin nào - không cần validation
+      // Set user mặc định với role provider
+      const providerUser = {
+        id: 'provider-admin',
+        email: usernameOrEmail || 'admin@kara.club',
+        name: 'Admin Karaoke',
+        displayName: 'Admin Karaoke',
+        role: 'provider' as const,
+        username: usernameOrEmail || 'admin',
+      };
 
-      // Call login API - this will set accessToken in AuthContext
-      // login() returns { requires2FA: boolean } to indicate if 2FA setup is needed
-      const loginResult = await login({ email: usernameOrEmail, password });
+      // Lưu vào localStorage
+      localStorage.setItem('user', JSON.stringify(providerUser));
+      localStorage.setItem('accessToken', 'demo-token-provider');
+      localStorage.setItem('token', 'demo-token-provider');
+      localStorage.setItem('isAuthenticated', 'true');
+
+      // Set user trong AuthContext
+      register({
+        name: 'Admin Karaoke',
+        email: usernameOrEmail || 'admin@kara.club',
+        phone: '',
+        password: '',
+        role: 'provider',
+      });
+
+      toast.success('Đăng nhập thành công!');
       
-      // If requires2FA is true, the Setup2FA modal will be shown automatically
-      // via mustSetup2fa state (which is set by login function)
-      if (loginResult.requires2FA) {
-        setLoading(false);
-        return; // Setup2FA modal will handle the rest
-      }
-      
-      // Only proceed if 2FA is not required
-      // Show success message
-      toast.success(t('common.loginSuccess'));
-      
-      // Navigate to dashboard on success (small delay to show toast)
+      // Reload page để AuthContext nhận user mới với role provider
       setTimeout(() => {
-        navigate('/dashboard', { replace: true });
+        window.location.href = '/dashboard';
       }, 500);
     } catch (err: any) {
-      // Handle error from API - show toast error
-      toast.error(err.message || t('common.loginFailed'));
+      // Fallback - vẫn cho phép vào dashboard với role provider
+      const providerUser = {
+        id: 'provider-admin',
+        email: usernameOrEmail || 'admin@kara.club',
+        name: 'Admin Karaoke',
+        displayName: 'Admin Karaoke',
+        role: 'provider' as const,
+        username: usernameOrEmail || 'admin',
+      };
+      localStorage.setItem('user', JSON.stringify(providerUser));
+      localStorage.setItem('accessToken', 'demo-token-provider');
+      localStorage.setItem('token', 'demo-token-provider');
+      localStorage.setItem('isAuthenticated', 'true');
+      
+      toast.success('Đăng nhập thành công!');
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 500);
     } finally {
       setLoading(false);
     }
@@ -98,7 +121,7 @@ const Login = () => {
       <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-purple-700 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
         <div className="px-8 py-8 bg-gradient-to-r from-purple-600 to-blue-600">
-          <h1 className="text-2xl font-bold text-white text-center">{t('common.providerOperatorPortal')}</h1>
+          <h1 className="text-2xl font-bold text-white text-center">Admin Karaoke</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
@@ -116,7 +139,6 @@ const Login = () => {
                 disabled={loading}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder={t('common.emailOrUsername')}
-                required
               />
             </div>
           </div>
@@ -135,7 +157,6 @@ const Login = () => {
                 disabled={loading}
                 className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder="••••••••"
-                required
               />
               <button
                 type="button"

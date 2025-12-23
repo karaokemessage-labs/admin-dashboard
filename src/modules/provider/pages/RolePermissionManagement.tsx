@@ -55,14 +55,62 @@ const RolePermissionManagement = () => {
     description: '',
   });
 
-  // Mock permissions
+  // Mock permissions - chuẩn hoá theo module KaKa Club
   const [permissions] = useState<Permission[]>([
-    { id: '1', name: 'View Dashboard', code: 'dashboard.view', description: 'Xem trang dashboard' },
-    { id: '2', name: 'Manage Games', code: 'games.manage', description: 'Quản lý games' },
-    { id: '3', name: 'Manage Operators', code: 'operators.manage', description: 'Quản lý operators' },
-    { id: '4', name: 'Manage Players', code: 'players.manage', description: 'Quản lý players' },
-    { id: '5', name: 'View Reports', code: 'reports.view', description: 'Xem báo cáo' },
-    { id: '6', name: 'Manage Settings', code: 'settings.manage', description: 'Quản lý cài đặt' },
+    {
+      id: '1',
+      name: 'Xem Dashboard',
+      code: 'dashboard.view',
+      description: 'Xem tổng quan hoạt động hệ thống (doanh thu, lượt đặt phòng, khách hàng)',
+    },
+    {
+      id: '2',
+      name: 'Quản lý Cơ sở',
+      code: 'venues.manage',
+      description: 'Thêm/sửa/xoá cơ sở Karaoke, Massage, Club',
+    },
+    {
+      id: '3',
+      name: 'Quản lý Karaoke',
+      code: 'karaoke.manage',
+      description: 'Quản lý phòng Karaoke, giá, khung giờ, trạng thái phòng',
+    },
+    {
+      id: '4',
+      name: 'Quản lý Massage',
+      code: 'massage.manage',
+      description: 'Quản lý phòng Massage, liệu trình, nhân viên, trạng thái phòng',
+    },
+    {
+      id: '5',
+      name: 'Xem Giao dịch',
+      code: 'transactions.view',
+      description: 'Xem lịch sử giao dịch đặt phòng và thanh toán dịch vụ',
+    },
+    {
+      id: '6',
+      name: 'Xử lý Hoàn tiền',
+      code: 'transactions.refund',
+      description: 'Duyệt và xử lý yêu cầu hoàn tiền của khách',
+    },
+    {
+      id: '7',
+      name: 'Xem Báo cáo',
+      code: 'reports.view',
+      description: 'Xem báo cáo doanh thu, công suất phòng, hiệu quả từng dịch vụ',
+    },
+    {
+      id: '8',
+      name: 'Quản lý Tài khoản & Phân quyền',
+      code: 'roles.manage',
+      description: 'Tạo role, gán quyền và quản lý tài khoản nhân viên',
+    },
+    {
+      id: '9',
+      name: 'Cài đặt Hệ thống',
+      code: 'settings.manage',
+      description: 'Cấu hình chung cho hệ thống KaKa Club',
+    },
   ]);
 
   // Mock operator accounts
@@ -96,31 +144,45 @@ const RolePermissionManagement = () => {
     },
   ]);
 
-  // Mock roles with permissions
+  // Mock roles với bộ quyền chuẩn cho mô hình KaKa Club
   const [roles, setRoles] = useState<Role[]>([
     {
       id: '1',
-      name: 'Super Admin',
-      code: 'super_admin',
-      description: 'Toàn quyền truy cập hệ thống',
-      permissions: permissions.slice(0, 6),
+      name: 'Owner',
+      code: 'owner',
+      description: 'Chủ hệ thống KaKa Club, toàn quyền cấu hình và xem báo cáo',
+      permissions,
       createdAt: '2024-01-15',
     },
     {
       id: '2',
-      name: 'Admin',
-      code: 'admin',
-      description: 'Quản trị viên',
-      permissions: permissions.slice(0, 4),
+      name: 'Karaoke Manager',
+      code: 'karaoke_manager',
+      description: 'Quản lý hoạt động khu vực Karaoke',
+      permissions: permissions.filter((p) =>
+        ['dashboard.view', 'venues.manage', 'karaoke.manage', 'transactions.view', 'reports.view'].includes(p.code)
+      ),
       createdAt: '2024-01-16',
     },
     {
       id: '3',
-      name: 'Manager',
-      code: 'manager',
-      description: 'Quản lý',
-      permissions: permissions.slice(0, 3),
+      name: 'Massage Manager',
+      code: 'massage_manager',
+      description: 'Quản lý hoạt động khu vực Massage',
+      permissions: permissions.filter((p) =>
+        ['dashboard.view', 'venues.manage', 'massage.manage', 'transactions.view', 'reports.view'].includes(p.code)
+      ),
       createdAt: '2024-01-17',
+    },
+    {
+      id: '4',
+      name: 'Thu ngân',
+      code: 'cashier',
+      description: 'Xử lý thanh toán, hoàn tiền và hỗ trợ khách tại quầy',
+      permissions: permissions.filter((p) =>
+        ['dashboard.view', 'transactions.view', 'transactions.refund'].includes(p.code)
+      ),
+      createdAt: '2024-01-18',
     },
   ]);
 
