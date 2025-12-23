@@ -86,7 +86,7 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
         <div className="flex items-center gap-3 min-w-[220px]">
           <div className="w-10 h-10 rounded-lg overflow-hidden border border-purple-200 shadow-sm bg-white flex items-center justify-center">
             <img
-              src="https://png.pngtree.com/png-clipart/20191213/ourmid/pngtree-vintage-karaoke-night-party-png-image_2088875.jpg"
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVN7Nb-a5GICVEgGOvVnh0FvL-b74WfoE8Dg&s"
               alt="KaKa Club Logo"
               className="w-full h-full object-cover"
             />
