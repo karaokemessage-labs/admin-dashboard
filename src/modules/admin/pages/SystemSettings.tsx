@@ -22,7 +22,7 @@ const SystemSettings = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('pages.settings.systemName')}</label>
               <input
                 type="text"
-                defaultValue="Game Provider Platform"
+                defaultValue="KaKa Club Admin Portal"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -30,7 +30,7 @@ const SystemSettings = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('pages.settings.systemDescription')}</label>
               <textarea
                 rows={3}
-                defaultValue="Hệ thống quản lý game cá cược"
+                defaultValue="Hệ thống quản lý karaoke club, massage và các dịch vụ giải trí"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -120,36 +120,49 @@ const SystemSettings = () => {
           </div>
         </div>
 
-        {/* Payment Settings */}
+        {/* Booking Settings */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-4">
             <CreditCard className="w-5 h-5 text-orange-600" />
-            <h3 className="text-lg font-semibold text-gray-800">{t('pages.settings.paymentSettings')}</h3>
+            <h3 className="text-lg font-semibold text-gray-800">Cài đặt Đặt phòng</h3>
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('pages.settings.minDepositLimit')}</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Thời gian đặt phòng tối thiểu (phút)</label>
               <input
                 type="number"
-                defaultValue={100000}
+                defaultValue={60}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="60"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('pages.settings.minWithdrawLimit')}</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Thời gian đặt phòng tối đa (phút)</label>
               <input
                 type="number"
-                defaultValue={50000}
+                defaultValue={480}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="480"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('pages.settings.withdrawProcessingTime')}</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Thời gian hủy đặt phòng trước (phút)</label>
               <input
                 type="number"
-                defaultValue={24}
+                defaultValue={30}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="30"
               />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Cho phép đặt phòng trực tuyến</p>
+                <p className="text-xs text-gray-500">Cho phép khách hàng đặt phòng qua website/app</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" defaultChecked className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+              </label>
             </div>
           </div>
         </div>

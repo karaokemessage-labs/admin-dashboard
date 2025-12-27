@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, Plus, X, Loader2, Edit, Trash2, User, Shield } from 'lucide-react';
+import { Search, Filter, X, Loader2, Edit, Trash2, User, Shield } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { userService } from '../../../services/userService';
@@ -49,16 +49,16 @@ const UsersManagement = () => {
     }
   };
 
-  const handleOpenModal = () => {
-    setIsEditMode(false);
-    setEditingUserId(null);
-    setIsModalOpen(true);
-    setFormData({
-      name: '',
-      email: '',
-      username: '',
-    });
-  };
+  // const handleOpenModal = () => {
+  //   setIsEditMode(false);
+  //   setEditingUserId(null);
+  //   setIsModalOpen(true);
+  //   setFormData({
+  //     name: '',
+  //     email: '',
+  //     username: '',
+  //   });
+  // };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -172,18 +172,9 @@ const UsersManagement = () => {
 
   return (
     <div className="flex-1 bg-gray-50 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-1">Quản lý Người dùng</h1>
-          <p className="text-gray-500 text-sm">Quản lý tài khoản người dùng trong hệ thống</p>
-        </div>
-        <button
-          onClick={handleOpenModal}
-          className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Tạo người dùng mới
-        </button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-1">Quản lý Người dùng</h1>
+        <p className="text-gray-500 text-sm">Quản lý tài khoản người dùng trong hệ thống</p>
       </div>
 
       {/* Filters */}

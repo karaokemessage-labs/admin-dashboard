@@ -1149,10 +1149,10 @@ const translations: Record<AllLanguages, Translations> = {
     },
     menu: {
       dashboard: 'Dashboard',
-      venuesManagement: 'Venues Management',
+      venuesManagement: 'Club Management',
       gamesManagement: 'Games Management',
-      operatorsManagement: 'Operators Management',
-      providerAccountsManagement: 'Provider Accounts Management',
+      operatorsManagement: 'Karaoke Management',
+      providerAccountsManagement: 'Massage Management',
       rolesPermissionsManagement: 'Roles & Permissions Management',
       playersManagement: 'Players Management',
       transactions: 'Transactions',
