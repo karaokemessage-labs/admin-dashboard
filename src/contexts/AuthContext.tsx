@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { authService, LoginResponse, UserMeResponse } from '../services/authService';
 
-export type UserRole = 'provider' | 'operator';
+export type UserRole = 'admin';
 
 interface User {
   id?: string;
@@ -20,7 +20,7 @@ interface AuthContextType {
   mustSetup2fa: boolean;
   login: (credentials: { email: string; password: string }) => Promise<{ requires2FA: boolean }>;
   register: (data: { name: string; email: string; phone: string; password: string; role: UserRole }) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   fetchUserInfo: () => Promise<void>;
   setMustSetup2fa: (value: boolean) => void;
 }
@@ -35,13 +35,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return JSON.parse(storedUser);
     }
 
-    // Không cần login: tạo sẵn user demo mặc định (provider)
+    // Không cần login: tạo sẵn user demo mặc định (admin)
     const defaultUser: User = {
-      id: 'demo-provider',
+      id: 'demo-admin',
       email: 'demo@kara.club',
       name: 'Kaka Admin',
       displayName: 'Kaka Admin',
-      role: 'provider',
+      role: 'admin',
       username: 'demo',
     };
 
@@ -70,30 +70,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Map API user response to our User type
   const mapUserFromApi = (apiUser: UserMeResponse, fallbackEmail?: string): User => {
-    const mapRole = (roles?: Array<{ id: string; name: string }>, fallbackRole?: string): UserRole => {
-      // Priority 1: Extract role from roles array (new API format)
-      if (roles && roles.length > 0) {
-        const roleName = roles[0].name?.toLowerCase();
-        if (roleName === 'provider' || roleName === 'operator') {
-          return roleName as UserRole;
-        }
-      }
-      
-      // Priority 2: Use fallback role if provided
-      if (fallbackRole) {
-        const normalizedRole = fallbackRole.toLowerCase();
-        if (normalizedRole === 'provider' || normalizedRole === 'operator') {
-          return normalizedRole as UserRole;
-        }
-      }
-      
-      // Default to operator
-      return 'operator';
-    };
-
     // Extract data from response (could be in data field or top level)
     const userData = apiUser.data || apiUser;
-    const roles = userData.roles || apiUser.roles;
 
     return {
       id: userData.id || apiUser.id || apiUser.uid || apiUser.userId || '',
@@ -102,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       displayName: userData.displayName || userData.name || apiUser.displayName || apiUser.name || userData.username || apiUser.username || '',
       username: userData.username || apiUser.username || '',
       phone: userData.phone || apiUser.phone,
-      role: mapRole(roles, userData.role || apiUser.role),
+      role: 'admin', // Always admin role
     };
   };
 
@@ -139,10 +117,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [token, user]);
 
   const login = async (credentials: { email: string; password: string }): Promise<{ requires2FA: boolean }> => {
-    // Normalize login identifier for special handling (e.g. admin account)
-    const loginIdentifier = credentials.email.trim().toLowerCase();
-    const isAdminLogin = loginIdentifier === 'admin' || loginIdentifier === 'admin@gmail.com';
-
     try {
       // Call API login
       const response: LoginResponse = await authService.login({
@@ -199,7 +173,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             name: responseData?.displayName || responseUser?.name || responseData?.username || '',
             displayName: responseData?.displayName || responseUser?.name || responseData?.username || '',
             username: responseData?.username || responseUser?.username || '',
-            role: 'operator', // Temporary, will be updated after verify
+            role: 'admin', // Temporary, will be updated after verify
           };
           setUser(tempUser);
           localStorage.setItem('user', JSON.stringify(tempUser));
@@ -215,20 +189,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { requires2FA: true };
       }
       
-      // Map role from API (Provider/Operator) to our UserRole type (provider/operator)
-      const mapRole = (role?: string): UserRole => {
-        // If login is explicitly the admin account, always force provider portal
-        if (isAdminLogin) {
-          return 'provider';
-        }
-
-        if (!role) return 'operator';
-        const normalizedRole = role.toLowerCase();
-        return (normalizedRole === 'provider' || normalizedRole === 'operator') 
-          ? normalizedRole as UserRole 
-          : 'operator';
-      };
-      
       // Build user data from API response
       // Note: API response has userId, username, displayName, role
       const userData: User = {
@@ -237,7 +197,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         name: responseData?.displayName || responseUser?.name || responseUser?.username || responseData?.username || '',
         displayName: responseData?.displayName || responseUser?.name || responseUser?.username || responseData?.username || '',
         username: responseData?.username || responseUser?.username || '',
-        role: mapRole(responseData?.role || responseUser?.role),
+        role: 'admin', // Always admin role
       };
       
       // Extract refresh token
@@ -287,16 +247,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('isAuthenticated', 'true');
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // Clear local state
     setUser(null);
     setToken(null);
     setMustSetup2fa(false);
     hasFetchedUserRef.current = false; // Reset ref so user can be fetched again on next login
+    
+    // Clear all authentication-related items from localStorage
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('pendingLoginEmail');
+    localStorage.removeItem('userSettings');
+    localStorage.removeItem('sidebarCollapsed');
   };
 
   // Với chế độ không cần login, chỉ cần có user và không yêu cầu 2FA là coi như đã đăng nhập

@@ -4,19 +4,19 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 const Monitoring = () => {
   const { t } = useLanguage();
   const systemStatus = [
-    { service: 'Game Server', status: 'online', uptime: '99.9%', latency: '12ms', players: 1520 },
-    { service: 'Payment Gateway', status: 'online', uptime: '99.8%', latency: '8ms', players: 0 },
-    { service: 'Database', status: 'online', uptime: '99.9%', latency: '3ms', players: 0 },
-    { service: 'API Gateway', status: 'online', uptime: '99.7%', latency: '15ms', players: 0 },
-    { service: 'Notification Service', status: 'warning', uptime: '98.5%', latency: '25ms', players: 0 },
+    { serviceKey: 'gameServer', service: t('pages.monitoring.serviceGameServer'), status: 'online', uptime: '99.9%', latency: '12ms', players: 1520 },
+    { serviceKey: 'paymentGateway', service: t('pages.monitoring.servicePaymentGateway'), status: 'online', uptime: '99.8%', latency: '8ms', players: 0 },
+    { serviceKey: 'database', service: t('pages.monitoring.serviceDatabase'), status: 'online', uptime: '99.9%', latency: '3ms', players: 0 },
+    { serviceKey: 'apiGateway', service: t('pages.monitoring.serviceApiGateway'), status: 'online', uptime: '99.7%', latency: '15ms', players: 0 },
+    { serviceKey: 'notificationService', service: t('pages.monitoring.serviceNotificationService'), status: 'warning', uptime: '98.5%', latency: '25ms', players: 0 },
   ];
 
   const recentEvents = [
-    { time: '14:30:25', service: 'Game Server', event: 'High load detected', type: 'warning' },
-    { time: '14:25:10', service: 'Database', event: 'Backup completed', type: 'success' },
-    { time: '14:20:05', service: 'Payment Gateway', event: 'Transaction processed', type: 'info' },
-    { time: '14:15:30', service: 'API Gateway', event: 'Rate limit warning', type: 'warning' },
-    { time: '14:10:15', service: 'Game Server', event: 'New player joined', type: 'info' },
+    { time: '14:30:25', service: t('pages.monitoring.serviceGameServer'), event: t('pages.monitoring.eventHighLoad'), type: 'warning' },
+    { time: '14:25:10', service: t('pages.monitoring.serviceDatabase'), event: t('pages.monitoring.eventBackupCompleted'), type: 'success' },
+    { time: '14:20:05', service: t('pages.monitoring.servicePaymentGateway'), event: t('pages.monitoring.eventTransactionProcessed'), type: 'info' },
+    { time: '14:15:30', service: t('pages.monitoring.serviceApiGateway'), event: t('pages.monitoring.eventRateLimitWarning'), type: 'warning' },
+    { time: '14:10:15', service: t('pages.monitoring.serviceGameServer'), event: t('pages.monitoring.eventNewPlayerJoined'), type: 'info' },
   ];
 
   const getStatusColor = (status: string) => {
@@ -92,7 +92,7 @@ const Monitoring = () => {
             <div>
               <p className="text-sm text-gray-500 mb-1">{t('pages.players.activePlayers')}</p>
               <p className="text-2xl font-bold text-gray-800">
-                {systemStatus.find(s => s.service === 'Game Server')?.players || 0}
+                {systemStatus.find(s => s.serviceKey === 'gameServer')?.players || 0}
               </p>
             </div>
             <div className="p-3 bg-orange-100 rounded-lg">

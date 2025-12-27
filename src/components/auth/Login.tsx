@@ -7,13 +7,14 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import Setup2FA from './Setup2FA';
 
 const Login = () => {
-  const { isAuthenticated, mustSetup2fa, setMustSetup2fa, fetchUserInfo, register } = useAuth();
+  const { isAuthenticated, mustSetup2fa, setMustSetup2fa, fetchUserInfo, login } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [usernameOrEmail, setUsernameOrEmail] = useState('admin@kara.club');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('admin@kaka.club');
   const [password, setPassword] = useState('be12345678@Ab');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated && !mustSetup2fa) {
@@ -24,59 +25,37 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
+
+    // Basic validation
+    if (!usernameOrEmail.trim() || !password.trim()) {
+      setError('Vui lòng nhập email/tên đăng nhập và mật khẩu');
+      setLoading(false);
+      return;
+    }
 
     try {
-      // Cho phép login với bất kỳ thông tin nào - không cần validation
-      // Set user mặc định với role provider
-      const providerUser = {
-        id: 'provider-admin',
-        email: usernameOrEmail || 'admin@kara.club',
-        name: 'Admin Karaoke',
-        displayName: 'Admin Karaoke',
-        role: 'provider' as const,
-        username: usernameOrEmail || 'admin',
-      };
-
-      // Lưu vào localStorage
-      localStorage.setItem('user', JSON.stringify(providerUser));
-      localStorage.setItem('accessToken', 'demo-token-provider');
-      localStorage.setItem('token', 'demo-token-provider');
-      localStorage.setItem('isAuthenticated', 'true');
-
-      // Set user trong AuthContext
-      register({
-        name: 'Admin Karaoke',
-        email: usernameOrEmail || 'admin@kara.club',
-        phone: '',
-        password: '',
-        role: 'provider',
+      // Call API login through AuthContext
+      const result = await login({
+        email: usernameOrEmail.trim(),
+        password: password.trim(),
       });
 
-      toast.success('Đăng nhập thành công!');
+      // If 2FA is required, Setup2FA component will be shown automatically
+      if (result.requires2FA) {
+        // Don't navigate, Setup2FA component will handle the flow
+        return;
+      }
+
+      // Login successful, fetch user info to get complete profile
+      await fetchUserInfo();
       
-      // Reload page để AuthContext nhận user mới với role provider
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 500);
+      toast.success('Đăng nhập thành công!');
+      navigate('/dashboard', { replace: true });
     } catch (err: any) {
-      // Fallback - vẫn cho phép vào dashboard với role provider
-      const providerUser = {
-        id: 'provider-admin',
-        email: usernameOrEmail || 'admin@kara.club',
-        name: 'Admin Karaoke',
-        displayName: 'Admin Karaoke',
-        role: 'provider' as const,
-        username: usernameOrEmail || 'admin',
-      };
-      localStorage.setItem('user', JSON.stringify(providerUser));
-      localStorage.setItem('accessToken', 'demo-token-provider');
-      localStorage.setItem('token', 'demo-token-provider');
-      localStorage.setItem('isAuthenticated', 'true');
-      
-      toast.success('Đăng nhập thành công!');
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 500);
+      const errorMessage = err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -168,6 +147,12 @@ const Login = () => {
               </button>
             </div>
           </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
 
           <div className="flex items-center justify-end">
             <Link

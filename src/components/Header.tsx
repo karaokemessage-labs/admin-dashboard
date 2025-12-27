@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Maximize2, Mail, Bell, Power, X, Globe, List, User, Settings, HelpCircle } from 'lucide-react';
+import { Search, Maximize2, Mail, Bell, Power, X, Globe, List, User, Settings, HelpCircle, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -18,21 +18,32 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    const messages: Record<string, string> = {
-      en: 'Logged out successfully!',
-      vi: 'Đăng xuất thành công!',
-      zh: '登出成功！',
-      th: 'ออกจากระบบสำเร็จ!',
-      ja: 'ログアウトしました！',
-      ko: '로그아웃되었습니다!',
-    };
-    toast.success(messages[language] || messages.en);
-    logout();
-    setTimeout(() => {
-      navigate('/login');
-    }, 300);
+  const handleLogout = async () => {
+    // Close profile menu before logout
+    setIsProfileMenuOpen(false);
+    setIsLoggingOut(true);
+
+    try {
+      // Call logout function from AuthContext to clear localStorage
+      await logout();
+      
+      // Show success message
+      toast.success(t('common.logoutSuccess') || 'Đăng xuất thành công!');
+      
+      // Small delay to show success message before redirect
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Redirect to login page
+      navigate('/login', { replace: true });
+    } catch (error: any) {
+      console.error('Logout error:', error);
+      // Still redirect to login page even if there's an error
+      navigate('/login', { replace: true });
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const getUserInitials = () => {
@@ -57,24 +68,15 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
   };
 
   const getHeaderTitle = () => {
-    if (user?.role === 'provider') {
-      return t('header.providerPortal');
-    } else if (user?.role === 'operator') {
-      return t('header.operatorPortal');
-    }
-    return t('header.providerPortal'); // Default
+    return t('header.adminPortal') || 'Admin Portal';
   };
 
-  const handleLanguageChange = (lang: 'en' | 'vi' | 'zh' | 'th' | 'ja' | 'ko') => {
+  const handleLanguageChange = (lang: 'en' | 'vi') => {
     setLanguage(lang);
     setIsLanguageMenuOpen(false);
     const messages: Record<string, string> = {
       en: 'Language changed to English',
       vi: 'Đã chuyển sang Tiếng Việt',
-      zh: '已切换到中文',
-      th: 'เปลี่ยนเป็นภาษาไทย',
-      ja: '日本語に切り替えました',
-      ko: '한국어로 변경되었습니다',
     };
     toast.success(messages[lang] || 'Language changed');
   };
@@ -127,20 +129,14 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded-lg px-3 py-2"
           >
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${
-              user?.role === 'provider' 
-                ? 'bg-gradient-to-br from-purple-400 to-purple-500' 
-                : 'bg-gradient-to-br from-blue-400 to-blue-500'
-            }`}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold bg-gradient-to-br from-purple-400 to-purple-500">
               {getUserInitials()}
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-medium text-gray-700">{getDisplayName()}</span>
               {user?.role && (
-                <span className={`text-xs font-semibold ${
-                  user.role === 'provider' ? 'text-purple-600' : 'text-blue-600'
-                }`}>
-                  {user.role === 'provider' ? t('header.providerPortal') : t('header.operatorPortal')}
+                <span className="text-xs font-semibold text-purple-600">
+                  {t('header.adminPortal') || 'Admin Portal'}
                 </span>
               )}
             </div>
@@ -160,22 +156,16 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                 {/* User Info Section */}
                 <div className="p-4 border-b border-gray-200">
                   <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${
-                      user?.role === 'provider' 
-                        ? 'bg-gradient-to-br from-purple-400 to-purple-500' 
-                        : 'bg-gradient-to-br from-blue-400 to-blue-500'
-                    }`}>
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-purple-400 to-purple-500">
                       {getUserInitials()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">{getDisplayName()}</p>
                       <p className="text-xs text-gray-500 truncate">{user?.email || ''}</p>
                       {user?.role && (
-                        <span className={`inline-block mt-1 text-xs font-semibold ${
-                          user.role === 'provider' ? 'text-purple-600' : 'text-blue-600'
-                        }`}>
-                      {user.role === 'provider' ? t('header.providerPortal') : t('header.operatorPortal')}
-                </span>
+                        <span className="inline-block mt-1 text-xs font-semibold text-purple-600">
+                          {t('header.adminPortal') || 'Admin Portal'}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -206,7 +196,7 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                   <button 
                     onClick={() => {
                       setIsProfileMenuOpen(false);
-                      // TODO: Navigate to help & support page
+                      navigate('/dashboard/help-support');
                     }}
                     className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors duration-150"
                   >
@@ -219,10 +209,20 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                 <div className="border-t border-gray-200 py-2">
                   <button 
                     onClick={handleLogout}
-                    className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors duration-150"
+                    disabled={isLoggingOut}
+                    className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Power className="w-5 h-5 text-red-600" />
-                    <span className="font-medium">{t('common.logout')}</span>
+                    {isLoggingOut ? (
+                      <>
+                        <Loader2 className="w-5 h-5 text-red-600 animate-spin" />
+                        <span className="font-medium">{t('common.loggingOut') || 'Đang đăng xuất...'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Power className="w-5 h-5 text-red-600" />
+                        <span className="font-medium">{t('common.logout')}</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2, Filter, X, Loader2, Eye } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
-import { operatorService, CreateOperatorRequest, Operator } from '../../../services/operatorService';
+import { karaokeService, CreateKaraokeRequest, Karaoke } from '../../../services/karaokeService';
+import { operatorService } from '../../../services/operatorService';
 
 const OperatorsManagement = () => {
   const { t } = useLanguage();
@@ -12,7 +13,7 @@ const OperatorsManagement = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [operatorToDelete, setOperatorToDelete] = useState<{ id: string; name: string } | null>(null);
-  const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
+  const [selectedOperator, setSelectedOperator] = useState<Karaoke | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [fetchingDetail, setFetchingDetail] = useState(false);
@@ -23,28 +24,24 @@ const OperatorsManagement = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(7);
   const [totalItems, setTotalItems] = useState<number>(0);
-  const [formData, setFormData] = useState<CreateOperatorRequest>({
-    name: '',
-    contact_email: '',
-    region: 'GLOBAL',
-    admin_username: '',
-    admin_display_name: '',
-    admin_email: '',
-    temp_password: '',
+  const [formData, setFormData] = useState<CreateKaraokeRequest>({
+    name: 'Karaoke Room A',
+    email: 'karaoke-a@kaka.club',
+    description: 'A spacious karaoke room with modern equipment',
   });
 
-  const [operators, setOperators] = useState<Operator[]>([]);
+  const [operators, setOperators] = useState<Karaoke[]>([]);
 
-  // Fetch operators on component mount
+  // Fetch karaokes on component mount
   useEffect(() => {
-    fetchOperators(1);
+    fetchKaraokes(1);
   }, []);
 
-  const fetchOperators = async (page: number) => {
+  const fetchKaraokes = async (page: number) => {
     setFetching(true);
     try {
-      const { operators: items, page: apiPage, total } = await operatorService.getOperators(page, pageSize);
-      setOperators(items);
+      const { karaokes, page: apiPage, total } = await karaokeService.getKaraokes(page, pageSize);
+      setOperators(karaokes);
       setCurrentPage(apiPage);
       setTotalItems(total);
     } catch (error: any) {
@@ -61,13 +58,9 @@ const OperatorsManagement = () => {
     setEditRegion('');
     setIsModalOpen(true);
     setFormData({
-      name: '',
-      contact_email: '',
-      region: 'GLOBAL',
-      admin_username: '',
-      admin_display_name: '',
-      admin_email: '',
-      temp_password: '',
+      name: 'Karaoke Room A',
+      email: 'karaoke-a@kaka.club',
+      description: 'A spacious karaoke room with modern equipment',
     });
   };
 
@@ -79,16 +72,12 @@ const OperatorsManagement = () => {
     setEditRegion('');
     setFormData({
       name: '',
-      contact_email: '',
-      region: 'GLOBAL',
-      admin_username: '',
-      admin_display_name: '',
-      admin_email: '',
-      temp_password: '',
+      email: '',
+      description: '',
     });
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -100,10 +89,15 @@ const OperatorsManagement = () => {
     e.preventDefault();
 
     // Validate required fields
-    if (!formData.name.trim() || !formData.contact_email.trim() || 
-        !formData.admin_username.trim() || !formData.admin_display_name.trim() || 
-        !formData.admin_email.trim() || !formData.temp_password.trim()) {
+    if (!formData.name.trim() || !formData.email.trim()) {
       toast.error(t('common.pleaseFillAllFields'));
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error('Email không hợp lệ');
       return;
     }
 
@@ -113,16 +107,21 @@ const OperatorsManagement = () => {
         await operatorService.updateOperator(editingOperatorId, {
           name: formData.name,
           status: editStatus,
-          region: formData.region || editRegion,
+          region: editRegion,
         });
         toast.success(t('common.update') + ' ' + t('common.success'));
       } else {
-        await operatorService.createOperator(formData);
+        // Call karaoke API to create
+        await karaokeService.createKaraoke({
+          name: formData.name,
+          email: formData.email,
+          description: formData.description || undefined,
+        });
         toast.success(t('pages.operators.createSuccess'));
       }
 
       handleCloseModal();
-      await fetchOperators(currentPage);
+      await fetchKaraokes(currentPage);
     } catch (error: any) {
       toast.error(error.message || t('pages.operators.createFailed'));
     } finally {
@@ -140,11 +139,11 @@ const OperatorsManagement = () => {
 
     setDeletingId(operatorToDelete.id);
     try {
-      await operatorService.deleteOperator(operatorToDelete.id);
+      await karaokeService.deleteKaraoke(operatorToDelete.id);
       toast.success(t('pages.operators.deleteSuccess'));
       setIsDeleteModalOpen(false);
       setOperatorToDelete(null);
-      await fetchOperators(currentPage);
+      await fetchKaraokes(currentPage);
     } catch (error: any) {
       toast.error(error.message || t('pages.operators.deleteFailed'));
     } finally {
@@ -157,15 +156,16 @@ const OperatorsManagement = () => {
     setOperatorToDelete(null);
   };
 
-  const handleViewDetail = async (operator: Operator) => {
+  const handleViewDetail = async (karaoke: Karaoke) => {
     setIsDetailModalOpen(true);
     setFetchingDetail(true);
     setSelectedOperator(null);
     
     try {
-      const response = await operatorService.getOperatorDetail(operator.id);
+      const response = await karaokeService.getKaraoke(karaoke.id);
       if (response.data) {
-        setSelectedOperator(response.data);
+        const karaokeData = Array.isArray(response.data) ? response.data[0] : response.data;
+        setSelectedOperator(karaokeData);
       }
     } catch (error: any) {
       toast.error(error.message || t('common.error'));
@@ -302,44 +302,44 @@ const OperatorsManagement = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredOperators.map((operator) => (
-                  <tr key={operator.id} className="hover:bg-gray-50 transition-colors">
+                {filteredOperators.map((karaoke) => (
+                  <tr key={karaoke.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
                           <span className="text-purple-600 font-semibold">
-                            {operator.name.charAt(0).toUpperCase()}
+                            {karaoke.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{operator.name}</div>
+                          <div className="text-sm font-medium text-gray-900">{karaoke.name}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{operator.email}</div>
+                      <div className="text-sm text-gray-900">{karaoke.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          operator.status?.toUpperCase() === 'ACTIVE'
+                          karaoke.status?.toUpperCase() === 'ACTIVE'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
                         }`}
                       >
-                        {operator.status?.toUpperCase() === 'ACTIVE' ? t('common.active') : t('common.inactive')}
+                        {karaoke.status?.toUpperCase() === 'ACTIVE' ? t('common.active') : t('common.inactive')}
                       </span>
                     </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {operator.createdAt ? new Date(operator.createdAt).toLocaleDateString('vi-VN') : '-'}
+                    {karaoke.createdAt ? new Date(karaoke.createdAt).toLocaleDateString('vi-VN') : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {operator.lastLogin ? new Date(operator.lastLogin).toLocaleDateString('vi-VN') : '-'}
+                    {(karaoke as any).lastLogin ? new Date((karaoke as any).lastLogin).toLocaleDateString('vi-VN') : '-'}
                   </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => handleViewDetail(operator)}
+                          onClick={() => handleViewDetail(karaoke)}
                           className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded"
                           title={t('pages.operators.viewDetails')}
                         >
@@ -349,17 +349,13 @@ const OperatorsManagement = () => {
                           onClick={() => {
                             setIsModalOpen(true);
                             setIsEditMode(true);
-                            setEditingOperatorId(operator.id);
-                            setEditStatus(operator.status || 'inactive');
-                            setEditRegion(operator.region || '');
+                            setEditingOperatorId(karaoke.id);
+                            setEditStatus(karaoke.status || 'inactive');
+                            setEditRegion((karaoke as any).region || '');
                             setFormData({
-                              name: operator.name,
-                              contact_email: operator.email || '',
-                              region: operator.region || 'GLOBAL',
-                              admin_username: '',
-                              admin_display_name: '',
-                              admin_email: '',
-                              temp_password: '',
+                              name: karaoke.name,
+                              email: karaoke.email || '',
+                              description: karaoke.description || '',
                             });
                           }}
                           className="text-purple-600 hover:text-purple-900 p-2 hover:bg-purple-50 rounded"
@@ -368,12 +364,12 @@ const OperatorsManagement = () => {
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteClick(String(operator.id), operator.name)}
-                          disabled={deletingId === String(operator.id)}
+                          onClick={() => handleDeleteClick(String(karaoke.id), karaoke.name)}
+                          disabled={deletingId === String(karaoke.id)}
                           className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                           title={t('pages.operators.deleteOperator')}
                         >
-                          {deletingId === String(operator.id) ? (
+                          {deletingId === String(karaoke.id) ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
                             <Trash2 className="w-4 h-4" />
@@ -416,7 +412,7 @@ const OperatorsManagement = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => currentPage > 1 && fetchOperators(currentPage - 1)}
+                  onClick={() => currentPage > 1 && fetchKaraokes(currentPage - 1)}
                   disabled={currentPage === 1 || fetching}
                   className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -432,7 +428,7 @@ const OperatorsManagement = () => {
 
                 <button
                   type="button"
-                  onClick={() => currentPage < totalPages && fetchOperators(currentPage + 1)}
+                  onClick={() => currentPage < totalPages && fetchKaraokes(currentPage + 1)}
                   disabled={currentPage >= totalPages || fetching}
                   className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -482,14 +478,14 @@ const OperatorsManagement = () => {
               </div>
 
               <div className="mb-4">
-                <label htmlFor="contact_email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                   {t('common.email')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
-                  id="contact_email"
-                  name="contact_email"
-                  value={formData.contact_email}
+                  id="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleInputChange}
                   required
                   disabled={loading}
@@ -498,94 +494,21 @@ const OperatorsManagement = () => {
                 />
               </div>
 
-              {!isEditMode && (
-                <>
-                  <div className="mb-4">
-                    <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('common.region') || 'Region'} <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="region"
-                      name="region"
-                      value={formData.region}
-                      onChange={handleInputChange}
-                      required
-                      disabled={loading}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      placeholder={t('common.region') || 'Enter region (e.g., GLOBAL, ASIA, etc.)'}
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label htmlFor="admin_username" className="block text-sm font-medium text-gray-700 mb-2">
-                      Admin Username <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="admin_username"
-                      name="admin_username"
-                      value={formData.admin_username}
-                      onChange={handleInputChange}
-                      required
-                      disabled={loading}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      placeholder="Enter admin username"
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label htmlFor="admin_display_name" className="block text-sm font-medium text-gray-700 mb-2">
-                      Admin Display Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="admin_display_name"
-                      name="admin_display_name"
-                      value={formData.admin_display_name}
-                      onChange={handleInputChange}
-                      required
-                      disabled={loading}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      placeholder="Enter admin display name"
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label htmlFor="admin_email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Admin Email <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      id="admin_email"
-                      name="admin_email"
-                      value={formData.admin_email}
-                      onChange={handleInputChange}
-                      required
-                      disabled={loading}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      placeholder="Enter admin email"
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label htmlFor="temp_password" className="block text-sm font-medium text-gray-700 mb-2">
-                      Temporary Password <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="password"
-                      id="temp_password"
-                      name="temp_password"
-                      value={formData.temp_password}
-                      onChange={handleInputChange}
-                      required
-                      disabled={loading}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      placeholder="Enter temporary password"
-                    />
-                  </div>
-                </>
-              )}
+              <div className="mb-4">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                  Mô tả
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  disabled={loading}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
+                  placeholder="Nhập mô tả (tùy chọn)"
+                />
+              </div>
               
               {/* When editing, allow changing status & region */}
 
@@ -668,7 +591,7 @@ const OperatorsManagement = () => {
             {/* Modal Body */}
             <div className="p-6">
               <p className="text-gray-700 mb-4">
-                {t('common.deleteConfirmMessage').replace('this item', `Operator "${operatorToDelete.name}"`)}
+                {t('common.deleteConfirmMessage').replace('this item', `Karaoke "${operatorToDelete.name}"`)}
               </p>
               <p className="text-sm text-red-600">
                 {t('common.deleteConfirmMessage').split('?')[1] || t('common.deleteConfirmMessage')}

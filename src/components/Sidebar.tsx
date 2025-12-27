@@ -31,11 +31,11 @@ const SidebarMenu = ({ isCollapsed, onMenuClick }: SidebarMenuProps) => {
   // Get role display text
   const getRoleText = () => {
     if (!user?.role) return t('common.user');
-    return user.role === 'provider' ? t('header.providerPortal') : t('header.operatorPortal');
+    return t('header.adminPortal') || 'Admin Portal';
   };
   
-  // Get menu items based on user role with translations
-  const menuItems = user?.role ? getMenuItemsByRole(user.role, t) : [];
+  // Get all menu items (admin-only portal, no role filtering needed)
+  const menuItems = getMenuItemsByRole(undefined, t);
 
   return (
     <aside className={`bg-white border-r border-gray-200 h-screen overflow-y-auto transition-all duration-300 ${
@@ -46,11 +46,7 @@ const SidebarMenu = ({ isCollapsed, onMenuClick }: SidebarMenuProps) => {
         <div className="flex items-center gap-3">
           <div className={`rounded-full flex items-center justify-center text-white font-semibold ${
             isCollapsed ? 'w-10 h-10' : 'w-12 h-12'
-          } ${
-            user?.role === 'provider' 
-              ? 'bg-gradient-to-br from-purple-400 to-purple-500' 
-              : 'bg-gradient-to-br from-blue-400 to-blue-500'
-          }`}>
+          } bg-gradient-to-br from-purple-400 to-purple-500`}>
             {getUserInitials()}
           </div>
           {!isCollapsed && (

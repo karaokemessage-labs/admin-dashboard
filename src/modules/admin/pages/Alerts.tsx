@@ -4,11 +4,11 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 const Alerts = () => {
   const { t } = useLanguage();
   const alerts = [
-    { id: 1, type: 'warning', title: 'Hệ thống load cao', message: 'CPU usage đạt 85%', time: '14:30:25', read: false },
-    { id: 2, type: 'error', title: 'Payment gateway timeout', message: 'Không thể kết nối đến payment gateway', time: '13:15:10', read: false },
-    { id: 3, type: 'info', title: 'Backup hoàn tất', message: 'Database backup đã hoàn thành thành công', time: '12:00:05', read: true },
-    { id: 4, type: 'warning', title: 'Rate limit gần đạt', message: 'API rate limit đạt 90%', time: '11:45:30', read: true },
-    { id: 5, type: 'success', title: 'Deployment thành công', message: 'Version 2.1.0 đã được deploy', time: '10:20:15', read: true },
+    { id: 1, type: 'warning', title: t('pages.alerts.alertHighSystemLoad'), message: t('pages.alerts.alertHighSystemLoadMessage'), time: '14:30:25', read: false },
+    { id: 2, type: 'error', title: t('pages.alerts.alertPaymentGatewayTimeout'), message: t('pages.alerts.alertPaymentGatewayTimeoutMessage'), time: '13:15:10', read: false },
+    { id: 3, type: 'info', title: t('pages.alerts.alertBackupCompleted'), message: t('pages.alerts.alertBackupCompletedMessage'), time: '12:00:05', read: true },
+    { id: 4, type: 'warning', title: t('pages.alerts.alertRateLimitNear'), message: t('pages.alerts.alertRateLimitNearMessage'), time: '11:45:30', read: true },
+    { id: 5, type: 'success', title: t('pages.alerts.alertDeploymentSuccess'), message: t('pages.alerts.alertDeploymentSuccessMessage'), time: '10:20:15', read: true },
   ];
 
   const getAlertIcon = (type: string) => {

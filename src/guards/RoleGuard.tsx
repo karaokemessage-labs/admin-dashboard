@@ -1,26 +1,22 @@
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth, UserRole } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 interface RoleGuardProps {
   children: ReactNode;
-  allowedRoles: UserRole[];
+  allowedRoles?: never; // Deprecated - no longer needed
   fallbackPath?: string;
 }
 
 /**
- * RoleGuard - Protect routes/components based on user role
- * @param allowedRoles - Array of roles that can access this route
- * @param fallbackPath - Path to redirect if user doesn't have permission (default: /dashboard)
+ * RoleGuard - Protect routes/components based on authentication
+ * Since this is an admin-only portal, we only check authentication
+ * @param fallbackPath - Path to redirect if not authenticated (default: /login)
  */
-const RoleGuard = ({ children, allowedRoles, fallbackPath = '/dashboard' }: RoleGuardProps) => {
-  const { user, isAuthenticated } = useAuth();
+const RoleGuard = ({ children, fallbackPath = '/login' }: RoleGuardProps) => {
+  const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!user?.role || !allowedRoles.includes(user.role)) {
     return <Navigate to={fallbackPath} replace />;
   }
 

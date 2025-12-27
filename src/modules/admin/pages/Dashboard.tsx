@@ -26,7 +26,7 @@ const Dashboard = () => {
       {/* Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <MetricCard
-          title="Doanh thu tuần này"
+          title={t('pages.dashboard.weeklyRevenue')}
           value="1.5 tỷ VNĐ"
           change="60%"
           changeType="increase"
@@ -35,7 +35,7 @@ const Dashboard = () => {
           icon={TrendingUp}
         />
         <MetricCard
-          title="Số lượt đặt phòng"
+          title={t('pages.dashboard.bookingsCount')}
           value="456"
           change="10%"
           changeType="increase"
@@ -44,7 +44,7 @@ const Dashboard = () => {
           icon={Bookmark}
         />
         <MetricCard
-          title="Khách hàng đang sử dụng"
+          title={t('pages.dashboard.activeCustomers')}
           value="95"
           change="5%"
           changeType="increase"

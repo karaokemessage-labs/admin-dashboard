@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getRoutesByRole } from '../routes/getRoutesByRole';
 
 const DashboardLayout = () => {
-  const { user } = useAuth();
+  const {} = useAuth();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
     return saved ? JSON.parse(saved) : false;
@@ -25,8 +25,8 @@ const DashboardLayout = () => {
     // Menu click is handled by Link navigation in Sidebar
   };
 
-  // Get routes based on user role
-  const routes = user?.role ? getRoutesByRole(user.role) : [];
+  // Get all routes (admin-only portal, no role checking needed)
+  const routes = getRoutesByRole();
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

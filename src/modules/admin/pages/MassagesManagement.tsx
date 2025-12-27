@@ -2,61 +2,48 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2, MoreVertical, Filter, X, Loader2, RefreshCw, UserCog } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { massageService, Massage } from '../../../services/massageService';
 
-interface ProviderAccount {
-  id: string;
-  code: string;
-  name: string;
-  email: string;
-  status?: string;
-  createdAt?: string;
-  lastLogin?: string;
-}
-
-const ProviderAccountManagement = () => {
+const MassagesManagement = () => {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingMassageId, setEditingMassageId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState<{ id: string; name: string } | null>(null);
   const [formData, setFormData] = useState({
-    code: '',
-    name: '',
-    email: '',
+    code: 'massage001',
+    name: 'Massage Spa Center',
+    email: 'massage@kaka.club',
   });
 
-  const [accounts, setAccounts] = useState<ProviderAccount[]>([]);
+  const [accounts, setAccounts] = useState<Massage[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize] = useState<number>(7);
+  const [totalItems, setTotalItems] = useState<number>(0);
 
-  // Mock data - sẽ thay bằng API call sau
+  // Fetch massages on component mount
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setAccounts([
-        {
-          id: '1',
-          code: 'provider001',
-          name: 'Provider Account 1',
-          email: 'provider1@example.com',
-          status: 'active',
-          createdAt: '2024-01-15',
-          lastLogin: '2024-01-20',
-        },
-        {
-          id: '2',
-          code: 'provider002',
-          name: 'Provider Account 2',
-          email: 'provider2@example.com',
-          status: 'active',
-          createdAt: '2024-01-16',
-          lastLogin: '2024-01-19',
-        },
-      ]);
-      setFetching(false);
-    }, 500);
+    fetchMassages(1);
   }, []);
+
+  const fetchMassages = async (page: number) => {
+    setFetching(true);
+    try {
+      const { massages, page: apiPage, total } = await massageService.getMassages(page, pageSize);
+      setAccounts(massages);
+      setCurrentPage(apiPage);
+      setTotalItems(total);
+    } catch (error: any) {
+      toast.error(error.message || t('common.error'));
+    } finally {
+      setFetching(false);
+    }
+  };
 
   const generateRandomData = () => {
     const randomNum = Math.floor(Math.random() * 1000000);
@@ -76,17 +63,24 @@ const ProviderAccountManagement = () => {
   };
 
   const handleOpenModal = () => {
-    const randomData = generateRandomData();
+    setIsEditMode(false);
+    setEditingMassageId(null);
     setIsModalOpen(true);
-    setFormData(randomData);
+    setFormData({
+      code: 'massage001',
+      name: 'Massage Spa Center',
+      email: 'massage@kaka.club',
+    });
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setIsEditMode(false);
+    setEditingMassageId(null);
     setFormData({
-      code: '',
-      name: '',
-      email: '',
+      code: 'massage001',
+      name: 'Massage Spa Center',
+      email: 'massage@kaka.club',
     });
   };
 
@@ -106,23 +100,37 @@ const ProviderAccountManagement = () => {
       return;
     }
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error('Email không hợp lệ');
+      return;
+    }
+
     setLoading(true);
     try {
-      // TODO: Call API to create provider account
-      const newAccount: ProviderAccount = {
-        id: String(accounts.length + 1),
-        code: formData.code,
-        name: formData.name,
-        email: formData.email,
-        status: 'active',
-        createdAt: new Date().toISOString().split('T')[0],
-      };
+      if (isEditMode && editingMassageId) {
+        // Call API to update massage
+        await massageService.updateMassage(editingMassageId, {
+          name: formData.name,
+          code: formData.code,
+          email: formData.email,
+        });
+        toast.success(t('common.update') + ' ' + t('common.success'));
+      } else {
+        // Call API to create massage
+        await massageService.createMassage({
+          name: formData.name,
+          code: formData.code,
+          email: formData.email,
+        });
+        toast.success(t('pages.providerAccounts.createSuccess'));
+      }
       
-      setAccounts([...accounts, newAccount]);
-      toast.success(t('pages.providerAccounts.createSuccess'));
       handleCloseModal();
+      await fetchMassages(currentPage);
     } catch (error: any) {
-      toast.error(error.message || t('pages.providerAccounts.createFailed'));
+      toast.error(error.message || (isEditMode ? t('pages.providerAccounts.updateFailed') : t('pages.providerAccounts.createFailed')));
     } finally {
       setLoading(false);
     }
@@ -138,11 +146,11 @@ const ProviderAccountManagement = () => {
 
     setDeletingId(accountToDelete.id);
     try {
-      // TODO: Call API to delete provider account
-      setAccounts(accounts.filter(acc => acc.id !== accountToDelete.id));
+      await massageService.deleteMassage(accountToDelete.id);
       toast.success(t('pages.providerAccounts.deleteSuccess'));
       setIsDeleteModalOpen(false);
       setAccountToDelete(null);
+      await fetchMassages(currentPage);
     } catch (error: any) {
       toast.error(error.message || t('pages.providerAccounts.deleteFailed'));
     } finally {
@@ -220,7 +228,7 @@ const ProviderAccountManagement = () => {
               <div>
                 <p className="text-sm text-gray-600 mb-1">{t('pages.providerAccounts.activeAccounts')}</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {accounts.filter(acc => acc.status === 'active').length}
+                  {accounts.filter(acc => acc.status?.toUpperCase() === 'ACTIVE').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -233,7 +241,7 @@ const ProviderAccountManagement = () => {
               <div>
                 <p className="text-sm text-gray-600 mb-1">{t('common.inactive')}</p>
                 <p className="text-2xl font-bold text-red-600">
-                  {accounts.filter(acc => acc.status === 'inactive').length}
+                  {accounts.filter(acc => acc.status?.toUpperCase() !== 'ACTIVE').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
@@ -302,12 +310,12 @@ const ProviderAccountManagement = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            account.status === 'active'
+                            account.status?.toUpperCase() === 'ACTIVE'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
                           }`}
                         >
-                          {account.status === 'active' ? t('common.active') : t('common.inactive')}
+                          {account.status?.toUpperCase() === 'ACTIVE' ? t('common.active') : t('common.inactive')}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -318,7 +326,20 @@ const ProviderAccountManagement = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
-                          <button className="text-purple-600 hover:text-purple-900 p-2 hover:bg-purple-50 rounded">
+                          <button
+                            onClick={() => {
+                              setIsModalOpen(true);
+                              setIsEditMode(true);
+                              setEditingMassageId(account.id);
+                              setFormData({
+                                code: account.code || '',
+                                name: account.name || '',
+                                email: account.email || '',
+                              });
+                            }}
+                            className="text-purple-600 hover:text-purple-900 p-2 hover:bg-purple-50 rounded"
+                            title={t('common.edit')}
+                          >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
@@ -352,6 +373,57 @@ const ProviderAccountManagement = () => {
               </p>
             </div>
           )}
+
+          {/* Pagination */}
+          {!fetching && totalItems > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 border-t border-gray-100">
+              <p className="text-sm text-gray-600">
+                {t('common.showing')}{' '}
+                <span className="font-medium">
+                  {totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1}
+                </span>{' '}
+                {t('common.to')}{' '}
+                <span className="font-medium">
+                  {Math.min(currentPage * pageSize, totalItems)}
+                </span>{' '}
+                {t('common.of')}{' '}
+                <span className="font-medium">{totalItems}</span>{' '}
+                {t('pages.providerAccounts.accountsLabel') || 'accounts'}
+              </p>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => currentPage > 1 && fetchMassages(currentPage - 1)}
+                  disabled={currentPage === 1 || fetching}
+                  className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {t('common.previous') || 'Previous'}
+                </button>
+
+                <span className="text-sm text-gray-600">
+                  {t('common.page')}{' '}
+                  <span className="font-medium">{currentPage}</span>{' '}
+                  {t('common.of') || 'of'}{' '}
+                  <span className="font-medium">{Math.max(1, Math.ceil(totalItems / pageSize))}</span>
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+                    if (currentPage < totalPages) {
+                      fetchMassages(currentPage + 1);
+                    }
+                  }}
+                  disabled={currentPage >= Math.ceil(totalItems / pageSize) || fetching}
+                  className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {t('common.next') || 'Next'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -361,7 +433,9 @@ const ProviderAccountManagement = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">{t('pages.providerAccounts.addAccount')}</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                {isEditMode ? t('common.editAction') : t('pages.providerAccounts.addAccount')}
+              </h2>
               <button
                 onClick={handleCloseModal}
                 disabled={loading}
@@ -378,19 +452,21 @@ const ProviderAccountManagement = () => {
                   <label htmlFor="code" className="block text-sm font-medium text-gray-700">
                     {t('common.code')} <span className="text-red-500">*</span>
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const randomData = generateRandomData();
-                      setFormData(randomData);
-                    }}
-                    disabled={loading}
-                    className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title={t('pages.providerAccounts.randomData')}
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    {t('pages.providerAccounts.random')}
-                  </button>
+                  {!isEditMode && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const randomData = generateRandomData();
+                        setFormData(randomData);
+                      }}
+                      disabled={loading}
+                      className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={t('pages.providerAccounts.randomData')}
+                    >
+                      <RefreshCw className="w-3 h-3" />
+                      {t('pages.providerAccounts.random')}
+                    </button>
+                  )}
                 </div>
                 <input
                   type="text"
@@ -455,7 +531,15 @@ const ProviderAccountManagement = () => {
                   className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                  <span>{loading ? t('common.creating') : t('pages.providerAccounts.createAccount')}</span>
+                  <span>
+                    {loading
+                      ? isEditMode
+                        ? t('common.updating')
+                        : t('common.creating')
+                      : isEditMode
+                        ? t('common.update')
+                        : t('pages.providerAccounts.createAccount')}
+                  </span>
                 </button>
               </div>
             </form>
@@ -475,7 +559,7 @@ const ProviderAccountManagement = () => {
             {/* Modal Body */}
             <div className="p-6">
               <p className="text-gray-700 mb-4">
-                {t('common.deleteConfirmMessage').replace('this item', `Provider Account "${accountToDelete.name}"`)}
+                {t('common.deleteConfirmMessage').replace('this item', `Massage "${accountToDelete.name}"`)}
               </p>
               <p className="text-sm text-red-600">
                 {t('common.deleteConfirmMessage').split('?')[1] || t('common.deleteConfirmMessage')}
@@ -509,5 +593,5 @@ const ProviderAccountManagement = () => {
   );
 };
 
-export default ProviderAccountManagement;
+export default MassagesManagement;
 

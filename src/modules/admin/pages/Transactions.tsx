@@ -26,9 +26,9 @@ const Transactions = () => {
   };
 
   const getTransactionTypeLabel = (type: string) => {
-    if (type === 'booking') return 'Đặt phòng';
-    if (type === 'service') return 'Dịch vụ';
-    if (type === 'refund') return 'Hoàn tiền';
+    if (type === 'booking') return t('pages.transactions.transactionTypeBooking');
+    if (type === 'service') return t('pages.transactions.transactionTypeService');
+    if (type === 'refund') return t('pages.transactions.transactionTypeRefund');
     return type;
   };
 
@@ -36,12 +36,12 @@ const Transactions = () => {
     <div className="flex-1 bg-gray-50 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-1">Quản lý Giao dịch</h1>
-          <p className="text-gray-500 text-sm">Theo dõi các giao dịch đặt phòng và thanh toán dịch vụ</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-1">{t('pages.transactions.title')}</h1>
+          <p className="text-gray-500 text-sm">{t('pages.transactions.description')}</p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
           <Download className="w-4 h-4" />
-          Xuất báo cáo
+          {t('pages.transactions.exportReport')}
         </button>
       </div>
 
@@ -50,7 +50,7 @@ const Transactions = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Giao dịch hôm nay</p>
+              <p className="text-sm text-gray-500 mb-1">{t('pages.transactions.totalTransactionsToday')}</p>
               <p className="text-2xl font-bold text-gray-800">1,234</p>
             </div>
           </div>
@@ -58,7 +58,7 @@ const Transactions = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Tổng doanh thu</p>
+              <p className="text-sm text-gray-500 mb-1">{t('pages.transactions.totalRevenue')}</p>
               <p className="text-2xl font-bold text-green-600">25.5 tỷ VNĐ</p>
             </div>
           </div>
@@ -66,7 +66,7 @@ const Transactions = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Tổng hoàn tiền</p>
+              <p className="text-sm text-gray-500 mb-1">{t('pages.transactions.totalRefund')}</p>
               <p className="text-2xl font-bold text-red-600">1.2 tỷ VNĐ</p>
             </div>
           </div>
@@ -74,7 +74,7 @@ const Transactions = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Đang chờ xử lý</p>
+              <p className="text-sm text-gray-500 mb-1">{t('pages.transactions.pendingProcessing')}</p>
               <p className="text-2xl font-bold text-yellow-600">45</p>
             </div>
           </div>
@@ -88,7 +88,7 @@ const Transactions = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm kiếm giao dịch (mã, khách hàng, cơ sở)..."
+              placeholder={t('pages.transactions.searchTransactionPlaceholder')}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
@@ -105,14 +105,14 @@ const Transactions = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Mã giao dịch</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Khách hàng</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Cơ sở</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Loại</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Số tiền</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Phương thức</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.transactions.transactionCode')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.transactions.customer')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.transactions.venue')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.tables.type')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.transactions.amount')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.transactions.paymentMethod')}</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Thời gian</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.transactions.time')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -141,7 +141,7 @@ const Transactions = () => {
                         ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {txn.status === 'completed' ? 'Hoàn thành' : txn.status === 'pending' ? 'Đang chờ' : 'Từ chối'}
+                      {txn.status === 'completed' ? t('pages.transactions.statusCompleted') : txn.status === 'pending' ? t('pages.transactions.statusPending') : t('pages.transactions.statusRejected')}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{txn.date}</td>

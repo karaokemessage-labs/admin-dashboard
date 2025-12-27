@@ -1,4 +1,5 @@
 import { API_CONFIG } from '../config/api';
+import { ErrorResponseDto } from '../types/api';
 
 export interface ApiResponse<T = any> {
   data: T;
@@ -11,6 +12,10 @@ export interface ApiError {
   message: string;
   status?: number;
   errors?: Record<string, string[]>;
+  error?: {
+    code?: string;
+    details?: Array<{ field?: string; message: string }>;
+  };
 }
 
 class ApiClient {
@@ -53,9 +58,16 @@ class ApiClient {
 
     const url = `${this.baseURL}${endpoint}`;
 
+    // Check if Content-Type should be included
+    // If headers are provided and don't have Content-Type, and body is empty, don't add it
+    const providedHeaders = options.headers as HeadersInit | undefined;
+    const hasContentType = providedHeaders && 'Content-Type' in providedHeaders;
+    const hasBody = options.body !== undefined && options.body !== '';
+    
     const defaultHeaders: HeadersInit = {
-      'Content-Type': 'application/json',
-      Accept: '*/*',
+      Accept: 'application/json',
+      // Only add Content-Type if body exists and Content-Type is not explicitly provided
+      ...(hasBody && !hasContentType ? { 'Content-Type': 'application/json' } : {}),
     };
 
     // Add Authorization header if token exists
@@ -71,7 +83,7 @@ class ApiClient {
       ...options,
       headers: {
         ...defaultHeaders,
-        ...options.headers,
+        ...providedHeaders,
         ...(cookies ? { Cookie: cookies } : {}),
       },
       signal: controller.signal,
@@ -101,16 +113,41 @@ class ApiClient {
       }
 
       if (!response.ok) {
+        // Handle ErrorResponseDto format
+        if (data?.success === false && data?.error) {
+          const errorResponse = data as ErrorResponseDto;
+          const error: ApiError = {
+            message: errorResponse.message || `HTTP error! status: ${response.status}`,
+            status: response.status,
+            error: errorResponse.error,
+            errors: errorResponse.error.details?.reduce((acc: Record<string, string[]>, detail: { field?: string; message: string }) => {
+              if (detail.field) {
+                acc[detail.field] = [detail.message];
+              }
+              return acc;
+            }, {} as Record<string, string[]>),
+          };
+          throw error;
+        }
+        
+        // Fallback for other error formats
         const error: ApiError = {
-          message: data?.message || data?.error || `HTTP error! status: ${response.status}`,
+          message: data?.message || data?.error?.message || `HTTP error! status: ${response.status}`,
           status: response.status,
           errors: data?.errors,
+          error: data?.error,
         };
         throw error;
       }
 
+      // Handle SuccessResponseDto format - extract data field if present
+      let responseData = data;
+      if (data?.success === true && data?.data !== undefined) {
+        responseData = data.data;
+      }
+
       return {
-        data,
+        data: responseData,
         status: response.status,
         message: data?.message,
       };
@@ -147,10 +184,29 @@ class ApiClient {
     body?: any,
     options?: RequestInit
   ): Promise<ApiResponse<T>> {
+    // Handle empty string body (for endpoints like logout that require empty body)
+    let requestBody: string | undefined;
+    
+    if (body === '') {
+      requestBody = '';
+    } else if (body !== undefined) {
+      requestBody = JSON.stringify(body);
+    }
+    
+    // If body is empty string, don't include Content-Type header
+    // Only include Accept and Authorization headers
+    const customHeaders: HeadersInit = {};
+    if (body === '') {
+      // For empty body, only set Accept header (no Content-Type)
+      customHeaders['Accept'] = 'application/json';
+      // Authorization will be added by request method if token exists
+    }
+    
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
-      body: body ? JSON.stringify(body) : undefined,
+      body: requestBody,
+      headers: body === '' ? { ...customHeaders, ...options?.headers } : options?.headers,
     });
   }
 

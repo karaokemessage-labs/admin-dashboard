@@ -7,7 +7,7 @@ import { authService, UserMeResponse } from '../../../services/authService';
 
 const MyProfile = () => {
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, fetchUserInfo } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -34,7 +34,7 @@ const MyProfile = () => {
       try {
         const userData = await authService.getMe();
         setProfileData(userData);
-        
+
         // Update form data with API response
         const data = userData.data || userData;
         setFormData({
@@ -49,7 +49,7 @@ const MyProfile = () => {
         setFetching(false);
       }
     };
-    
+
     fetchProfile();
   }, []);
 
@@ -59,25 +59,68 @@ const MyProfile = () => {
   };
 
   const handleSave = async () => {
+    // Validation
+    if (!formData.name || !formData.name.trim()) {
+      toast.error('Tên không được để trống');
+      return;
+    }
+
+    if (!formData.email || !formData.email.trim()) {
+      toast.error('Email không được để trống');
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error('Email không hợp lệ');
+      return;
+    }
+
     setLoading(true);
     try {
-      // TODO: Call API to update profile
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Call API to update profile
+      await authService.updateProfile({
+        name: formData.name,
+        displayName: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        username: formData.username || undefined,
+      });
+
+      // Refresh profile data
+      const userData = await authService.getMe();
+      setProfileData(userData);
+
+      // Update form data with API response
+      const data = userData.data || userData;
+      setFormData({
+        name: data.displayName || data.name || '',
+        email: data.email || '',
+        phone: data.phone || '',
+        username: data.username || '',
+      });
+
+      // Update AuthContext user info
+      await fetchUserInfo();
+
       toast.success(t('common.update') + ' ' + t('common.success'));
       setIsEditing(false);
-    } catch (error) {
-      toast.error(t('common.error'));
+    } catch (error: any) {
+      toast.error(error.message || t('common.error'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = () => {
+    // Reset form data from latest profile data or user context
+    const data = profileData?.data || profileData;
     setFormData({
-      name: user?.displayName || user?.name || '',
-      email: user?.email || '',
-      phone: user?.phone || '',
-      username: user?.username || '',
+      name: data?.displayName || data?.name || user?.displayName || user?.name || '',
+      email: data?.email || user?.email || '',
+      phone: data?.phone || user?.phone || '',
+      username: data?.username || user?.username || '',
     });
     setIsEditing(false);
   };
@@ -109,17 +152,17 @@ const MyProfile = () => {
     return data?.email || user?.email || '';
   };
 
-  const getRole = () => {
-    const data = profileData?.data || profileData;
-    // Check role from data.role or data.roles array
-    if (data?.role) {
-      return data.role;
-    }
-    if (data?.roles && data.roles.length > 0) {
-      return data.roles[0].name;
-    }
-    return user?.role || '';
-  };
+  // const getRole = () => {
+  //   const data = profileData?.data || profileData;
+  //   // Check role from data.role or data.roles array
+  //   if (data?.role) {
+  //     return data.role;
+  //   }
+  //   if (data?.roles && data.roles.length > 0) {
+  //     return data.roles[0].name;
+  //   }
+  //   return user?.role || '';
+  // };
 
   const getStatus = () => {
     const data = profileData?.data || profileData;
@@ -140,7 +183,7 @@ const MyProfile = () => {
     return (
       <div className="flex-1 bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
           <p className="text-gray-600">Đang tải thông tin profile...</p>
         </div>
       </div>
@@ -160,17 +203,13 @@ const MyProfile = () => {
           <div className="flex items-center gap-6">
             <div className="relative">
               <div
-                className={`w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold ${
-                  user?.role === 'provider'
-                    ? 'bg-gradient-to-br from-purple-400 to-purple-500'
-                    : 'bg-gradient-to-br from-blue-400 to-blue-500'
-                }`}
+                className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold bg-gradient-to-br from-purple-400 to-purple-500"
               >
                 {getUserInitials()}
               </div>
               {isEditing && (
                 <button
-                  className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors"
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white hover:bg-purple-700 transition-colors"
                   title={t('pages.profile.changePhoto')}
                 >
                   <Camera className="w-4 h-4" />
@@ -183,23 +222,14 @@ const MyProfile = () => {
               </h2>
               <p className="text-gray-500 mb-2">{getEmail()}</p>
               <div className="flex items-center gap-2 mb-2">
-                {getRole() && (
-                  <span
-                    className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-                      getRole() === 'provider' || getRole() === 'PROVIDER'
-                        ? 'bg-purple-100 text-purple-800'
-                        : 'bg-blue-100 text-blue-800'
-                    }`}
-                  >
-                    {getRole() === 'provider' || getRole() === 'PROVIDER' ? t('header.providerPortal') : t('header.operatorPortal')}
-                  </span>
-                )}
+                <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                  {t('header.adminPortal')}
+                </span>
                 <span
-                  className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-                    getStatus() === 'ACTIVE'
+                  className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${getStatus() === 'ACTIVE'
                       ? 'bg-green-100 text-green-800'
                       : 'bg-gray-100 text-gray-800'
-                  }`}
+                    }`}
                 >
                   {getStatus()}
                 </span>
@@ -209,7 +239,7 @@ const MyProfile = () => {
               {!isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                 >
                   <Edit2 className="w-4 h-4" />
                   {t('common.editAction')}
@@ -227,7 +257,7 @@ const MyProfile = () => {
                   <button
                     onClick={handleSave}
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
                   >
                     {loading ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -245,7 +275,7 @@ const MyProfile = () => {
         {/* Profile Information */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-6">
-            <User className="w-5 h-5 text-blue-600" />
+            <User className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-800">{t('pages.profile.personalInfo')}</h3>
           </div>
 
@@ -262,9 +292,8 @@ const MyProfile = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
+                    }`}
                 />
               </div>
             </div>
@@ -281,26 +310,8 @@ const MyProfile = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
-                  }`}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.phone')}</label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
+                    }`}
                 />
               </div>
             </div>
@@ -315,9 +326,24 @@ const MyProfile = () => {
                   value={formData.username}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
+                    }`}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.phone')}</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
+                    }`}
                 />
               </div>
             </div>
@@ -328,11 +354,10 @@ const MyProfile = () => {
               <div className="relative">
                 <div className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
                   <span
-                    className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-                      getStatus() === 'ACTIVE'
+                    className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${getStatus() === 'ACTIVE'
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
-                    }`}
+                      }`}
                   >
                     {getStatus()}
                   </span>
@@ -362,8 +387,8 @@ const MyProfile = () => {
                     const createdAt = data?.createdAt;
                     if (!createdAt) return 'N/A';
                     // Handle both timestamp (number) and ISO string
-                    const date = typeof createdAt === 'number' 
-                      ? new Date(createdAt * 1000) 
+                    const date = typeof createdAt === 'number'
+                      ? new Date(createdAt * 1000)
                       : new Date(createdAt);
                     return date.toLocaleString('en-US', {
                       year: 'numeric',
@@ -384,8 +409,8 @@ const MyProfile = () => {
                     const updatedAt = data?.updatedAt;
                     if (!updatedAt) return 'N/A';
                     // Handle both timestamp (number) and ISO string
-                    const date = typeof updatedAt === 'number' 
-                      ? new Date(updatedAt * 1000) 
+                    const date = typeof updatedAt === 'number'
+                      ? new Date(updatedAt * 1000)
                       : new Date(updatedAt);
                     return date.toLocaleString('en-US', {
                       year: 'numeric',
@@ -404,7 +429,7 @@ const MyProfile = () => {
         {/* Account Security */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
           <div className="flex items-center gap-3 mb-6">
-            <Shield className="w-5 h-5 text-blue-600" />
+            <Shield className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-800">{t('pages.profile.accountSecurity')}</h3>
           </div>
 
@@ -414,9 +439,9 @@ const MyProfile = () => {
                 <p className="font-medium text-gray-900">{t('pages.profile.changePassword')}</p>
                 <p className="text-sm text-gray-500">{t('pages.profile.changePasswordDesc')}</p>
               </div>
-              <button 
+              <button
                 onClick={() => setShowChangePasswordModal(true)}
-                className="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                className="px-4 py-2 text-purple-600 border border-purple-600 rounded-lg hover:bg-purple-50 transition-colors"
               >
                 {t('common.editAction')}
               </button>
@@ -430,16 +455,15 @@ const MyProfile = () => {
                   <p className="text-sm text-gray-500">{t('pages.profile.twoFactorAuthDesc')}</p>
                 </div>
                 <span
-                  className={`px-3 py-1 text-sm font-semibold rounded-full ${
-                    get2FAStatus()
+                  className={`px-3 py-1 text-sm font-semibold rounded-full ${get2FAStatus()
                       ? 'bg-green-100 text-green-800'
                       : 'bg-gray-100 text-gray-800'
-                  }`}
+                    }`}
                 >
                   {get2FAStatus() ? 'Enabled' : 'Disabled'}
                 </span>
               </div>
-              
+
               {/* 2FA Configs */}
               {get2FAConfigs().length > 0 && (
                 <div className="mt-4 space-y-2">
@@ -455,11 +479,10 @@ const MyProfile = () => {
                         )}
                       </div>
                       <span
-                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          config.isActive
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${config.isActive
                             ? 'bg-green-100 text-green-800'
                             : 'bg-gray-100 text-gray-800'
-                        }`}
+                          }`}
                       >
                         {config.isActive ? 'Active' : 'Inactive'}
                       </span>
@@ -478,8 +501,8 @@ const MyProfile = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             {/* Modal Header */}
             <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-200">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-purple-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900">Change Password</h3>
               <button
@@ -508,7 +531,7 @@ const MyProfile = () => {
                       value={passwordForm.oldPassword}
                       onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
                       disabled={changingPassword}
-                      className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                      className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
                       placeholder="Enter current password"
                     />
                     <button
@@ -532,7 +555,7 @@ const MyProfile = () => {
                       value={passwordForm.newPassword}
                       onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
                       disabled={changingPassword}
-                      className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                      className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
                       placeholder="Enter new password"
                     />
                     <button
@@ -589,7 +612,7 @@ const MyProfile = () => {
                   }
                 }}
                 disabled={changingPassword}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center gap-2"
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center gap-2"
               >
                 {changingPassword && <Loader2 className="w-4 h-4 animate-spin" />}
                 {changingPassword ? 'Changing...' : 'Change Password'}

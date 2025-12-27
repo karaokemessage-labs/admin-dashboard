@@ -54,6 +54,8 @@ export interface Translations {
       loginSuccess: string;
       loginFailed: string;
       checkLoginInfo: string;
+      logoutSuccess: string;
+      logoutLocal: string;
       // Table & List
       filter: string;
       noData: string;
@@ -132,6 +134,9 @@ export interface Translations {
       done: string;
       increased: string;
       decreased: string;
+      weeklyRevenue: string;
+      bookingsCount: string;
+      activeCustomers: string;
     };
       operators: {
         title: string;
@@ -159,13 +164,29 @@ export interface Translations {
         userNotFound: string;
         operatorsLabel: string;
       };
-    games: {
-      title: string;
-      addGame: string;
-      createGame: string;
-      searchPlaceholder: string;
-      description: string;
-    };
+      games: {
+        title: string;
+        addGame: string;
+        createGame: string;
+        searchPlaceholder: string;
+        description: string;
+        venueManagement: string;
+        venueName: string;
+        venueType: string;
+        venueTypeKaraoke: string;
+        venueTypeMassage: string;
+        venueTypeClub: string;
+        bookingsCount: string;
+        revenue: string;
+        addVenue: string;
+        searchVenuePlaceholder: string;
+        enterVenueName: string;
+        actions: string;
+        noVenuesYet: string;
+        createSuccess: string;
+        deleteSuccess: string;
+        deleteFailed: string;
+      };
       providerAccounts: {
         title: string;
         addAccount: string;
@@ -272,6 +293,22 @@ export interface Translations {
       completed: string;
       rejected: string;
       description: string;
+      customer: string;
+      venue: string;
+      transactionTypeBooking: string;
+      transactionTypeService: string;
+      transactionTypeDeposit: string;
+      transactionTypeWithdraw: string;
+      transactionTypeRefund: string;
+      paymentMethodCash: string;
+      paymentMethodTransfer: string;
+      paymentMethodEwallet: string;
+      statusPending: string;
+      statusCompleted: string;
+      statusRejected: string;
+      searchTransactionPlaceholder: string;
+      totalRevenue: string;
+      totalRefund: string;
     };
     auditLogs: {
       title: string;
@@ -342,6 +379,16 @@ export interface Translations {
       warning: string;
       totalAlertsLabel: string;
       description: string;
+      alertHighSystemLoad: string;
+      alertPaymentGatewayTimeout: string;
+      alertBackupCompleted: string;
+      alertRateLimitNear: string;
+      alertDeploymentSuccess: string;
+      alertHighSystemLoadMessage: string;
+      alertPaymentGatewayTimeoutMessage: string;
+      alertBackupCompletedMessage: string;
+      alertRateLimitNearMessage: string;
+      alertDeploymentSuccessMessage: string;
     };
     monitoring: {
       online: string;
@@ -355,6 +402,16 @@ export interface Translations {
       totalServices: string;
       recentEvents: string;
       description: string;
+      serviceGameServer: string;
+      servicePaymentGateway: string;
+      serviceDatabase: string;
+      serviceApiGateway: string;
+      serviceNotificationService: string;
+      eventHighLoad: string;
+      eventBackupCompleted: string;
+      eventTransactionProcessed: string;
+      eventRateLimitWarning: string;
+      eventNewPlayerJoined: string;
     };
     risk: {
       totalAlerts: string;
@@ -441,6 +498,34 @@ export interface Translations {
         showPhone: string;
         showPhoneDesc: string;
       };
+      helpSupport: {
+        description: string;
+        emailSupport: string;
+        emailSupportDesc: string;
+        liveChat: string;
+        liveChatDesc: string;
+        startChat: string;
+        phoneSupport: string;
+        phoneSupportDesc: string;
+        faq: string;
+        gettingStarted: string;
+        accountManagement: string;
+        faq1Question: string;
+        faq1Answer: string;
+        faq2Question: string;
+        faq2Answer: string;
+        faq3Question: string;
+        faq3Answer: string;
+        faq4Question: string;
+        faq4Answer: string;
+        resources: string;
+        userGuide: string;
+        userGuideDesc: string;
+        apiDocumentation: string;
+        apiDocumentationDesc: string;
+        community: string;
+        communityDesc: string;
+      };
       tables: {
         id: string;
         player: string;
@@ -464,6 +549,7 @@ export interface Translations {
   header: {
     providerPortal: string;
     operatorPortal: string;
+    adminPortal: string;
     myProfile: string;
     helpSupport: string;
   };
@@ -497,11 +583,14 @@ export interface Translations {
   };
 }
 
-// Định nghĩa các ngôn ngữ được hỗ trợ
-export type SupportedLanguage = 'en' | 'vi' | 'zh' | 'th' | 'ja' | 'ko';
+// Định nghĩa các ngôn ngữ được hỗ trợ (chỉ hiển thị en và vi)
+export type SupportedLanguage = 'en' | 'vi';
+
+// Internal type cho tất cả ngôn ngữ có trong translations (giữ lại để không phá vỡ code)
+type AllLanguages = 'en' | 'vi' | 'zh' | 'th' | 'ja' | 'ko';
 
 // Translations cho từng ngôn ngữ
-const translations: Record<SupportedLanguage, Translations> = {
+const translations: Record<AllLanguages, Translations> = {
   en: {
     common: {
       search: 'Search',
@@ -557,6 +646,8 @@ const translations: Record<SupportedLanguage, Translations> = {
       loginSuccess: 'Login successful!',
       loginFailed: 'Login failed. Please check your login information.',
       checkLoginInfo: 'Login failed. Please check your login information.',
+      logoutSuccess: 'Logged out successfully!',
+      logoutLocal: 'Logged out locally',
       // Table & List
       filter: 'Filter',
       noData: 'No data available',
@@ -635,6 +726,9 @@ const translations: Record<SupportedLanguage, Translations> = {
         done: 'DONE',
         increased: 'Increased',
         decreased: 'Decreased',
+        weeklyRevenue: 'Weekly Revenue',
+        bookingsCount: 'Bookings Count',
+        activeCustomers: 'Active Customers',
       },
       operators: {
         title: 'Operators Management',
@@ -668,6 +762,22 @@ const translations: Record<SupportedLanguage, Translations> = {
         createGame: 'Create Game',
         searchPlaceholder: 'Search game...',
         description: 'Manage and track games in the system',
+        venueManagement: 'Venue Management',
+        venueName: 'Venue Name',
+        venueType: 'Venue Type',
+        venueTypeKaraoke: 'Karaoke',
+        venueTypeMassage: 'Massage',
+        venueTypeClub: 'Club',
+        bookingsCount: 'Bookings',
+        revenue: 'Revenue',
+        addVenue: 'Add New Venue',
+        searchVenuePlaceholder: 'Search venues...',
+        enterVenueName: 'Enter venue name',
+        actions: 'Actions',
+        noVenuesYet: 'No venues yet',
+        createSuccess: 'Created successfully',
+        deleteSuccess: 'Deleted successfully',
+        deleteFailed: 'Delete failed',
       },
       providerAccounts: {
         title: 'Provider Accounts Management',
@@ -775,6 +885,22 @@ const translations: Record<SupportedLanguage, Translations> = {
         completed: 'Completed',
         rejected: 'Rejected',
         description: 'View and manage all transactions in the system',
+        customer: 'Customer',
+        venue: 'Venue',
+        transactionTypeBooking: 'Booking',
+        transactionTypeService: 'Service',
+        transactionTypeDeposit: 'Deposit',
+        transactionTypeWithdraw: 'Withdraw',
+        transactionTypeRefund: 'Refund',
+        paymentMethodCash: 'Cash',
+        paymentMethodTransfer: 'Bank Transfer',
+        paymentMethodEwallet: 'E-Wallet',
+        statusPending: 'Pending',
+        statusCompleted: 'Completed',
+        statusRejected: 'Rejected',
+        searchTransactionPlaceholder: 'Search transactions (code, customer, venue)...',
+        totalRevenue: 'Total Revenue',
+        totalRefund: 'Total Refund',
       },
       settings: {
         title: 'System Settings',
@@ -808,6 +934,16 @@ const translations: Record<SupportedLanguage, Translations> = {
         warning: 'Warning',
         totalAlertsLabel: 'Total Alerts',
         description: 'View and manage system alerts and notifications',
+        alertHighSystemLoad: 'High System Load',
+        alertPaymentGatewayTimeout: 'Payment Gateway Timeout',
+        alertBackupCompleted: 'Backup Completed',
+        alertRateLimitNear: 'Rate Limit Near',
+        alertDeploymentSuccess: 'Deployment Success',
+        alertHighSystemLoadMessage: 'CPU usage reached 85%',
+        alertPaymentGatewayTimeoutMessage: 'Unable to connect to payment gateway',
+        alertBackupCompletedMessage: 'Database backup completed successfully',
+        alertRateLimitNearMessage: 'API rate limit reached 90%',
+        alertDeploymentSuccessMessage: 'Version 2.1.0 has been deployed',
       },
       reports: {
         exportPdf: 'Export PDF',
@@ -846,6 +982,16 @@ const translations: Record<SupportedLanguage, Translations> = {
         totalServices: 'Total Services',
         recentEvents: 'Recent Events',
         description: 'Monitor system services and performance',
+        serviceGameServer: 'Game Server',
+        servicePaymentGateway: 'Payment Gateway',
+        serviceDatabase: 'Database',
+        serviceApiGateway: 'API Gateway',
+        serviceNotificationService: 'Notification Service',
+        eventHighLoad: 'High load detected',
+        eventBackupCompleted: 'Backup completed',
+        eventTransactionProcessed: 'Transaction processed',
+        eventRateLimitWarning: 'Rate limit warning',
+        eventNewPlayerJoined: 'New player joined',
       },
       risk: {
         totalAlerts: 'Total Risk Alerts',
@@ -944,6 +1090,34 @@ const translations: Record<SupportedLanguage, Translations> = {
         showPhone: 'Show Phone',
         showPhoneDesc: 'Display your phone number to other users',
       },
+      helpSupport: {
+        description: 'Get help and support for your account and services',
+        emailSupport: 'Email Support',
+        emailSupportDesc: 'Send us an email and we\'ll get back to you within 24 hours',
+        liveChat: 'Live Chat',
+        liveChatDesc: 'Chat with our support team in real-time',
+        startChat: 'Start Chat',
+        phoneSupport: 'Phone Support',
+        phoneSupportDesc: 'Call us for immediate assistance',
+        faq: 'Frequently Asked Questions',
+        gettingStarted: 'Getting Started',
+        accountManagement: 'Account Management',
+        faq1Question: 'How do I create an account?',
+        faq1Answer: 'You can create an account by clicking on the "Register" button on the login page and filling in your information.',
+        faq2Question: 'How do I reset my password?',
+        faq2Answer: 'Click on "Forgot Password" on the login page and follow the instructions sent to your email.',
+        faq3Question: 'How do I update my profile?',
+        faq3Answer: 'Go to "My Profile" from the user menu and click "Edit" to update your information.',
+        faq4Question: 'How do I enable 2FA?',
+        faq4Answer: 'Go to "My Profile" > "Account Security" and follow the setup instructions for Two-Factor Authentication.',
+        resources: 'Resources',
+        userGuide: 'User Guide',
+        userGuideDesc: 'Complete guide to using the admin dashboard',
+        apiDocumentation: 'API Documentation',
+        apiDocumentationDesc: 'Technical documentation for API integration',
+        community: 'Community Forum',
+        communityDesc: 'Join our community to get help and share ideas',
+      },
       tables: {
         id: 'ID',
         player: 'Player',
@@ -967,6 +1141,7 @@ const translations: Record<SupportedLanguage, Translations> = {
     header: {
       providerPortal: 'KaKa Club',
       operatorPortal: 'Operator Portal',
+      adminPortal: 'Admin Portal',
       myProfile: 'My Profile',
       helpSupport: 'Help & Support',
     },
@@ -1054,6 +1229,8 @@ const translations: Record<SupportedLanguage, Translations> = {
       loginSuccess: 'Đăng nhập thành công!',
       loginFailed: 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.',
       checkLoginInfo: 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.',
+      logoutSuccess: 'Đăng xuất thành công!',
+      logoutLocal: 'Đã đăng xuất (có thể không đồng bộ với server)',
       // Table & List
       filter: 'Lọc',
       noData: 'Không có dữ liệu',
@@ -1132,58 +1309,77 @@ const translations: Record<SupportedLanguage, Translations> = {
         done: 'HOÀN THÀNH',
         increased: 'Tăng',
         decreased: 'Giảm',
+        weeklyRevenue: 'Doanh thu tuần này',
+        bookingsCount: 'Số lượt đặt phòng',
+        activeCustomers: 'Khách hàng đang sử dụng',
       },
       operators: {
-        title: 'Quản lý Operator',
-        addOperator: 'Thêm Operator',
-        createOperator: 'Tạo Operator',
-        deleteOperator: 'Xóa Operator',
-        operatorDetails: 'Chi tiết Operator',
+        title: 'Quản lý Karaoke',
+        addOperator: 'Thêm Karaoke',
+        createOperator: 'Tạo Karaoke',
+        deleteOperator: 'Xóa Karaoke',
+        operatorDetails: 'Chi tiết Karaoke',
         searchPlaceholder: 'Tìm kiếm theo tên, email...',
-        createSuccess: 'Tạo Operator thành công!',
-        createFailed: 'Tạo Operator thất bại. Vui lòng thử lại.',
-        deleteSuccess: 'Xóa Operator thành công!',
-        deleteFailed: 'Xóa Operator thất bại. Vui lòng thử lại.',
+        createSuccess: 'Tạo Karaoke thành công!',
+        createFailed: 'Tạo Karaoke thất bại. Vui lòng thử lại.',
+        deleteSuccess: 'Xóa Karaoke thành công!',
+        deleteFailed: 'Xóa Karaoke thất bại. Vui lòng thử lại.',
         viewDetails: 'Xem chi tiết',
-        deleteOperatorTitle: 'Xóa Operator',
-        description: 'Quản lý và theo dõi các Operator trong hệ thống',
-        noOperatorsFound: 'Không tìm thấy Operator nào',
-        noOperatorsYet: 'Chưa có Operator nào',
-        operatorCode: 'Mã Operator',
-        operatorName: 'Tên Operator',
-        enterOperatorCode: 'Nhập mã operator...',
-        enterOperatorName: 'Nhập tên operator...',
+        deleteOperatorTitle: 'Xóa Karaoke',
+        description: 'Quản lý và theo dõi các Karaoke trong hệ thống',
+        noOperatorsFound: 'Không tìm thấy Karaoke nào',
+        noOperatorsYet: 'Chưa có Karaoke nào',
+        operatorCode: 'Mã Karaoke',
+        operatorName: 'Tên Karaoke',
+        enterOperatorCode: 'Nhập mã karaoke...',
+        enterOperatorName: 'Nhập tên karaoke...',
         randomData: 'Random dữ liệu',
         random: 'Random',
         edit: 'Chỉnh sửa',
         userNotFound: 'Không tìm thấy thông tin người dùng',
-        operatorsLabel: 'operator',
+        operatorsLabel: 'karaoke',
       },
       games: {
         title: 'Quản lý Games',
         addGame: 'Thêm Game',
         createGame: 'Tạo Game',
         searchPlaceholder: 'Tìm kiếm game...',
-        description: 'Quản lý và theo dõi các game trong hệ thống',
+        description: 'Quản lý và theo dõi các club trong hệ thống',
+        venueManagement: 'Quản lý Club',
+        venueName: 'Tên Club',
+        venueType: 'Loại Club',
+        venueTypeKaraoke: 'Karaoke',
+        venueTypeMassage: 'Massage',
+        venueTypeClub: 'Club',
+        bookingsCount: 'Số lượt đặt',
+        revenue: 'Doanh thu',
+        addVenue: 'Thêm Club mới',
+        searchVenuePlaceholder: 'Tìm kiếm Club...',
+        enterVenueName: 'Nhập tên Club',
+        actions: 'Thao tác',
+        noVenuesYet: 'Chưa có club nào',
+        createSuccess: 'Tạo thành công',
+        deleteSuccess: 'Xóa thành công',
+        deleteFailed: 'Xóa thất bại',
       },
       providerAccounts: {
-        title: 'Quản lý Provider Account',
-        addAccount: 'Thêm Provider Account',
-        createAccount: 'Tạo Provider Account',
-        deleteAccount: 'Xóa Provider Account',
+        title: 'Quản lý Massage',
+        addAccount: 'Thêm Massage',
+        createAccount: 'Tạo Massage',
+        deleteAccount: 'Xóa Massage',
         searchPlaceholder: 'Tìm kiếm theo tên, email, mã...',
-        createSuccess: 'Tạo Provider Account thành công!',
-        createFailed: 'Tạo Provider Account thất bại. Vui lòng thử lại.',
-        deleteSuccess: 'Xóa Provider Account thành công!',
-        deleteFailed: 'Xóa Provider Account thất bại. Vui lòng thử lại.',
-        deleteAccountTitle: 'Xóa Provider Account',
-        description: 'Quản lý và theo dõi các Provider Account trong hệ thống',
+        createSuccess: 'Tạo Massage thành công!',
+        createFailed: 'Tạo Massage thất bại. Vui lòng thử lại.',
+        deleteSuccess: 'Xóa Massage thành công!',
+        deleteFailed: 'Xóa Massage thất bại. Vui lòng thử lại.',
+        deleteAccountTitle: 'Xóa Massage',
+        description: 'Quản lý và theo dõi các Massage trong hệ thống',
         totalAccounts: 'Tổng số Account',
         activeAccounts: 'Đang hoạt động',
-        loadingAccounts: 'Đang tải danh sách Provider Account...',
-        providerAccount: 'Provider Account',
-        noAccountsFound: 'Không tìm thấy Provider Account nào',
-        noAccountsYet: 'Chưa có Provider Account nào',
+        loadingAccounts: 'Đang tải danh sách Massage...',
+        providerAccount: 'Massage',
+        noAccountsFound: 'Không tìm thấy Massage nào',
+        noAccountsYet: 'Chưa có Massage nào',
         randomData: 'Random dữ liệu',
         random: 'Random',
       },
@@ -1272,6 +1468,22 @@ const translations: Record<SupportedLanguage, Translations> = {
         completed: 'Hoàn thành',
         rejected: 'Từ chối',
         description: 'Xem và quản lý tất cả các giao dịch trong hệ thống',
+        customer: 'Khách hàng',
+        venue: 'Club',
+        transactionTypeBooking: 'Đặt phòng',
+        transactionTypeService: 'Dịch vụ',
+        transactionTypeDeposit: 'Nạp tiền',
+        transactionTypeWithdraw: 'Rút tiền',
+        transactionTypeRefund: 'Hoàn tiền',
+        paymentMethodCash: 'Tiền mặt',
+        paymentMethodTransfer: 'Chuyển khoản',
+        paymentMethodEwallet: 'Ví điện tử',
+        statusPending: 'Đang chờ',
+        statusCompleted: 'Hoàn thành',
+        statusRejected: 'Từ chối',
+        searchTransactionPlaceholder: 'Tìm kiếm giao dịch (mã, khách hàng, club)...',
+        totalRevenue: 'Tổng doanh thu',
+        totalRefund: 'Tổng hoàn tiền',
       },
       settings: {
         title: 'Cài đặt hệ thống',
@@ -1305,6 +1517,16 @@ const translations: Record<SupportedLanguage, Translations> = {
         warning: 'Cảnh báo',
         totalAlertsLabel: 'Tổng cảnh báo',
         description: 'Xem và quản lý các cảnh báo và thông báo hệ thống',
+        alertHighSystemLoad: 'Hệ thống load cao',
+        alertPaymentGatewayTimeout: 'Payment gateway timeout',
+        alertBackupCompleted: 'Backup hoàn tất',
+        alertRateLimitNear: 'Rate limit gần đạt',
+        alertDeploymentSuccess: 'Deployment thành công',
+        alertHighSystemLoadMessage: 'CPU usage đạt 85%',
+        alertPaymentGatewayTimeoutMessage: 'Không thể kết nối đến payment gateway',
+        alertBackupCompletedMessage: 'Database backup đã hoàn thành thành công',
+        alertRateLimitNearMessage: 'API rate limit đạt 90%',
+        alertDeploymentSuccessMessage: 'Version 2.1.0 đã được deploy',
       },
       reports: {
         exportPdf: 'Xuất PDF',
@@ -1343,6 +1565,16 @@ const translations: Record<SupportedLanguage, Translations> = {
         totalServices: 'Tổng Services',
         recentEvents: 'Sự kiện gần đây',
         description: 'Giám sát các dịch vụ và hiệu suất hệ thống',
+        serviceGameServer: 'Game Server',
+        servicePaymentGateway: 'Payment Gateway',
+        serviceDatabase: 'Database',
+        serviceApiGateway: 'API Gateway',
+        serviceNotificationService: 'Notification Service',
+        eventHighLoad: 'High load detected',
+        eventBackupCompleted: 'Backup completed',
+        eventTransactionProcessed: 'Transaction processed',
+        eventRateLimitWarning: 'Rate limit warning',
+        eventNewPlayerJoined: 'New player joined',
       },
       risk: {
         totalAlerts: 'Tổng cảnh báo rủi ro',
@@ -1441,6 +1673,34 @@ const translations: Record<SupportedLanguage, Translations> = {
         showPhone: 'Hiển thị Số điện thoại',
         showPhoneDesc: 'Hiển thị số điện thoại của bạn cho người dùng khác',
       },
+      helpSupport: {
+        description: 'Nhận trợ giúp và hỗ trợ cho tài khoản và dịch vụ của bạn',
+        emailSupport: 'Hỗ trợ Email',
+        emailSupportDesc: 'Gửi email cho chúng tôi và chúng tôi sẽ phản hồi trong vòng 24 giờ',
+        liveChat: 'Trò chuyện trực tiếp',
+        liveChatDesc: 'Trò chuyện với đội ngũ hỗ trợ của chúng tôi theo thời gian thực',
+        startChat: 'Bắt đầu trò chuyện',
+        phoneSupport: 'Hỗ trợ Điện thoại',
+        phoneSupportDesc: 'Gọi cho chúng tôi để được hỗ trợ ngay lập tức',
+        faq: 'Câu hỏi thường gặp',
+        gettingStarted: 'Bắt đầu',
+        accountManagement: 'Quản lý Tài khoản',
+        faq1Question: 'Làm thế nào để tạo tài khoản?',
+        faq1Answer: 'Bạn có thể tạo tài khoản bằng cách nhấp vào nút "Đăng ký" trên trang đăng nhập và điền thông tin của bạn.',
+        faq2Question: 'Làm thế nào để đặt lại mật khẩu?',
+        faq2Answer: 'Nhấp vào "Quên mật khẩu" trên trang đăng nhập và làm theo hướng dẫn được gửi đến email của bạn.',
+        faq3Question: 'Làm thế nào để cập nhật hồ sơ?',
+        faq3Answer: 'Đi tới "Hồ sơ của tôi" từ menu người dùng và nhấp "Chỉnh sửa" để cập nhật thông tin của bạn.',
+        faq4Question: 'Làm thế nào để bật 2FA?',
+        faq4Answer: 'Đi tới "Hồ sơ của tôi" > "Bảo mật tài khoản" và làm theo hướng dẫn thiết lập cho Xác thực hai yếu tố.',
+        resources: 'Tài nguyên',
+        userGuide: 'Hướng dẫn sử dụng',
+        userGuideDesc: 'Hướng dẫn đầy đủ về cách sử dụng admin dashboard',
+        apiDocumentation: 'Tài liệu API',
+        apiDocumentationDesc: 'Tài liệu kỹ thuật cho tích hợp API',
+        community: 'Diễn đàn Cộng đồng',
+        communityDesc: 'Tham gia cộng đồng của chúng tôi để nhận trợ giúp và chia sẻ ý tưởng',
+      },
       tables: {
         id: 'ID',
         player: 'Player',
@@ -1464,12 +1724,13 @@ const translations: Record<SupportedLanguage, Translations> = {
     header: {
       providerPortal: 'KaKa Club',
       operatorPortal: 'Operator Portal',
+      adminPortal: 'Admin Portal',
       myProfile: 'Hồ sơ của tôi',
       helpSupport: 'Trợ giúp & Hỗ trợ',
     },
     menu: {
       dashboard: 'Dashboard',
-      venuesManagement: 'Quản lý Cơ sở',
+      venuesManagement: 'Quản lý Club',
       gamesManagement: 'Quản lý Games',
       operatorsManagement: 'Quản lý Karaoke',
       providerAccountsManagement: 'Quản lý Massage',
@@ -1608,6 +1869,8 @@ const translations: Record<SupportedLanguage, Translations> = {
       lastUpdate: '最后更新',
       trackingId: '跟踪ID',
       done: '已完成',
+      logoutSuccess: '登出成功！',
+      logoutLocal: '本地登出',
     },
     pages: {
       dashboard: {
@@ -1629,6 +1892,9 @@ const translations: Record<SupportedLanguage, Translations> = {
         done: '已完成',
         increased: '增加',
         decreased: '减少',
+        weeklyRevenue: '周收入',
+        bookingsCount: '预订数量',
+        activeCustomers: '活跃客户',
       },
       operators: {
         title: '运营商管理',
@@ -1662,6 +1928,22 @@ const translations: Record<SupportedLanguage, Translations> = {
         createGame: '创建游戏',
         searchPlaceholder: '搜索游戏...',
         description: '管理系统中的游戏',
+        venueManagement: '场所管理',
+        venueName: '场所名称',
+        venueType: '场所类型',
+        venueTypeKaraoke: '卡拉OK',
+        venueTypeMassage: '按摩',
+        venueTypeClub: '俱乐部',
+        enterVenueName: '输入场所名称...',
+        bookingsCount: '预订数量',
+        revenue: '收入',
+        actions: '操作',
+        addVenue: '添加场所',
+        searchVenuePlaceholder: '搜索场所...',
+        noVenuesYet: '暂无场所',
+        createSuccess: '创建成功',
+        deleteSuccess: '删除成功',
+        deleteFailed: '删除失败',
       },
       providerAccounts: {
         title: '提供商账户管理',
@@ -1769,6 +2051,22 @@ const translations: Record<SupportedLanguage, Translations> = {
         completed: '已完成',
         rejected: '已拒绝',
         description: '查看和管理系统中的所有交易',
+        customer: '客户',
+        venue: '场所',
+        transactionTypeBooking: '预订',
+        transactionTypeService: '服务',
+        transactionTypeDeposit: '存款',
+        transactionTypeWithdraw: '提款',
+        transactionTypeRefund: '退款',
+        paymentMethodCash: '现金',
+        paymentMethodTransfer: '转账',
+        paymentMethodEwallet: '电子钱包',
+        statusPending: '待处理',
+        statusCompleted: '已完成',
+        statusRejected: '已拒绝',
+        searchTransactionPlaceholder: '搜索交易 (代码, 客户, 场所)...',
+        totalRevenue: '总收入',
+        totalRefund: '总退款',
       },
       auditLogs: {
         title: '审计日志',
@@ -1820,6 +2118,16 @@ const translations: Record<SupportedLanguage, Translations> = {
         warning: '警告',
         totalAlertsLabel: '总警报',
         description: '查看和管理系统警报和通知',
+        alertHighSystemLoad: '系统负载高',
+        alertPaymentGatewayTimeout: '支付网关超时',
+        alertBackupCompleted: '备份完成',
+        alertRateLimitNear: '速率限制接近',
+        alertDeploymentSuccess: '部署成功',
+        alertHighSystemLoadMessage: 'CPU使用率达到85%',
+        alertPaymentGatewayTimeoutMessage: '支付网关响应超时',
+        alertBackupCompletedMessage: '系统备份已成功完成',
+        alertRateLimitNearMessage: 'API速率限制接近阈值',
+        alertDeploymentSuccessMessage: '新版本已成功部署',
       },
       reports: {
         exportPdf: '导出PDF',
@@ -1858,6 +2166,16 @@ const translations: Record<SupportedLanguage, Translations> = {
         totalServices: '总服务数',
         recentEvents: '最近事件',
         description: '监控系统服务和性能',
+        serviceGameServer: '游戏服务器',
+        servicePaymentGateway: '支付网关',
+        serviceDatabase: '数据库',
+        serviceApiGateway: 'API网关',
+        serviceNotificationService: '通知服务',
+        eventHighLoad: '检测到高负载',
+        eventBackupCompleted: '备份完成',
+        eventTransactionProcessed: '交易已处理',
+        eventRateLimitWarning: '速率限制警告',
+        eventNewPlayerJoined: '新玩家加入',
       },
       risk: {
         totalAlerts: '总风险警报',
@@ -1957,10 +2275,39 @@ const translations: Record<SupportedLanguage, Translations> = {
         game: '游戏',
         wagered: '投注',
       },
+      helpSupport: {
+        description: '获取帐户和服务的帮助和支持',
+        emailSupport: '电子邮件支持',
+        emailSupportDesc: '给我们发送电子邮件，我们将在24小时内回复您',
+        liveChat: '在线聊天',
+        liveChatDesc: '与我们的支持团队实时聊天',
+        startChat: '开始聊天',
+        phoneSupport: '电话支持',
+        phoneSupportDesc: '致电我们以获得即时帮助',
+        faq: '常见问题',
+        gettingStarted: '入门',
+        accountManagement: '账户管理',
+        faq1Question: '如何创建账户？',
+        faq1Answer: '点击注册按钮并填写所需信息',
+        faq2Question: '如何重置密码？',
+        faq2Answer: '点击登录页面的"忘记密码"链接',
+        faq3Question: '如何联系支持？',
+        faq3Answer: '您可以通过电子邮件、实时聊天或电话联系我们',
+        faq4Question: '如何启用2FA？',
+        faq4Answer: '转到"我的个人资料" > "账户安全"并按照双因素认证的设置说明操作',
+        resources: '资源',
+        userGuide: '用户指南',
+        userGuideDesc: '使用管理仪表板的完整指南',
+        apiDocumentation: 'API文档',
+        apiDocumentationDesc: 'API集成的技术文档',
+        community: '社区论坛',
+        communityDesc: '加入我们的社区以获得帮助和分享想法',
+      },
     },
     header: {
       providerPortal: '提供商门户',
       operatorPortal: '运营商门户',
+      adminPortal: '管理门户',
       myProfile: '我的资料',
       helpSupport: '帮助与支持',
     },
@@ -2105,6 +2452,8 @@ const translations: Record<SupportedLanguage, Translations> = {
       lastUpdate: 'อัปเดตล่าสุด',
       trackingId: 'ID ติดตาม',
       done: 'เสร็จสิ้น',
+      logoutSuccess: 'ออกจากระบบสำเร็จ!',
+      logoutLocal: 'ออกจากระบบในเครื่อง',
     },
     pages: {
       dashboard: {
@@ -2126,6 +2475,9 @@ const translations: Record<SupportedLanguage, Translations> = {
         done: 'เสร็จสิ้น',
         increased: 'เพิ่มขึ้น',
         decreased: 'ลดลง',
+        weeklyRevenue: 'รายได้รายสัปดาห์',
+        bookingsCount: 'จำนวนการจอง',
+        activeCustomers: 'ลูกค้าที่ใช้งาน',
       },
       operators: {
         title: 'จัดการผู้ดำเนินการ',
@@ -2159,6 +2511,22 @@ const translations: Record<SupportedLanguage, Translations> = {
         createGame: 'สร้างเกม',
         searchPlaceholder: 'ค้นหาเกม...',
         description: 'จัดการและติดตามเกมในระบบ',
+        venueManagement: 'การจัดการสถานที่',
+        venueName: 'ชื่อสถานที่',
+        venueType: 'ประเภทสถานที่',
+        venueTypeKaraoke: 'คาราโอเกะ',
+        venueTypeMassage: 'นวด',
+        venueTypeClub: 'คลับ',
+        enterVenueName: 'ใส่ชื่อสถานที่...',
+        bookingsCount: 'จำนวนการจอง',
+        revenue: 'รายได้',
+        actions: 'การดำเนินการ',
+        addVenue: 'เพิ่มสถานที่',
+        searchVenuePlaceholder: 'ค้นหาสถานที่...',
+        noVenuesYet: 'ยังไม่มีสถานที่',
+        createSuccess: 'สร้างสำเร็จ',
+        deleteSuccess: 'ลบสำเร็จ',
+        deleteFailed: 'ลบไม่สำเร็จ',
       },
       providerAccounts: {
         title: 'จัดการบัญชีผู้ให้บริการ',
@@ -2266,6 +2634,22 @@ const translations: Record<SupportedLanguage, Translations> = {
         completed: 'เสร็จสมบูรณ์',
         rejected: 'ปฏิเสธ',
         description: 'ดูและจัดการธุรกรรมทั้งหมดในระบบ',
+        customer: 'ลูกค้า',
+        venue: 'สถานที่',
+        transactionTypeBooking: 'การจอง',
+        transactionTypeService: 'บริการ',
+        transactionTypeDeposit: 'ฝากเงิน',
+        transactionTypeWithdraw: 'ถอนเงิน',
+        transactionTypeRefund: 'คืนเงิน',
+        paymentMethodCash: 'เงินสด',
+        paymentMethodTransfer: 'โอนเงิน',
+        paymentMethodEwallet: 'กระเป๋าเงินอิเล็กทรอนิกส์',
+        statusPending: 'รอดำเนินการ',
+        statusCompleted: 'เสร็จสมบูรณ์',
+        statusRejected: 'ปฏิเสธ',
+        searchTransactionPlaceholder: 'ค้นหาธุรกรรม (รหัส, ลูกค้า, สถานที่)...',
+        totalRevenue: 'รายได้ทั้งหมด',
+        totalRefund: 'คืนเงินทั้งหมด',
       },
       auditLogs: {
         title: 'บันทึกการตรวจสอบ',
@@ -2317,6 +2701,16 @@ const translations: Record<SupportedLanguage, Translations> = {
         warning: 'คำเตือน',
         totalAlertsLabel: 'การแจ้งเตือนทั้งหมด',
         description: 'ดูและจัดการการแจ้งเตือนและแจ้งเตือนระบบ',
+        alertHighSystemLoad: 'โหลดระบบสูง',
+        alertPaymentGatewayTimeout: 'Payment gateway timeout',
+        alertBackupCompleted: 'สำรองข้อมูลเสร็จสมบูรณ์',
+        alertRateLimitNear: 'Rate limit ใกล้ถึง',
+        alertDeploymentSuccess: 'Deployment สำเร็จ',
+        alertHighSystemLoadMessage: 'การใช้ CPU ถึง 85%',
+        alertPaymentGatewayTimeoutMessage: 'Payment gateway timeout',
+        alertBackupCompletedMessage: 'สำรองข้อมูลเสร็จสมบูรณ์',
+        alertRateLimitNearMessage: 'API rate limit ใกล้ถึง',
+        alertDeploymentSuccessMessage: 'Deployment สำเร็จ',
       },
       reports: {
         exportPdf: 'ส่งออก PDF',
@@ -2355,6 +2749,16 @@ const translations: Record<SupportedLanguage, Translations> = {
         totalServices: 'บริการทั้งหมด',
         recentEvents: 'เหตุการณ์ล่าสุด',
         description: 'ตรวจสอบบริการและประสิทธิภาพของระบบ',
+        serviceGameServer: 'Game Server',
+        servicePaymentGateway: 'Payment Gateway',
+        serviceDatabase: 'Database',
+        serviceApiGateway: 'API Gateway',
+        serviceNotificationService: 'Notification Service',
+        eventHighLoad: 'High load detected',
+        eventBackupCompleted: 'Backup completed',
+        eventTransactionProcessed: 'Transaction processed',
+        eventRateLimitWarning: 'Rate limit warning',
+        eventNewPlayerJoined: 'New player joined',
       },
       risk: {
         totalAlerts: 'การแจ้งเตือนความเสี่ยงทั้งหมด',
@@ -2454,10 +2858,39 @@ const translations: Record<SupportedLanguage, Translations> = {
         game: 'เกม',
         wagered: 'ยอดเดิมพัน',
       },
+      helpSupport: {
+        description: 'รับความช่วยเหลือและสนับสนุนสำหรับบัญชีและบริการของคุณ',
+        emailSupport: 'การสนับสนุนทางอีเมล',
+        emailSupportDesc: 'ส่งอีเมลถึงเราและเราจะตอบกลับภายใน 24 ชั่วโมง',
+        liveChat: 'แชทสด',
+        liveChatDesc: 'แชทกับทีมสนับสนุนของเราแบบเรียลไทม์',
+        startChat: 'เริ่มแชท',
+        phoneSupport: 'การสนับสนุนทางโทรศัพท์',
+        phoneSupportDesc: 'โทรหาเราเพื่อรับความช่วยเหลือทันที',
+        faq: 'คำถามที่พบบ่อย',
+        gettingStarted: 'เริ่มต้นใช้งาน',
+        accountManagement: 'การจัดการบัญชี',
+        faq1Question: 'ฉันจะสร้างบัญชีได้อย่างไร?',
+        faq1Answer: 'คลิกปุ่มลงทะเบียนและกรอกข้อมูลที่จำเป็น',
+        faq2Question: 'ฉันจะรีเซ็ตรหัสผ่านได้อย่างไร?',
+        faq2Answer: 'คลิกลิงก์ "ลืมรหัสผ่าน" บนหน้าเข้าสู่ระบบ',
+        faq3Question: 'ฉันจะติดต่อฝ่ายสนับสนุนได้อย่างไร?',
+        faq3Answer: 'คุณสามารถติดต่อเราผ่านอีเมล แชทสด หรือโทรศัพท์',
+        faq4Question: 'ฉันจะเปิดใช้งาน 2FA ได้อย่างไร?',
+        faq4Answer: 'ไปที่ "โปรไฟล์ของฉัน" > "ความปลอดภัยบัญชี" และทำตามคำแนะนำในการตั้งค่าการยืนยันตัวตนแบบสองปัจจัย',
+        resources: 'ทรัพยากร',
+        userGuide: 'คู่มือผู้ใช้',
+        userGuideDesc: 'คู่มือฉบับสมบูรณ์สำหรับการใช้แดชบอร์ดผู้ดูแลระบบ',
+        apiDocumentation: 'เอกสาร API',
+        apiDocumentationDesc: 'เอกสารทางเทคนิคสำหรับการรวม API',
+        community: 'ฟอรัมชุมชน',
+        communityDesc: 'เข้าร่วมชุมชนของเราเพื่อรับความช่วยเหลือและแบ่งปันความคิด',
+      },
     },
     header: {
       providerPortal: 'พอร์ทัลผู้ให้บริการ',
       operatorPortal: 'พอร์ทัลผู้ดำเนินการ',
+      adminPortal: 'พอร์ทัลผู้ดูแลระบบ',
       myProfile: 'โปรไฟล์ของฉัน',
       helpSupport: 'ช่วยเหลือและสนับสนุน',
     },
@@ -2602,6 +3035,8 @@ const translations: Record<SupportedLanguage, Translations> = {
       lastUpdate: '最終更新',
       trackingId: 'トラッキングID',
       done: '完了',
+      logoutSuccess: 'ログアウト成功！',
+      logoutLocal: 'ローカルログアウト',
     },
     pages: {
       dashboard: {
@@ -2623,6 +3058,9 @@ const translations: Record<SupportedLanguage, Translations> = {
         done: '完了',
         increased: '増加',
         decreased: '減少',
+        weeklyRevenue: '週間収益',
+        bookingsCount: '予約数',
+        activeCustomers: 'アクティブ顧客',
       },
       operators: {
         title: 'オペレーター管理',
@@ -2656,6 +3094,22 @@ const translations: Record<SupportedLanguage, Translations> = {
         createGame: 'ゲームを作成',
         searchPlaceholder: 'ゲームを検索...',
         description: 'システム内のゲームを管理および追跡',
+        venueManagement: '会場管理',
+        venueName: '会場名',
+        venueType: '会場タイプ',
+        venueTypeKaraoke: 'カラオケ',
+        venueTypeMassage: 'マッサージ',
+        venueTypeClub: 'クラブ',
+        enterVenueName: '会場名を入力...',
+        bookingsCount: '予約数',
+        revenue: '収益',
+        actions: '操作',
+        addVenue: '会場を追加',
+        searchVenuePlaceholder: '会場を検索...',
+        noVenuesYet: '会場がまだありません',
+        createSuccess: '作成成功',
+        deleteSuccess: '削除成功',
+        deleteFailed: '削除失敗',
       },
       providerAccounts: {
         title: 'プロバイダーアカウント管理',
@@ -2763,6 +3217,22 @@ const translations: Record<SupportedLanguage, Translations> = {
         completed: '完了',
         rejected: '拒否',
         description: 'システム内のすべての取引を表示および管理',
+        customer: '顧客',
+        venue: '会場',
+        transactionTypeBooking: '予約',
+        transactionTypeService: 'サービス',
+        transactionTypeDeposit: '入金',
+        transactionTypeWithdraw: '出金',
+        transactionTypeRefund: '返金',
+        paymentMethodCash: '現金',
+        paymentMethodTransfer: '振込',
+        paymentMethodEwallet: '電子財布',
+        statusPending: '保留中',
+        statusCompleted: '完了',
+        statusRejected: '拒否',
+        searchTransactionPlaceholder: '取引を検索 (コード、顧客、会場)...',
+        totalRevenue: '総収益',
+        totalRefund: '総返金',
       },
       auditLogs: {
         title: '監査ログ',
@@ -2814,6 +3284,16 @@ const translations: Record<SupportedLanguage, Translations> = {
         warning: '警告',
         totalAlertsLabel: 'アラート総数',
         description: 'システムアラートと通知の表示と管理',
+        alertHighSystemLoad: 'システム負荷が高い',
+        alertPaymentGatewayTimeout: '決済ゲートウェイタイムアウト',
+        alertBackupCompleted: 'バックアップ完了',
+        alertRateLimitNear: 'レート制限に近い',
+        alertDeploymentSuccess: 'デプロイ成功',
+        alertHighSystemLoadMessage: 'CPU使用率が85%に達しました',
+        alertPaymentGatewayTimeoutMessage: '決済ゲートウェイがタイムアウトしました',
+        alertBackupCompletedMessage: 'システムバックアップが正常に完了しました',
+        alertRateLimitNearMessage: 'APIレート制限がしきい値に近づいています',
+        alertDeploymentSuccessMessage: '新しいバージョンが正常にデプロイされました',
       },
       reports: {
         exportPdf: 'PDFをエクスポート',
@@ -2852,6 +3332,16 @@ const translations: Record<SupportedLanguage, Translations> = {
         totalServices: 'サービス総数',
         recentEvents: '最近のイベント',
         description: 'システムサービスとパフォーマンスの監視',
+        serviceGameServer: 'ゲームサーバー',
+        servicePaymentGateway: '決済ゲートウェイ',
+        serviceDatabase: 'データベース',
+        serviceApiGateway: 'APIゲートウェイ',
+        serviceNotificationService: '通知サービス',
+        eventHighLoad: '高負荷が検出されました',
+        eventBackupCompleted: 'バックアップ完了',
+        eventTransactionProcessed: '取引処理済み',
+        eventRateLimitWarning: 'レート制限警告',
+        eventNewPlayerJoined: '新しいプレイヤーが参加しました',
       },
       risk: {
         totalAlerts: 'リスクアラート総数',
@@ -2951,10 +3441,39 @@ const translations: Record<SupportedLanguage, Translations> = {
         game: 'ゲーム',
         wagered: 'ベット',
       },
+      helpSupport: {
+        description: 'アカウントとサービスのヘルプとサポートを取得',
+        emailSupport: 'メールサポート',
+        emailSupportDesc: 'メールを送信していただければ、24時間以内に返信いたします',
+        liveChat: 'ライブチャット',
+        liveChatDesc: 'サポートチームとリアルタイムでチャット',
+        startChat: 'チャットを開始',
+        phoneSupport: '電話サポート',
+        phoneSupportDesc: '即座のサポートのためにお電話ください',
+        faq: 'よくある質問',
+        gettingStarted: '始めましょう',
+        accountManagement: 'アカウント管理',
+        faq1Question: 'アカウントを作成するにはどうすればよいですか？',
+        faq1Answer: '登録ボタンをクリックして必要な情報を入力してください',
+        faq2Question: 'パスワードをリセットするにはどうすればよいですか？',
+        faq2Answer: 'ログインページの「パスワードを忘れた」リンクをクリックしてください',
+        faq3Question: 'サポートに連絡するにはどうすればよいですか？',
+        faq3Answer: 'メール、ライブチャット、または電話でお問い合わせいただけます',
+        faq4Question: '2FAを有効にするにはどうすればよいですか？',
+        faq4Answer: '「マイプロフィール」>「アカウントセキュリティ」に移動し、二要素認証のセットアップ手順に従ってください',
+        resources: 'リソース',
+        userGuide: 'ユーザーガイド',
+        userGuideDesc: '管理ダッシュボードの使用に関する完全なガイド',
+        apiDocumentation: 'APIドキュメント',
+        apiDocumentationDesc: 'API統合のための技術ドキュメント',
+        community: 'コミュニティフォーラム',
+        communityDesc: 'コミュニティに参加してヘルプを得たりアイデアを共有したりしましょう',
+      },
     },
     header: {
       providerPortal: 'プロバイダーポータル',
       operatorPortal: 'オペレーターポータル',
+      adminPortal: '管理者ポータル',
       myProfile: 'マイプロフィール',
       helpSupport: 'ヘルプとサポート',
     },
@@ -3099,6 +3618,8 @@ const translations: Record<SupportedLanguage, Translations> = {
       lastUpdate: '마지막 업데이트',
       trackingId: '추적 ID',
       done: '완료',
+      logoutSuccess: '로그아웃 성공!',
+      logoutLocal: '로컬 로그아웃',
     },
     pages: {
       dashboard: {
@@ -3120,6 +3641,9 @@ const translations: Record<SupportedLanguage, Translations> = {
         done: '완료',
         increased: '증가',
         decreased: '감소',
+        weeklyRevenue: '주간 수익',
+        bookingsCount: '예약 수',
+        activeCustomers: '활성 고객',
       },
       operators: {
         title: '운영자 관리',
@@ -3153,6 +3677,22 @@ const translations: Record<SupportedLanguage, Translations> = {
         createGame: '게임 생성',
         searchPlaceholder: '게임 검색...',
         description: '시스템의 게임 관리 및 추적',
+        venueManagement: '장소 관리',
+        venueName: '장소 이름',
+        venueType: '장소 유형',
+        venueTypeKaraoke: '노래방',
+        venueTypeMassage: '마사지',
+        venueTypeClub: '클럽',
+        enterVenueName: '장소 이름 입력...',
+        bookingsCount: '예약 수',
+        revenue: '수익',
+        actions: '작업',
+        addVenue: '장소 추가',
+        searchVenuePlaceholder: '장소 검색...',
+        noVenuesYet: '아직 장소가 없습니다',
+        createSuccess: '생성 성공',
+        deleteSuccess: '삭제 성공',
+        deleteFailed: '삭제 실패',
       },
       providerAccounts: {
         title: '제공자 계정 관리',
@@ -3260,6 +3800,22 @@ const translations: Record<SupportedLanguage, Translations> = {
         completed: '완료',
         rejected: '거부됨',
         description: '시스템의 모든 거래 보기 및 관리',
+        customer: '고객',
+        venue: '장소',
+        transactionTypeBooking: '예약',
+        transactionTypeService: '서비스',
+        transactionTypeDeposit: '입금',
+        transactionTypeWithdraw: '출금',
+        transactionTypeRefund: '환불',
+        paymentMethodCash: '현금',
+        paymentMethodTransfer: '이체',
+        paymentMethodEwallet: '전자지갑',
+        statusPending: '대기 중',
+        statusCompleted: '완료',
+        statusRejected: '거부됨',
+        searchTransactionPlaceholder: '거래 검색 (코드, 고객, 장소)...',
+        totalRevenue: '총 수익',
+        totalRefund: '총 환불',
       },
       auditLogs: {
         title: '감사 로그',
@@ -3311,6 +3867,16 @@ const translations: Record<SupportedLanguage, Translations> = {
         warning: '경고',
         totalAlertsLabel: '총 알림',
         description: '시스템 알림 및 알림 보기 및 관리',
+        alertHighSystemLoad: '시스템 부하 높음',
+        alertPaymentGatewayTimeout: '결제 게이트웨이 타임아웃',
+        alertBackupCompleted: '백업 완료',
+        alertRateLimitNear: '속도 제한 근접',
+        alertDeploymentSuccess: '배포 성공',
+        alertHighSystemLoadMessage: 'CPU 사용률이 85%에 도달했습니다',
+        alertPaymentGatewayTimeoutMessage: '결제 게이트웨이가 타임아웃되었습니다',
+        alertBackupCompletedMessage: '시스템 백업이 성공적으로 완료되었습니다',
+        alertRateLimitNearMessage: 'API 속도 제한이 임계값에 가까워지고 있습니다',
+        alertDeploymentSuccessMessage: '새 버전이 성공적으로 배포되었습니다',
       },
       reports: {
         exportPdf: 'PDF 내보내기',
@@ -3349,6 +3915,16 @@ const translations: Record<SupportedLanguage, Translations> = {
         totalServices: '총 서비스',
         recentEvents: '최근 이벤트',
         description: '시스템 서비스 및 성능 모니터링',
+        serviceGameServer: '게임 서버',
+        servicePaymentGateway: '결제 게이트웨이',
+        serviceDatabase: '데이터베이스',
+        serviceApiGateway: 'API 게이트웨이',
+        serviceNotificationService: '알림 서비스',
+        eventHighLoad: '높은 부하 감지됨',
+        eventBackupCompleted: '백업 완료',
+        eventTransactionProcessed: '거래 처리됨',
+        eventRateLimitWarning: '속도 제한 경고',
+        eventNewPlayerJoined: '새 플레이어 가입',
       },
       risk: {
         totalAlerts: '총 위험 알림',
@@ -3448,10 +4024,39 @@ const translations: Record<SupportedLanguage, Translations> = {
         game: '게임',
         wagered: '베팅',
       },
+      helpSupport: {
+        description: '계정 및 서비스에 대한 도움말 및 지원 받기',
+        emailSupport: '이메일 지원',
+        emailSupportDesc: '이메일을 보내주시면 24시간 이내에 답변드리겠습니다',
+        liveChat: '실시간 채팅',
+        liveChatDesc: '지원 팀과 실시간으로 채팅',
+        startChat: '채팅 시작',
+        phoneSupport: '전화 지원',
+        phoneSupportDesc: '즉시 지원을 받으려면 전화주세요',
+        faq: '자주 묻는 질문',
+        gettingStarted: '시작하기',
+        accountManagement: '계정 관리',
+        faq1Question: '계정을 만들려면 어떻게 해야 하나요?',
+        faq1Answer: '등록 버튼을 클릭하고 필요한 정보를 입력하세요',
+        faq2Question: '비밀번호를 재설정하려면 어떻게 해야 하나요?',
+        faq2Answer: '로그인 페이지의 "비밀번호 찾기" 링크를 클릭하세요',
+        faq3Question: '지원팀에 연락하려면 어떻게 해야 하나요?',
+        faq3Answer: '이메일, 실시간 채팅 또는 전화로 문의하실 수 있습니다',
+        faq4Question: '2FA를 활성화하려면 어떻게 해야 하나요?',
+        faq4Answer: '"내 프로필" > "계정 보안"으로 이동하여 이중 인증 설정 지침을 따르세요',
+        resources: '리소스',
+        userGuide: '사용자 가이드',
+        userGuideDesc: '관리 대시보드 사용에 대한 완전한 가이드',
+        apiDocumentation: 'API 문서',
+        apiDocumentationDesc: 'API 통합을 위한 기술 문서',
+        community: '커뮤니티 포럼',
+        communityDesc: '커뮤니티에 가입하여 도움을 받고 아이디어를 공유하세요',
+      },
     },
     header: {
       providerPortal: '제공자 포털',
       operatorPortal: '운영자 포털',
+      adminPortal: '관리자 포털',
       myProfile: '내 프로필',
       helpSupport: '도움말 및 지원',
     },
@@ -3506,10 +4111,6 @@ export const getSupportedLanguages = (): Array<{ code: SupportedLanguage; name: 
   return [
     { code: 'en', name: translations.en.languages.en },
     { code: 'vi', name: translations.en.languages.vi },
-    { code: 'zh', name: translations.en.languages.zh },
-    { code: 'th', name: translations.en.languages.th },
-    { code: 'ja', name: translations.en.languages.ja },
-    { code: 'ko', name: translations.en.languages.ko },
   ];
 };
 

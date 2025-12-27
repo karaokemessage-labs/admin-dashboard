@@ -29,6 +29,27 @@ const UserSettings = () => {
     },
   });
 
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem('userSettings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        setSettings((prev) => ({
+          ...prev,
+          ...parsed,
+          appearance: {
+            ...prev.appearance,
+            ...parsed.appearance,
+            language: language, // Always use current language from context
+          },
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to load settings from localStorage:', error);
+    }
+  }, []);
+
   // Check 2FA status on mount
   useEffect(() => {
     const check2FAStatus = async () => {
@@ -123,7 +144,7 @@ const UserSettings = () => {
     }));
   };
 
-  const handleLanguageChange = (lang: 'en' | 'vi' | 'zh' | 'th' | 'ja' | 'ko') => {
+  const handleLanguageChange = (lang: 'en' | 'vi') => {
     setLanguage(lang);
     setSettings((prev) => ({
       ...prev,
@@ -137,11 +158,16 @@ const UserSettings = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      // TODO: Call API to save settings
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // TODO: Call API to save settings when endpoint is available
+      // For now, save to localStorage as a temporary solution
+      localStorage.setItem('userSettings', JSON.stringify(settings));
+      
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      
       toast.success(t('common.save') + ' ' + t('common.success'));
-    } catch (error) {
-      toast.error(t('common.error'));
+    } catch (error: any) {
+      toast.error(error.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -227,15 +253,11 @@ const UserSettings = () => {
                 <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <select
                   value={settings.appearance.language}
-                  onChange={(e) => handleLanguageChange(e.target.value as 'en' | 'vi' | 'zh' | 'th' | 'ja' | 'ko')}
+                  onChange={(e) => handleLanguageChange(e.target.value as 'en' | 'vi')}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="en">English</option>
                   <option value="vi">Tiếng Việt</option>
-                  <option value="zh">中文</option>
-                  <option value="th">ไทย</option>
-                  <option value="ja">日本語</option>
-                  <option value="ko">한국어</option>
                 </select>
               </div>
             </div>

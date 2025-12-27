@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import translations from '../utils/translations';
 
-export type Language = 'en' | 'vi' | 'zh' | 'th' | 'ja' | 'ko';
+export type Language = 'en' | 'vi';
 
 interface LanguageContextType {
   language: Language;
@@ -21,7 +21,7 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
     // Kiểm tra xem có phải môi trường browser không
     if (typeof window !== 'undefined' && window.localStorage) {
       const savedLanguage = localStorage.getItem('language') as Language;
-      const supportedLanguages: Language[] = ['en', 'vi', 'zh', 'th', 'ja', 'ko'];
+      const supportedLanguages: Language[] = ['en', 'vi'];
       return savedLanguage && supportedLanguages.includes(savedLanguage)
         ? savedLanguage 
         : 'en'; // Mặc định là tiếng Anh

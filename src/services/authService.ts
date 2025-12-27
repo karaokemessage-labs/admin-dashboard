@@ -1,40 +1,51 @@
 import { apiClient, ApiError } from './apiClient';
 import { API_ENDPOINTS } from '../config/api';
-import { UserRole } from '../contexts/AuthContext';
+import {
+  LoginDto,
+  RegisterDto,
+  AccountResponseDto,
+  ChangePasswordDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  SuccessResponseDto,
+} from '../types/api';
 
 export interface LoginRequest {
-  usernameOrEmail: string;
+  emailOrUsername?: string;
+  usernameOrEmail?: string; // For backward compatibility - will be mapped to emailOrUsername
   password: string;
+  rememberMe?: boolean;
+  twoFactorCode?: string;
 }
 
 export interface LoginResponse {
-  status?: string;
+  success?: boolean;
   message?: string;
   data?: {
     accessToken?: string;
     refreshToken?: string;
     accessTokenExpiresAt?: string;
     refreshTokenExpiresAt?: string;
+    user?: AccountResponseDto;
     userId?: string;
     username?: string;
     displayName?: string;
     role?: string;
     mustSetup2fa?: boolean;
     mustChangePassword?: boolean;
+    [key: string]: any;
   };
-  // Fallback for different API response formats
+  // Fallback for different API response formats (top-level fields)
   token?: string;
   accessToken?: string;
   refreshToken?: string;
+  user?: AccountResponseDto;
+  userId?: string;
+  username?: string;
+  displayName?: string;
+  role?: string;
   mustSetup2fa?: boolean;
   mustChangePassword?: boolean;
-  user?: {
-    id: string;
-    email: string;
-    username?: string;
-    name?: string;
-    role?: UserRole;
-  };
   [key: string]: any; // For any additional fields from API
 }
 
@@ -52,44 +63,21 @@ export interface TwoFactorConfig {
   updatedAt: number;
 }
 
-export interface UserMeData {
-  id?: string;
-  username?: string;
-  displayName?: string;
-  email?: string;
-  status?: string;
+export interface UserMeData extends AccountResponseDto {
+  // Additional fields that might be present
   providerId?: string | null;
   operatorId?: string | null;
-  twoFaEnabled?: boolean;
-  mustChangePassword?: boolean;
-  mustSetup2fa?: boolean;
-  requires2faChallenge?: boolean;
-  createdAt?: number | string;
-  updatedAt?: number | string;
-  role?: string;
   roles?: UserMeRole[];
   twoFactorConfigs?: TwoFactorConfig[];
   [key: string]: any; // For any additional fields from API
 }
 
-export interface UserMeResponse {
+export interface UserMeResponse extends AccountResponseDto {
   success?: boolean;
   message?: string;
   data?: UserMeData;
   // Fallback for direct data response
-  id?: string;
-  uid?: string;
-  userId?: string;
-  email?: string;
-  username?: string;
-  name?: string;
-  displayName?: string;
-  phone?: string;
-  role?: string;
   roles?: UserMeRole[];
-  sid?: string;
-  iat?: number;
-  exp?: number;
   [key: string]: any; // For any additional fields from API
 }
 
@@ -142,8 +130,10 @@ export interface Disable2FAResponse {
 }
 
 export interface ChangePasswordRequest {
-  oldPassword: string;
+  currentPassword?: string;
+  oldPassword?: string; // For backward compatibility - will be mapped to currentPassword
   newPassword: string;
+  confirmNewPassword?: string; // Optional - will default to newPassword if not provided
 }
 
 export interface ChangePasswordResponse {
@@ -151,6 +141,12 @@ export interface ChangePasswordResponse {
   message?: string;
   [key: string]: any;
 }
+
+export interface ForgotPasswordRequest extends ForgotPasswordDto {}
+
+export interface ResetPasswordRequest extends ResetPasswordDto {}
+
+export interface RegisterRequest extends RegisterDto {}
 
 export interface RecoveryCodesResponse {
   success?: boolean;
@@ -164,10 +160,32 @@ export interface RecoveryCodesResponse {
   [key: string]: any;
 }
 
+export interface UpdateProfileRequest {
+  name?: string;
+  displayName?: string;
+  email?: string;
+  phone?: string;
+  username?: string;
+}
+
+export interface UpdateProfileResponse {
+  success?: boolean;
+  message?: string;
+  data?: AccountResponseDto;
+  [key: string]: any;
+}
+
 export interface AuthService {
   login: (credentials: LoginRequest) => Promise<LoginResponse>;
+  adminLogin: (credentials: LoginRequest) => Promise<LoginResponse>;
+  register: (data: RegisterRequest) => Promise<SuccessResponseDto>;
   getMe: () => Promise<UserMeResponse>;
+  updateProfile: (data: UpdateProfileRequest) => Promise<UpdateProfileResponse>;
+  logout: () => Promise<SuccessResponseDto>;
+  refreshTokens: (refreshToken: string) => Promise<SuccessResponseDto<{ accessToken: string; refreshToken: string }>>;
   changePassword: (request: ChangePasswordRequest) => Promise<ChangePasswordResponse>;
+  forgotPassword: (request: ForgotPasswordRequest) => Promise<SuccessResponseDto>;
+  resetPassword: (request: ResetPasswordRequest) => Promise<SuccessResponseDto>;
   setup2FATOTP: (userId: string) => Promise<Setup2FATOTPResponse>;
   regenerate2FATOTP: (userId: string) => Promise<Setup2FATOTPResponse>;
   setup2FAEmail: (userId: string) => Promise<Setup2FAEmailResponse>;
@@ -179,11 +197,32 @@ export interface AuthService {
 class AuthServiceImpl implements AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      const response = await apiClient.post<LoginResponse>(
+      // Map usernameOrEmail to emailOrUsername for backward compatibility
+      const emailOrUsername = credentials.emailOrUsername || credentials.usernameOrEmail;
+      if (!emailOrUsername) {
+        throw new Error('Email hoặc tên đăng nhập là bắt buộc');
+      }
+      
+      const loginDto: LoginDto = {
+        emailOrUsername,
+        password: credentials.password,
+        rememberMe: credentials.rememberMe,
+        twoFactorCode: credentials.twoFactorCode,
+      };
+      const response = await apiClient.post<any>(
         API_ENDPOINTS.AUTH.LOGIN,
-        credentials
+        loginDto
       );
-      return response.data;
+      // The apiClient already extracts the data field from SuccessResponseDto
+      // So response.data is the actual response data object
+      const responseData = response.data || {};
+      return {
+        success: true,
+        message: response.message,
+        data: responseData,
+        // Spread data fields to top level for backward compatibility with AuthContext
+        ...responseData,
+      } as LoginResponse;
     } catch (error) {
       const apiError = error as ApiError;
       throw new Error(
@@ -192,27 +231,219 @@ class AuthServiceImpl implements AuthService {
     }
   }
 
-  async getMe(): Promise<UserMeResponse> {
+  async adminLogin(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      const response = await apiClient.get<{ success: boolean; message: string; data: UserMeData }>(
-        API_ENDPOINTS.AUTH.ME
-      );
-      // API returns { success, message, data: {...} }
-      // response.data is the API response body: { success, message, data: {...} }
-      const apiResponse = response.data;
+      // Map usernameOrEmail to emailOrUsername for backward compatibility
+      const emailOrUsername = credentials.emailOrUsername || credentials.usernameOrEmail;
+      if (!emailOrUsername) {
+        throw new Error('Email hoặc tên đăng nhập là bắt buộc');
+      }
       
-      // Return the full response structure with data fields spread to top level for easy access
+      const loginDto: LoginDto = {
+        emailOrUsername,
+        password: credentials.password,
+        rememberMe: credentials.rememberMe,
+        twoFactorCode: credentials.twoFactorCode,
+      };
+      const response = await apiClient.post<any>(
+        API_ENDPOINTS.ADMIN.LOGIN,
+        loginDto
+      );
+      // The apiClient already extracts the data field from SuccessResponseDto
+      // So response.data is the actual response data object
+      const responseData = response.data || {};
       return {
-        success: apiResponse.success,
-        message: apiResponse.message,
-        data: apiResponse.data,
-        // Spread data fields to top level for backward compatibility and easy access
-        ...(apiResponse.data || {}),
-      } as UserMeResponse;
+        success: true,
+        message: response.message,
+        data: responseData,
+        // Spread data fields to top level for backward compatibility with AuthContext
+        ...responseData,
+      } as LoginResponse;
     } catch (error) {
       const apiError = error as ApiError;
       throw new Error(
+        apiError.message || 'Đăng nhập admin thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.'
+      );
+    }
+  }
+
+  async register(data: RegisterRequest): Promise<SuccessResponseDto> {
+    try {
+      const response = await apiClient.post<SuccessResponseDto>(
+        API_ENDPOINTS.AUTH.REGISTER,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Đăng ký thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async logout(): Promise<SuccessResponseDto> {
+    try {
+      // Call logout API endpoint to invalidate token on server
+      // POST /auth/logout with empty body and Authorization header
+      // Headers: Accept: application/json, Authorization: Bearer <token>
+      // Body: empty string ''
+      console.log('Calling logout API:', API_ENDPOINTS.AUTH.LOGOUT);
+      const response = await apiClient.post<SuccessResponseDto>(
+        API_ENDPOINTS.AUTH.LOGOUT,
+        '' // Empty body as per API specification
+      );
+      
+      console.log('Logout API response:', response);
+      
+      // API returns SuccessResponseDto, apiClient extracts the data field
+      // Return success response
+      return {
+        success: true,
+        data: response.data || {},
+        message: response.message || 'Đăng xuất thành công',
+      };
+    } catch (error) {
+      const apiError = error as ApiError;
+      console.error('Logout API error:', apiError);
+      // Don't throw error - let the caller handle clearing local storage
+      // This allows logout to complete even if API call fails
+      throw new Error(
+        apiError.message || 'Đăng xuất thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async refreshTokens(refreshToken: string): Promise<SuccessResponseDto<{ accessToken: string; refreshToken: string }>> {
+    try {
+      const response = await apiClient.post<SuccessResponseDto<{ accessToken: string; refreshToken: string }>>(
+        API_ENDPOINTS.AUTH.REFRESH,
+        { refreshToken }
+      );
+      return response.data;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Làm mới token thất bại. Vui lòng đăng nhập lại.'
+      );
+    }
+  }
+
+  async forgotPassword(request: ForgotPasswordRequest): Promise<SuccessResponseDto> {
+    try {
+      const response = await apiClient.post<SuccessResponseDto>(
+        API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
+        request
+      );
+      return response.data;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Gửi email đặt lại mật khẩu thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async resetPassword(request: ResetPasswordRequest): Promise<SuccessResponseDto> {
+    try {
+      const response = await apiClient.post<SuccessResponseDto>(
+        API_ENDPOINTS.AUTH.RESET_PASSWORD,
+        request
+      );
+      return response.data;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async getMe(): Promise<UserMeResponse> {
+    try {
+      // GET /auth/me with Authorization header
+      // Headers: Accept: application/json, Authorization: Bearer <token>
+      console.log('Fetching user profile from:', API_ENDPOINTS.AUTH.ME);
+      const response = await apiClient.get<UserMeResponse | AccountResponseDto>(
+        API_ENDPOINTS.AUTH.ME
+      );
+      
+      console.log('API Response from /auth/me:', response);
+      
+      // API may return SuccessResponseDto format: { success: true, data: AccountResponseDto }
+      // or direct AccountResponseDto format
+      // apiClient already extracts the data field if it's SuccessResponseDto
+      const accountData = response.data as AccountResponseDto | UserMeData;
+      
+      console.log('Processed account data:', accountData);
+      
+      // Check if response already has UserMeResponse structure
+      if ('roles' in accountData || 'twoFactorConfigs' in accountData || 'providerId' in accountData) {
+        const result = {
+          ...accountData,
+          data: accountData as UserMeData,
+          success: true,
+        } as UserMeResponse;
+        console.log('Returning UserMeResponse with roles/configs:', result);
+        return result;
+      }
+      
+      // Return with data fields spread to top level for backward compatibility
+      const result = {
+        ...accountData,
+        data: accountData as UserMeData,
+        success: true,
+      } as UserMeResponse;
+      console.log('Returning UserMeResponse (standard):', result);
+      return result;
+    } catch (error) {
+      const apiError = error as ApiError;
+      console.error('Error fetching user profile:', apiError);
+      throw new Error(
         apiError.message || 'Không thể lấy thông tin người dùng. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async updateProfile(data: UpdateProfileRequest): Promise<UpdateProfileResponse> {
+    try {
+      // First get current user info to get the user ID
+      const currentUser = await this.getMe();
+      const userId = currentUser.data?.id || currentUser.id;
+      
+      if (!userId) {
+        throw new Error('Không tìm thấy ID người dùng. Vui lòng đăng nhập lại.');
+      }
+
+      console.log('Updating profile for user:', userId, 'with data:', data);
+      
+      // Use userService to update user profile
+      // Import userService at the top if not already imported
+      const { userService } = await import('./userService');
+      
+      // Map displayName to name if needed
+      const updateData: any = {};
+      if (data.name) updateData.name = data.name;
+      if (data.displayName) updateData.name = data.displayName; // API might use 'name' field
+      if (data.email) updateData.email = data.email;
+      if (data.username) updateData.username = data.username;
+      // Note: phone might not be in UpdateUserRequestDto, but we'll try
+      if (data.phone !== undefined) (updateData as any).phone = data.phone;
+
+      const response = await userService.updateUser(userId, updateData);
+      
+      console.log('Profile update response:', response);
+      
+      return {
+        success: true,
+        message: 'Cập nhật hồ sơ thành công',
+        data: response as any,
+      };
+    } catch (error) {
+      const apiError = error as ApiError;
+      console.error('Error updating profile:', apiError);
+      throw new Error(
+        apiError.message || 'Cập nhật hồ sơ thất bại. Vui lòng thử lại.'
       );
     }
   }
@@ -321,11 +552,28 @@ class AuthServiceImpl implements AuthService {
 
   async changePassword(request: ChangePasswordRequest): Promise<ChangePasswordResponse> {
     try {
-      const response = await apiClient.post<ChangePasswordResponse>(
+      // Map oldPassword to currentPassword for backward compatibility
+      const currentPassword = request.currentPassword || request.oldPassword;
+      if (!currentPassword) {
+        throw new Error('Mật khẩu hiện tại là bắt buộc');
+      }
+      
+      const changePasswordDto: ChangePasswordDto = {
+        currentPassword,
+        newPassword: request.newPassword,
+        confirmNewPassword: request.confirmNewPassword || request.newPassword, // Use newPassword as confirm if not provided
+      };
+      const response = await apiClient.post<SuccessResponseDto>(
         API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
-        request
+        changePasswordDto
       );
-      return response.data;
+      // API returns SuccessResponseDto, apiClient extracts the data field
+      // response.data is the extracted data (which should be SuccessResponseDto structure or empty object)
+      // But since the API endpoint returns SuccessResponseDto with empty data, we construct response
+      return {
+        success: true,
+        message: response.message || 'Đổi mật khẩu thành công',
+      };
     } catch (error) {
       const apiError = error as ApiError;
       throw new Error(
