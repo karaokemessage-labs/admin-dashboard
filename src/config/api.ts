@@ -2,13 +2,8 @@
 // Get API base URL from environment variable
 // Default to localhost:3000 for development
 const getApiBaseUrl = (): string => {
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
-  if (envUrl) {
-    // Remove trailing slash if present
-    return envUrl.replace(/\/$/, '');
-  }
-  // Default to localhost:3000 for development
-  return 'http://localhost:3000';
+  const envUrl = import.meta.env.VITE_API_BASE_URL || "https://kaka-club-api-gateway.ngrok.dev"
+  return envUrl;
 };
 
 export const API_CONFIG = {
