@@ -566,6 +566,8 @@ export interface Translations {
     promotionsBonus: string;
     reports: string;
     analytics: string;
+    articlesManagement: string;
+    usersManagement: string;
     monitoring: string;
     riskManagement: string;
     apiManagement: string;
@@ -1158,6 +1160,8 @@ const translations: Record<AllLanguages, Translations> = {
       promotionsBonus: 'Promotions & Bonus',
       reports: 'Reports & Statistics',
       analytics: 'Performance Analytics',
+      articlesManagement: 'Articles Management',
+      usersManagement: 'Users Management',
       monitoring: 'Monitoring',
       riskManagement: 'Risk Management',
       apiManagement: 'API Management',
@@ -1741,6 +1745,8 @@ const translations: Record<AllLanguages, Translations> = {
       promotionsBonus: 'Khuyến mãi & Bonus',
       reports: 'Báo cáo & Thống kê',
       analytics: 'Phân tích hiệu suất',
+      articlesManagement: 'Quản lý Bài viết',
+      usersManagement: 'Quản lý Người dùng',
       monitoring: 'Monitoring',
       riskManagement: 'Quản lý rủi ro',
       apiManagement: 'API Management',
@@ -2324,6 +2330,8 @@ const translations: Record<AllLanguages, Translations> = {
       promotionsBonus: '促销和奖金',
       reports: '报告和统计',
       analytics: '性能分析',
+      articlesManagement: '文章管理',
+      usersManagement: '用户管理',
       monitoring: '监控',
       riskManagement: '风险管理',
       apiManagement: 'API管理',
@@ -2907,6 +2915,8 @@ const translations: Record<AllLanguages, Translations> = {
       promotionsBonus: 'โปรโมชั่นและโบนัส',
       reports: 'รายงานและสถิติ',
       analytics: 'การวิเคราะห์ประสิทธิภาพ',
+      articlesManagement: 'จัดการบทความ',
+      usersManagement: 'จัดการผู้ใช้',
       monitoring: 'การตรวจสอบ',
       riskManagement: 'การจัดการความเสี่ยง',
       apiManagement: 'การจัดการ API',
@@ -3490,6 +3500,8 @@ const translations: Record<AllLanguages, Translations> = {
       promotionsBonus: 'プロモーションとボーナス',
       reports: 'レポートと統計',
       analytics: 'パフォーマンス分析',
+      articlesManagement: '記事管理',
+      usersManagement: 'ユーザー管理',
       monitoring: 'モニタリング',
       riskManagement: 'リスク管理',
       apiManagement: 'API管理',
@@ -4073,6 +4085,8 @@ const translations: Record<AllLanguages, Translations> = {
       promotionsBonus: '프로모션 및 보너스',
       reports: '보고서 및 통계',
       analytics: '성능 분석',
+      articlesManagement: '기사 관리',
+      usersManagement: '사용자 관리',
       monitoring: '모니터링',
       riskManagement: '위험 관리',
       apiManagement: 'API 관리',

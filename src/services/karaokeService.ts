@@ -5,12 +5,32 @@ export interface CreateKaraokeRequest {
   name: string;
   email: string;
   description?: string;
+  address?: string;
+  phone?: string;
+  district?: string;
+  rating?: number;
+  reviewCount?: number;
+  qualityLevel?: 'PREMIUM' | 'STANDARD' | 'BASIC';
+  tags?: string[];
+  views?: number;
+  featured?: boolean;
+  imageUrl?: string;
 }
 
 export interface UpdateKaraokeRequest {
   name?: string;
   email?: string;
   description?: string;
+  address?: string;
+  phone?: string;
+  district?: string;
+  rating?: number;
+  reviewCount?: number;
+  qualityLevel?: 'PREMIUM' | 'STANDARD' | 'BASIC';
+  tags?: string[];
+  views?: number;
+  featured?: boolean;
+  imageUrl?: string;
   status?: string;
 }
 
@@ -53,11 +73,7 @@ class KaraokeServiceImpl implements KaraokeService {
       console.log('Creating karaoke with data:', data);
       const response = await apiClient.post<CreateKaraokeResponse>(
         API_ENDPOINTS.KARAOKE.BASE,
-        {
-          name: data.name,
-          email: data.email,
-          description: data.description,
-        }
+        data
       );
       
       console.log('Create karaoke response:', response);
