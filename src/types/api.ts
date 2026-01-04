@@ -398,3 +398,21 @@ export interface UpdateSystemSettingsRequestDto {
     allowOnlineBooking?: boolean;
   };
 }
+
+export interface CreateSystemSettingRequestDto {
+  key: string;
+  value: string | number | boolean;
+}
+
+export interface UpdateSystemSettingRequestDto {
+  key?: string;
+  value?: string | number | boolean;
+}
+
+export interface SystemSettingResponseDto {
+  id?: string;
+  key: string;
+  value: string | number | boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}

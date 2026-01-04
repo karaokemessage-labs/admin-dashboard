@@ -25,35 +25,42 @@ const SystemSettings = () => {
     try {
       setLoading(true);
       const data = await systemSettingsService.getSystemSettings();
-      setSettings(data);
-      // Initialize form data with fetched settings
-      setFormData({
-        general: {
-          systemName: data.general.systemName,
-          systemDescription: data.general.systemDescription,
-          defaultLanguage: data.general.defaultLanguage,
-        },
-        notifications: {
-          emailNotification: data.notifications.emailNotification,
-          pushNotification: data.notifications.pushNotification,
-          smsAlert: data.notifications.smsAlert,
-        },
-        security: {
-          sessionTimeout: data.security.sessionTimeout,
-          maxLoginAttempts: data.security.maxLoginAttempts,
-          require2FA: data.security.require2FA,
-        },
-        booking: {
-          minBookingDuration: data.booking.minBookingDuration,
-          maxBookingDuration: data.booking.maxBookingDuration,
-          cancellationTimeBefore: data.booking.cancellationTimeBefore,
-          allowOnlineBooking: data.booking.allowOnlineBooking,
-        },
-      });
+      
+      // Validate and set settings
+      if (data && data.general && data.notifications && data.security && data.booking) {
+        setSettings(data);
+        // Initialize form data with fetched settings
+        setFormData({
+          general: {
+            systemName: data.general.systemName || '',
+            systemDescription: data.general.systemDescription || '',
+            defaultLanguage: data.general.defaultLanguage || 'vi',
+          },
+          notifications: {
+            emailNotification: data.notifications.emailNotification ?? true,
+            pushNotification: data.notifications.pushNotification ?? true,
+            smsAlert: data.notifications.smsAlert ?? false,
+          },
+          security: {
+            sessionTimeout: data.security.sessionTimeout ?? 30,
+            maxLoginAttempts: data.security.maxLoginAttempts ?? 5,
+            require2FA: data.security.require2FA ?? false,
+          },
+          booking: {
+            minBookingDuration: data.booking.minBookingDuration ?? 60,
+            maxBookingDuration: data.booking.maxBookingDuration ?? 480,
+            cancellationTimeBefore: data.booking.cancellationTimeBefore ?? 30,
+            allowOnlineBooking: data.booking.allowOnlineBooking ?? true,
+          },
+        });
+      } else {
+        throw new Error('Invalid response structure from API');
+      }
     } catch (error: any) {
-      toast.error(error.message || t('common.error'));
+      console.error('Error fetching system settings:', error);
+      toast.error(error.message || t('common.error') || 'Không thể tải cài đặt hệ thống');
       // Set default values if API fails
-      setSettings({
+      const defaultSettings: SystemSettingsResponseDto = {
         general: {
           systemName: 'KaKa Club Admin Portal',
           systemDescription: 'Hệ thống quản lý karaoke club, massage và các dịch vụ giải trí',
@@ -75,6 +82,13 @@ const SystemSettings = () => {
           cancellationTimeBefore: 30,
           allowOnlineBooking: true,
         },
+      };
+      setSettings(defaultSettings);
+      setFormData({
+        general: defaultSettings.general,
+        notifications: defaultSettings.notifications,
+        security: defaultSettings.security,
+        booking: defaultSettings.booking,
       });
     } finally {
       setLoading(false);

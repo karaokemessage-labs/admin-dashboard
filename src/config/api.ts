@@ -38,6 +38,7 @@ export const API_ENDPOINTS = {
   // System Settings endpoints
   SYSTEM_SETTINGS: {
     BASE: '/system-settings',
+    BY_ID: (id: string) => `/system-settings/${id}`,
   },
   // Wallet endpoints
   WALLET: {
