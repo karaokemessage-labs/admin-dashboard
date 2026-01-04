@@ -21,41 +21,122 @@ const SystemSettings = () => {
     fetchSystemSettings();
   }, []);
 
+  const transformSettingsFromKeyValue = (settingsArray: any[]): SystemSettingsResponseDto => {
+    // Transform array of {key, value} objects to structured format
+    const settingsMap: Record<string, any> = {};
+    
+    if (Array.isArray(settingsArray)) {
+      settingsArray.forEach((setting: any) => {
+        if (setting.key && setting.value !== undefined) {
+          settingsMap[setting.key] = setting.value;
+        }
+      });
+    }
+    
+    // Map keys to structured format
+    return {
+      general: {
+        systemName: settingsMap['system_name'] || settingsMap['systemName'] || 'KaKa Club Admin Portal',
+        systemDescription: settingsMap['system_description'] || settingsMap['systemDescription'] || 'Hệ thống quản lý karaoke club, massage và các dịch vụ giải trí',
+        defaultLanguage: settingsMap['default_language'] || settingsMap['defaultLanguage'] || 'vi',
+      },
+      notifications: {
+        emailNotification: settingsMap['email_notification'] ?? settingsMap['emailNotification'] ?? true,
+        pushNotification: settingsMap['push_notification'] ?? settingsMap['pushNotification'] ?? true,
+        smsAlert: settingsMap['sms_alert'] ?? settingsMap['smsAlert'] ?? false,
+      },
+      security: {
+        sessionTimeout: settingsMap['session_timeout'] ?? settingsMap['sessionTimeout'] ?? 30,
+        maxLoginAttempts: settingsMap['max_login_attempts'] ?? settingsMap['maxLoginAttempts'] ?? 5,
+        require2FA: settingsMap['require_2fa'] ?? settingsMap['require2FA'] ?? false,
+      },
+      booking: {
+        minBookingDuration: settingsMap['min_booking_duration'] ?? settingsMap['minBookingDuration'] ?? 60,
+        maxBookingDuration: settingsMap['max_booking_duration'] ?? settingsMap['maxBookingDuration'] ?? 480,
+        cancellationTimeBefore: settingsMap['cancellation_time_before'] ?? settingsMap['cancellationTimeBefore'] ?? 30,
+        allowOnlineBooking: settingsMap['allow_online_booking'] ?? settingsMap['allowOnlineBooking'] ?? true,
+      },
+    };
+  };
+
   const fetchSystemSettings = async () => {
     try {
       setLoading(true);
       const data = await systemSettingsService.getSystemSettings();
       
-      // Validate and set settings
+      console.log('System settings API response:', data);
+      
+      let transformedSettings: SystemSettingsResponseDto;
+      
+      // Check if response is already in the expected format
       if (data && data.general && data.notifications && data.security && data.booking) {
-        setSettings(data);
-        // Initialize form data with fetched settings
-        setFormData({
+        transformedSettings = data;
+      } 
+      // Check if response is an array of key-value pairs
+      else if (Array.isArray(data)) {
+        transformedSettings = transformSettingsFromKeyValue(data);
+      }
+      // Check if response has a data property containing array
+      else if (data && Array.isArray((data as any).data)) {
+        transformedSettings = transformSettingsFromKeyValue((data as any).data);
+      }
+      // Try to transform from any object structure
+      else if (data && typeof data === 'object') {
+        transformedSettings = transformSettingsFromKeyValue([data]);
+      }
+      // Fallback to defaults
+      else {
+        console.warn('Unexpected response structure, using defaults');
+        transformedSettings = {
           general: {
-            systemName: data.general.systemName || '',
-            systemDescription: data.general.systemDescription || '',
-            defaultLanguage: data.general.defaultLanguage || 'vi',
+            systemName: 'KaKa Club Admin Portal',
+            systemDescription: 'Hệ thống quản lý karaoke club, massage và các dịch vụ giải trí',
+            defaultLanguage: 'vi',
           },
           notifications: {
-            emailNotification: data.notifications.emailNotification ?? true,
-            pushNotification: data.notifications.pushNotification ?? true,
-            smsAlert: data.notifications.smsAlert ?? false,
+            emailNotification: true,
+            pushNotification: true,
+            smsAlert: false,
           },
           security: {
-            sessionTimeout: data.security.sessionTimeout ?? 30,
-            maxLoginAttempts: data.security.maxLoginAttempts ?? 5,
-            require2FA: data.security.require2FA ?? false,
+            sessionTimeout: 30,
+            maxLoginAttempts: 5,
+            require2FA: false,
           },
           booking: {
-            minBookingDuration: data.booking.minBookingDuration ?? 60,
-            maxBookingDuration: data.booking.maxBookingDuration ?? 480,
-            cancellationTimeBefore: data.booking.cancellationTimeBefore ?? 30,
-            allowOnlineBooking: data.booking.allowOnlineBooking ?? true,
+            minBookingDuration: 60,
+            maxBookingDuration: 480,
+            cancellationTimeBefore: 30,
+            allowOnlineBooking: true,
           },
-        });
-      } else {
-        throw new Error('Invalid response structure from API');
+        };
       }
+      
+      setSettings(transformedSettings);
+      // Initialize form data with fetched settings
+      setFormData({
+        general: {
+          systemName: transformedSettings.general.systemName || '',
+          systemDescription: transformedSettings.general.systemDescription || '',
+          defaultLanguage: transformedSettings.general.defaultLanguage || 'vi',
+        },
+        notifications: {
+          emailNotification: transformedSettings.notifications.emailNotification ?? true,
+          pushNotification: transformedSettings.notifications.pushNotification ?? true,
+          smsAlert: transformedSettings.notifications.smsAlert ?? false,
+        },
+        security: {
+          sessionTimeout: transformedSettings.security.sessionTimeout ?? 30,
+          maxLoginAttempts: transformedSettings.security.maxLoginAttempts ?? 5,
+          require2FA: transformedSettings.security.require2FA ?? false,
+        },
+        booking: {
+          minBookingDuration: transformedSettings.booking.minBookingDuration ?? 60,
+          maxBookingDuration: transformedSettings.booking.maxBookingDuration ?? 480,
+          cancellationTimeBefore: transformedSettings.booking.cancellationTimeBefore ?? 30,
+          allowOnlineBooking: transformedSettings.booking.allowOnlineBooking ?? true,
+        },
+      });
     } catch (error: any) {
       console.error('Error fetching system settings:', error);
       toast.error(error.message || t('common.error') || 'Không thể tải cài đặt hệ thống');
