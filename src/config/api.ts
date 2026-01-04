@@ -35,6 +35,10 @@ export const API_ENDPOINTS = {
     LOGIN: '/admin/login',
     DASHBOARD_STATS: '/admin/dashboard/stats',
   },
+  // System Settings endpoints
+  SYSTEM_SETTINGS: {
+    BASE: '/system-settings',
+  },
   // Wallet endpoints
   WALLET: {
     BALANCE: '/wallet/balance',

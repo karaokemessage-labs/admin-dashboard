@@ -1,8 +1,147 @@
-import { Settings, Save, Bell, Shield, CreditCard } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Settings, Save, Bell, Shield, CreditCard, Loader2 } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { systemSettingsService } from '../../../services/systemSettingsService';
+import { SystemSettingsResponseDto, UpdateSystemSettingsRequestDto } from '../../../types/api';
+import { toast } from 'react-toastify';
 
 const SystemSettings = () => {
   const { t } = useLanguage();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [settings, setSettings] = useState<SystemSettingsResponseDto | null>(null);
+  const [formData, setFormData] = useState<UpdateSystemSettingsRequestDto>({
+    general: {},
+    notifications: {},
+    security: {},
+    booking: {},
+  });
+
+  useEffect(() => {
+    fetchSystemSettings();
+  }, []);
+
+  const fetchSystemSettings = async () => {
+    try {
+      setLoading(true);
+      const data = await systemSettingsService.getSystemSettings();
+      setSettings(data);
+      // Initialize form data with fetched settings
+      setFormData({
+        general: {
+          systemName: data.general.systemName,
+          systemDescription: data.general.systemDescription,
+          defaultLanguage: data.general.defaultLanguage,
+        },
+        notifications: {
+          emailNotification: data.notifications.emailNotification,
+          pushNotification: data.notifications.pushNotification,
+          smsAlert: data.notifications.smsAlert,
+        },
+        security: {
+          sessionTimeout: data.security.sessionTimeout,
+          maxLoginAttempts: data.security.maxLoginAttempts,
+          require2FA: data.security.require2FA,
+        },
+        booking: {
+          minBookingDuration: data.booking.minBookingDuration,
+          maxBookingDuration: data.booking.maxBookingDuration,
+          cancellationTimeBefore: data.booking.cancellationTimeBefore,
+          allowOnlineBooking: data.booking.allowOnlineBooking,
+        },
+      });
+    } catch (error: any) {
+      toast.error(error.message || t('common.error'));
+      // Set default values if API fails
+      setSettings({
+        general: {
+          systemName: 'KaKa Club Admin Portal',
+          systemDescription: 'Hệ thống quản lý karaoke club, massage và các dịch vụ giải trí',
+          defaultLanguage: 'vi',
+        },
+        notifications: {
+          emailNotification: true,
+          pushNotification: true,
+          smsAlert: false,
+        },
+        security: {
+          sessionTimeout: 30,
+          maxLoginAttempts: 5,
+          require2FA: false,
+        },
+        booking: {
+          minBookingDuration: 60,
+          maxBookingDuration: 480,
+          cancellationTimeBefore: 30,
+          allowOnlineBooking: true,
+        },
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      const updatedSettings = await systemSettingsService.updateSystemSettings(formData);
+      setSettings(updatedSettings);
+      toast.success(t('pages.settings.saveSuccess') || 'Cài đặt đã được lưu thành công!');
+    } catch (error: any) {
+      toast.error(error.message || t('pages.settings.saveFailed') || 'Lưu cài đặt thất bại. Vui lòng thử lại.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleInputChange = (
+    section: keyof UpdateSystemSettingsRequestDto,
+    field: string,
+    value: string | number | boolean
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      [section]: {
+        ...(prev[section] || {}),
+        [field]: value,
+      },
+    }));
+  };
+  if (loading) {
+    return (
+      <div className="flex-1 bg-gray-50 p-6">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+          <span className="ml-3 text-gray-600">{t('common.loading') || 'Đang tải...'}</span>
+        </div>
+      </div>
+    );
+  }
+
+  const currentSettings = settings || {
+    general: {
+      systemName: formData.general?.systemName || 'KaKa Club Admin Portal',
+      systemDescription: formData.general?.systemDescription || 'Hệ thống quản lý karaoke club, massage và các dịch vụ giải trí',
+      defaultLanguage: formData.general?.defaultLanguage || 'vi',
+    },
+    notifications: {
+      emailNotification: formData.notifications?.emailNotification ?? true,
+      pushNotification: formData.notifications?.pushNotification ?? true,
+      smsAlert: formData.notifications?.smsAlert ?? false,
+    },
+    security: {
+      sessionTimeout: formData.security?.sessionTimeout ?? 30,
+      maxLoginAttempts: formData.security?.maxLoginAttempts ?? 5,
+      require2FA: formData.security?.require2FA ?? false,
+    },
+    booking: {
+      minBookingDuration: formData.booking?.minBookingDuration ?? 60,
+      maxBookingDuration: formData.booking?.maxBookingDuration ?? 480,
+      cancellationTimeBefore: formData.booking?.cancellationTimeBefore ?? 30,
+      allowOnlineBooking: formData.booking?.allowOnlineBooking ?? true,
+    },
+  };
+
   return (
     <div className="flex-1 bg-gray-50 p-6">
       <div className="mb-6">
@@ -22,7 +161,8 @@ const SystemSettings = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('pages.settings.systemName')}</label>
               <input
                 type="text"
-                defaultValue="KaKa Club Admin Portal"
+                value={formData.general?.systemName || currentSettings.general.systemName}
+                onChange={(e) => handleInputChange('general', 'systemName', e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -30,15 +170,20 @@ const SystemSettings = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('pages.settings.systemDescription')}</label>
               <textarea
                 rows={3}
-                defaultValue="Hệ thống quản lý karaoke club, massage và các dịch vụ giải trí"
+                value={formData.general?.systemDescription || currentSettings.general.systemDescription}
+                onChange={(e) => handleInputChange('general', 'systemDescription', e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('pages.settings.defaultLanguage')}</label>
-              <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                <option>Tiếng Việt</option>
-                <option>English</option>
+              <select
+                value={formData.general?.defaultLanguage || currentSettings.general.defaultLanguage}
+                onChange={(e) => handleInputChange('general', 'defaultLanguage', e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="vi">Tiếng Việt</option>
+                <option value="en">English</option>
               </select>
             </div>
           </div>
@@ -57,7 +202,12 @@ const SystemSettings = () => {
                 <p className="text-xs text-gray-500">{t('pages.settings.emailNotificationDesc')}</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" defaultChecked className="sr-only peer" />
+                <input
+                  type="checkbox"
+                  checked={formData.notifications?.emailNotification ?? currentSettings.notifications.emailNotification}
+                  onChange={(e) => handleInputChange('notifications', 'emailNotification', e.target.checked)}
+                  className="sr-only peer"
+                />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
             </div>
@@ -67,7 +217,12 @@ const SystemSettings = () => {
                 <p className="text-xs text-gray-500">{t('pages.settings.pushNotificationDesc')}</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" defaultChecked className="sr-only peer" />
+                <input
+                  type="checkbox"
+                  checked={formData.notifications?.pushNotification ?? currentSettings.notifications.pushNotification}
+                  onChange={(e) => handleInputChange('notifications', 'pushNotification', e.target.checked)}
+                  className="sr-only peer"
+                />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
             </div>
@@ -77,7 +232,12 @@ const SystemSettings = () => {
                 <p className="text-xs text-gray-500">{t('pages.settings.smsAlertDesc')}</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input
+                  type="checkbox"
+                  checked={formData.notifications?.smsAlert ?? currentSettings.notifications.smsAlert}
+                  onChange={(e) => handleInputChange('notifications', 'smsAlert', e.target.checked)}
+                  className="sr-only peer"
+                />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
             </div>
@@ -95,7 +255,8 @@ const SystemSettings = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('pages.settings.sessionTimeout')}</label>
               <input
                 type="number"
-                defaultValue={30}
+                value={formData.security?.sessionTimeout ?? currentSettings.security.sessionTimeout}
+                onChange={(e) => handleInputChange('security', 'sessionTimeout', parseInt(e.target.value) || 0)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -103,7 +264,8 @@ const SystemSettings = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('pages.settings.maxLoginAttempts')}</label>
               <input
                 type="number"
-                defaultValue={5}
+                value={formData.security?.maxLoginAttempts ?? currentSettings.security.maxLoginAttempts}
+                onChange={(e) => handleInputChange('security', 'maxLoginAttempts', parseInt(e.target.value) || 0)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -113,7 +275,12 @@ const SystemSettings = () => {
                 <p className="text-xs text-gray-500">{t('pages.settings.require2FADesc')}</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input
+                  type="checkbox"
+                  checked={formData.security?.require2FA ?? currentSettings.security.require2FA}
+                  onChange={(e) => handleInputChange('security', 'require2FA', e.target.checked)}
+                  className="sr-only peer"
+                />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
             </div>
@@ -131,7 +298,8 @@ const SystemSettings = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Thời gian đặt phòng tối thiểu (phút)</label>
               <input
                 type="number"
-                defaultValue={60}
+                value={formData.booking?.minBookingDuration ?? currentSettings.booking.minBookingDuration}
+                onChange={(e) => handleInputChange('booking', 'minBookingDuration', parseInt(e.target.value) || 0)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="60"
               />
@@ -140,7 +308,8 @@ const SystemSettings = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Thời gian đặt phòng tối đa (phút)</label>
               <input
                 type="number"
-                defaultValue={480}
+                value={formData.booking?.maxBookingDuration ?? currentSettings.booking.maxBookingDuration}
+                onChange={(e) => handleInputChange('booking', 'maxBookingDuration', parseInt(e.target.value) || 0)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="480"
               />
@@ -149,7 +318,8 @@ const SystemSettings = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Thời gian hủy đặt phòng trước (phút)</label>
               <input
                 type="number"
-                defaultValue={30}
+                value={formData.booking?.cancellationTimeBefore ?? currentSettings.booking.cancellationTimeBefore}
+                onChange={(e) => handleInputChange('booking', 'cancellationTimeBefore', parseInt(e.target.value) || 0)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="30"
               />
@@ -160,7 +330,12 @@ const SystemSettings = () => {
                 <p className="text-xs text-gray-500">Cho phép khách hàng đặt phòng qua website/app</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" defaultChecked className="sr-only peer" />
+                <input
+                  type="checkbox"
+                  checked={formData.booking?.allowOnlineBooking ?? currentSettings.booking.allowOnlineBooking}
+                  onChange={(e) => handleInputChange('booking', 'allowOnlineBooking', e.target.checked)}
+                  className="sr-only peer"
+                />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
             </div>
@@ -169,9 +344,22 @@ const SystemSettings = () => {
 
         {/* Save Button */}
         <div className="flex justify-end">
-          <button className="flex items-center gap-2 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-            <Save className="w-4 h-4" />
-            {t('pages.settings.saveSettings')}
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>{t('common.saving') || 'Đang lưu...'}</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>{t('pages.settings.saveSettings')}</span>
+              </>
+            )}
           </button>
         </div>
       </div>

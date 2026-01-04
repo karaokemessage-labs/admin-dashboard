@@ -12,4 +12,5 @@ export * from './rbacService';
 export * from './karaokeService';
 export * from './massageService';
 export * from './clubService';
+export * from './systemSettingsService';
 

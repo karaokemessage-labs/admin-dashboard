@@ -349,3 +349,52 @@ export interface GetCommentsResponseDto {
   page: number;
   limit: number;
 }
+
+// System Settings Types
+export interface SystemSettingsResponseDto {
+  general: {
+    systemName: string;
+    systemDescription: string;
+    defaultLanguage: string;
+  };
+  notifications: {
+    emailNotification: boolean;
+    pushNotification: boolean;
+    smsAlert: boolean;
+  };
+  security: {
+    sessionTimeout: number;
+    maxLoginAttempts: number;
+    require2FA: boolean;
+  };
+  booking: {
+    minBookingDuration: number;
+    maxBookingDuration: number;
+    cancellationTimeBefore: number;
+    allowOnlineBooking: boolean;
+  };
+}
+
+export interface UpdateSystemSettingsRequestDto {
+  general?: {
+    systemName?: string;
+    systemDescription?: string;
+    defaultLanguage?: string;
+  };
+  notifications?: {
+    emailNotification?: boolean;
+    pushNotification?: boolean;
+    smsAlert?: boolean;
+  };
+  security?: {
+    sessionTimeout?: number;
+    maxLoginAttempts?: number;
+    require2FA?: boolean;
+  };
+  booking?: {
+    minBookingDuration?: number;
+    maxBookingDuration?: number;
+    cancellationTimeBefore?: number;
+    allowOnlineBooking?: boolean;
+  };
+}

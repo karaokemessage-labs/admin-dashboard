@@ -16,7 +16,7 @@ import AdminSystemSettings from '../modules/admin/pages/SystemSettings';
 import GamesManagement from '../modules/admin/pages/ClubsManagement';
 import KaraokesManagement from '../modules/admin/pages/KaraokesManagement';
 import MassagesManagement from '../modules/admin/pages/MassagesManagement';
-// import RolePermissionManagement from '../modules/admin/pages/RolePermissionManagement';
+import RolePermissionManagement from '../modules/admin/pages/RolePermissionManagement';
 // import AdminPromotionsBonus from '../modules/admin/pages/PromotionsBonus';
 // import AdminRiskManagement from '../modules/admin/pages/RiskManagement';
 // import ApiManagement from '../modules/admin/pages/ApiManagement';
@@ -34,7 +34,7 @@ export const getRoutesByRole = (): ReactElement[] => {
     <Route key="venues" path="/clubs" element={<GamesManagement />} />,
     <Route key="operators" path="/karaoke" element={<KaraokesManagement />} />,
     <Route key="provider-accounts" path="/massages" element={<MassagesManagement />} />,
-    // <Route key="roles-permissions" path="/roles-permissions" element={<RolePermissionManagement />} />,
+    <Route key="roles-permissions" path="/roles-permissions" element={<RolePermissionManagement />} />,
     // <Route key="transactions" path="/transactions" element={<AdminTransactions />} />,
     // <Route key="wallet" path="/wallet" element={<AdminWalletPayment />} />,
     // <Route key="promotions" path="/promotions" element={<AdminPromotionsBonus />} />,

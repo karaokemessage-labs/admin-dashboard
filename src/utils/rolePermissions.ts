@@ -5,6 +5,7 @@ import {
   Building2,
   Settings,
   User,
+  Shield,
   LucideIcon
 } from 'lucide-react';
 
@@ -26,7 +27,7 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
   { id: 'venues', label: 'Venues Management', path: '/dashboard/clubs', icon: VenueIcon, translationKey: 'menu.venuesManagement' },
   { id: 'operators', label: 'Operators Management', path: '/dashboard/karaoke', icon: UserCog, translationKey: 'menu.operatorsManagement' },
   { id: 'provider-accounts', label: 'Provider Accounts Management', path: '/dashboard/massages', icon: Building2, translationKey: 'menu.providerAccountsManagement' },
-  // { id: 'roles-permissions', label: 'Roles & Permissions Management', path: '/dashboard/roles-permissions', icon: Shield, translationKey: 'menu.rolesPermissionsManagement' },
+  { id: 'roles-permissions', label: 'Roles & Permissions Management', path: '/dashboard/roles-permissions', icon: Shield, translationKey: 'menu.rolesPermissionsManagement' },
   // { id: 'transactions', label: 'Transactions', path: '/dashboard/transactions', icon: CreditCard, translationKey: 'menu.transactions' },
   // { id: 'wallet', label: 'Wallet & Payment', path: '/dashboard/wallet', icon: Wallet, translationKey: 'menu.walletPayment' },
   // { id: 'promotions', label: 'Promotions & Bonus', path: '/dashboard/promotions', icon: Gift, translationKey: 'menu.promotionsBonus' },
