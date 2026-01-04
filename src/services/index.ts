@@ -8,6 +8,7 @@ export * from './bookingService';
 export * from './userService';
 export * from './articleService';
 export * from './commentService';
+export * from './ratingService';
 export * from './rbacService';
 export * from './karaokeService';
 export * from './massageService';

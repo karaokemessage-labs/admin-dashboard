@@ -9,6 +9,8 @@ import AdminDashboard from '../modules/admin/pages/Dashboard';
 // import AdminAnalytics from '../modules/admin/pages/Analytics';
 // import ArticlesManagement from '../modules/admin/pages/ArticlesManagement';
 import UsersManagement from '../modules/admin/pages/UsersManagement';
+import CommentsManagement from '../modules/admin/pages/CommentsManagement';
+import RatingManagement from '../modules/admin/pages/RatingManagement';
 // import AdminMonitoring from '../modules/admin/pages/Monitoring';
 // import AdminAlerts from '../modules/admin/pages/Alerts';
 // import AdminAuditLogs from '../modules/admin/pages/AuditLogs';
@@ -17,6 +19,7 @@ import GamesManagement from '../modules/admin/pages/ClubsManagement';
 import KaraokesManagement from '../modules/admin/pages/KaraokesManagement';
 import MassagesManagement from '../modules/admin/pages/MassagesManagement';
 import RolePermissionManagement from '../modules/admin/pages/RolePermissionManagement';
+import UserDetails from '../modules/admin/pages/UserDetails';
 // import AdminPromotionsBonus from '../modules/admin/pages/PromotionsBonus';
 // import AdminRiskManagement from '../modules/admin/pages/RiskManagement';
 // import ApiManagement from '../modules/admin/pages/ApiManagement';
@@ -42,6 +45,9 @@ export const getRoutesByRole = (): ReactElement[] => {
     // <Route key="analytics" path="/analytics" element={<AdminAnalytics />} />,
     // <Route key="articles" path="/articles" element={<ArticlesManagement />} />,
     <Route key="users" path="/users" element={<UsersManagement />} />,
+    <Route key="user-details" path="/users/:id" element={<UserDetails />} />,
+    <Route key="comments" path="/comments" element={<CommentsManagement />} />,
+    <Route key="ratings" path="/ratings" element={<RatingManagement />} />,
     // <Route key="monitoring" path="/monitoring" element={<AdminMonitoring />} />,
     // <Route key="risk" path="/risk" element={<AdminRiskManagement />} />,
     // <Route key="api" path="/api" element={<ApiManagement />} />,

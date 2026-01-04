@@ -41,16 +41,43 @@ export interface CreateClubResponse {
   [key: string]: any;
 }
 
+export interface FacilityWithRatingsAndComments {
+  facility: Club;
+  ratings: Array<{
+    id: string;
+    rating: number;
+    comment: string | null;
+    articleId: string;
+    userId: string;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  comments: Array<{
+    id: string;
+    content: string;
+    articleId: string;
+    userId: string;
+    parentId: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  totalRatings: number;
+  totalComments?: number;
+  page: number;
+  limit: number;
+}
+
 export interface GetClubResponse {
   success?: boolean;
   message?: string;
-  data?: Club | Club[];
+  data?: Club | Club[] | FacilityWithRatingsAndComments;
   [key: string]: any;
 }
 
 export interface ClubService {
   createClub: (data: CreateClubRequest) => Promise<CreateClubResponse>;
   getClub: (id: string) => Promise<GetClubResponse>;
+  getClubWithRatingsAndComments: (id: string) => Promise<FacilityWithRatingsAndComments>;
   getClubs: (page?: number, pageSize?: number) => Promise<{ clubs: Club[]; page: number; total: number }>;
   updateClub: (id: string, data: UpdateClubRequest) => Promise<CreateClubResponse>;
   deleteClub: (id: string) => Promise<void>;
@@ -88,11 +115,62 @@ class ClubServiceImpl implements ClubService {
       const response = await apiClient.get<GetClubResponse>(
         API_ENDPOINTS.CLUBS.BY_ID(id)
       );
+      
+      // Ensure response includes ratings and comments
+      const data = response.data;
+      if (data && typeof data === 'object' && 'data' in data && data.data && typeof data.data === 'object' && 'facility' in data.data) {
+        const facilityData = data.data as any;
+        return {
+          ...data,
+          data: {
+            ...facilityData,
+            comments: facilityData.comments || [],
+            totalComments: facilityData.totalComments || (facilityData.comments?.length || 0),
+            ratings: facilityData.ratings || [],
+            totalRatings: facilityData.totalRatings || (facilityData.ratings?.length || 0),
+          }
+        };
+      }
+      
       return response.data;
     } catch (error) {
       const apiError = error as ApiError;
       throw new Error(
         apiError.message || 'Không thể lấy thông tin Club. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async getClubWithRatingsAndComments(id: string): Promise<FacilityWithRatingsAndComments> {
+    try {
+      const response = await apiClient.get<{ success: boolean; data: FacilityWithRatingsAndComments; message?: string }>(
+        API_ENDPOINTS.CLUBS.BY_ID(id)
+      );
+      
+      // Ensure comments array exists even if API doesn't return it
+      const data = response.data.data || response.data;
+      if (data && 'facility' in data) {
+        return {
+          ...data,
+          comments: data.comments || [],
+          totalComments: data.totalComments || data.comments?.length || 0,
+        };
+      }
+      
+      // If response doesn't have the expected structure, try to extract from response.data
+      if (response.data && typeof response.data === 'object' && 'facility' in response.data) {
+        return {
+          ...(response.data as FacilityWithRatingsAndComments),
+          comments: (response.data as any).comments || [],
+          totalComments: (response.data as any).totalComments || ((response.data as any).comments?.length || 0),
+        };
+      }
+      
+      throw new Error('Response format không đúng. Vui lòng thử lại.');
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Không thể lấy thông tin Club với ratings và comments. Vui lòng thử lại.'
       );
     }
   }
@@ -184,6 +262,7 @@ class ClubServiceImpl implements ClubService {
 }
 
 export const clubService: ClubService = new ClubServiceImpl();
+
 
 
 

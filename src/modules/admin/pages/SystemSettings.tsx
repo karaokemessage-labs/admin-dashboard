@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Settings, Save, Bell, Shield, CreditCard, Loader2 } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { systemSettingsService } from '../../../services/systemSettingsService';
-import { SystemSettingsResponseDto, UpdateSystemSettingsRequestDto } from '../../../types/api';
+import { SystemSettingsResponseDto, UpdateSystemSettingsRequestDto, SystemSettingResponseDto } from '../../../types/api';
 import { toast } from 'react-toastify';
 
 const SystemSettings = () => {
@@ -10,6 +10,7 @@ const SystemSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<SystemSettingsResponseDto | null>(null);
+  const [settingsArray, setSettingsArray] = useState<SystemSettingResponseDto[]>([]); // Store raw settings array with IDs
   const [formData, setFormData] = useState<UpdateSystemSettingsRequestDto>({
     general: {},
     notifications: {},
@@ -116,13 +117,20 @@ const SystemSettings = () => {
             allowOnlineBooking: toBoolean(data.booking.allowOnlineBooking ?? true),
           },
         };
+        // If structured format, try to fetch raw array format for IDs
+        // This is a fallback - ideally API should return array format
+        setSettingsArray([]);
       } 
       // Check if response is an array of key-value pairs
       else if (Array.isArray(data)) {
+        // Store the raw array with IDs for later updates
+        setSettingsArray(data as SystemSettingResponseDto[]);
         transformedSettings = transformSettingsFromKeyValue(data);
       }
       // Check if response has a data property containing array
       else if (data && Array.isArray((data as any).data)) {
+        // Store the raw array with IDs for later updates
+        setSettingsArray((data as any).data as SystemSettingResponseDto[]);
         transformedSettings = transformSettingsFromKeyValue((data as any).data);
       }
       // Try to transform from any object structure
@@ -221,13 +229,127 @@ const SystemSettings = () => {
     }
   };
 
+  // Map form fields to API keys
+  const getKeyForField = (section: string, field: string): string => {
+    const keyMap: Record<string, Record<string, string>> = {
+      general: {
+        systemName: 'system_name',
+        systemDescription: 'system_description',
+        defaultLanguage: 'default_language',
+      },
+      notifications: {
+        emailNotification: 'email_notification',
+        pushNotification: 'push_notification',
+        smsAlert: 'sms_alert',
+      },
+      security: {
+        sessionTimeout: 'session_timeout',
+        maxLoginAttempts: 'max_login_attempts',
+        require2FA: 'require_2fa',
+      },
+      booking: {
+        minBookingDuration: 'min_booking_duration',
+        maxBookingDuration: 'max_booking_duration',
+        cancellationTimeBefore: 'cancellation_time_before',
+        allowOnlineBooking: 'allow_online_booking',
+      },
+    };
+    return keyMap[section]?.[field] || field;
+  };
+
+  // Find setting ID by key
+  const findSettingIdByKey = (key: string): string | null => {
+    const setting = settingsArray.find(s => s.key === key);
+    return setting?.id || null;
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
-      const updatedSettings = await systemSettingsService.updateSystemSettings(formData);
-      setSettings(updatedSettings);
+      
+      // Collect all changed settings
+      const updates: Array<{ id: string; key: string; value: any }> = [];
+      
+      // Process general settings
+      if (formData.general) {
+        Object.entries(formData.general).forEach(([field, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            const key = getKeyForField('general', field);
+            const id = findSettingIdByKey(key);
+            if (id) {
+              updates.push({ id, key, value });
+            }
+          }
+        });
+      }
+
+      // Process notifications
+      if (formData.notifications) {
+        Object.entries(formData.notifications).forEach(([field, value]) => {
+          if (value !== undefined && value !== null) {
+            const key = getKeyForField('notifications', field);
+            const id = findSettingIdByKey(key);
+            if (id) {
+              updates.push({ id, key, value });
+            }
+          }
+        });
+      }
+
+      // Process security
+      if (formData.security) {
+        Object.entries(formData.security).forEach(([field, value]) => {
+          if (value !== undefined && value !== null) {
+            const key = getKeyForField('security', field);
+            const id = findSettingIdByKey(key);
+            if (id) {
+              updates.push({ id, key, value });
+            }
+          }
+        });
+      }
+
+      // Process booking
+      if (formData.booking) {
+        Object.entries(formData.booking).forEach(([field, value]) => {
+          if (value !== undefined && value !== null) {
+            const key = getKeyForField('booking', field);
+            const id = findSettingIdByKey(key);
+            if (id) {
+              updates.push({ id, key, value });
+            }
+          }
+        });
+      }
+
+      if (updates.length === 0) {
+        toast.info('Không có thay đổi nào để lưu');
+        return;
+      }
+
+      // If we have settings array with IDs, update individually using PATCH
+      if (settingsArray.length > 0) {
+        const updatePromises = updates.map(async ({ id, key, value }) => {
+          if (id) {
+            return systemSettingsService.updateSystemSetting(id, { key, value });
+          } else {
+            // If ID not found, create new setting
+            return systemSettingsService.createSystemSetting({ key, value });
+          }
+        });
+
+        await Promise.all(updatePromises);
+      } else {
+        // Fallback: use bulk update if we don't have individual IDs
+        await systemSettingsService.updateSystemSettings(formData);
+      }
+      
+      // Refresh settings after update
+      await fetchSystemSettings();
+      
       toast.success(t('pages.settings.saveSuccess') || 'Cài đặt đã được lưu thành công!');
     } catch (error: any) {
+      console.error('Error saving system settings:', error);
       toast.error(error.message || t('pages.settings.saveFailed') || 'Lưu cài đặt thất bại. Vui lòng thử lại.');
     } finally {
       setSaving(false);
@@ -496,7 +618,7 @@ const SystemSettings = () => {
               </>
             ) : (
               <>
-                <Save className="w-4 h-4" />
+            <Save className="w-4 h-4" />
                 <span>{t('pages.settings.saveSettings')}</span>
               </>
             )}

@@ -350,6 +350,35 @@ export interface GetCommentsResponseDto {
   limit: number;
 }
 
+// Rating Types
+export interface CreateRatingRequestDto {
+  rating: number; // 1-5 stars
+  articleId: string;
+  comment?: string;
+}
+
+export interface UpdateRatingRequestDto {
+  rating?: number;
+  comment?: string;
+}
+
+export interface RatingResponseDto {
+  id: string;
+  rating: number;
+  comment: string | null;
+  articleId: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetRatingsResponseDto {
+  data: RatingResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 // System Settings Types
 export interface SystemSettingsResponseDto {
   general: {

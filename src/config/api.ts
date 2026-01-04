@@ -96,5 +96,12 @@ export const API_ENDPOINTS = {
     BASE: '/clubs',
     BY_ID: (id: string) => `/clubs/${id}`,
   },
+  // Rating endpoints
+  RATINGS: {
+    BASE: '/ratings',
+    BY_ID: (id: string) => `/ratings/${id}`,
+    BY_ARTICLE: (articleId: string) => `/ratings/article/${articleId}`,
+    BY_USER: (userId: string) => `/ratings/user/${userId}`,
+  },
 };
 

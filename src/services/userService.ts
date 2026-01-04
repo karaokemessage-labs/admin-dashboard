@@ -65,7 +65,7 @@ class UserServiceImpl implements UserService {
 
   async updateUser(id: string, data: UpdateUserRequestDto): Promise<UserResponseDto> {
     try {
-      const response = await apiClient.put<UserResponseDto>(
+      const response = await apiClient.patch<UserResponseDto>(
         API_ENDPOINTS.USERS.BY_ID(id),
         data
       );

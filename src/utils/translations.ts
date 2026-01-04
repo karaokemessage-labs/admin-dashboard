@@ -568,6 +568,8 @@ export interface Translations {
     analytics: string;
     articlesManagement: string;
     usersManagement: string;
+    commentsManagement: string;
+    ratingsManagement: string;
     monitoring: string;
     riskManagement: string;
     apiManagement: string;
@@ -1162,6 +1164,8 @@ const translations: Record<AllLanguages, Translations> = {
       analytics: 'Performance Analytics',
       articlesManagement: 'Articles Management',
       usersManagement: 'Users Management',
+      commentsManagement: 'Comments Management',
+      ratingsManagement: 'Ratings Management',
       monitoring: 'Monitoring',
       riskManagement: 'Risk Management',
       apiManagement: 'API Management',
@@ -1747,6 +1751,8 @@ const translations: Record<AllLanguages, Translations> = {
       analytics: 'Phân tích hiệu suất',
       articlesManagement: 'Quản lý Bài viết',
       usersManagement: 'Quản lý Người dùng',
+      commentsManagement: 'Quản lý Bình luận',
+      ratingsManagement: 'Quản lý Đánh giá',
       monitoring: 'Monitoring',
       riskManagement: 'Quản lý rủi ro',
       apiManagement: 'API Management',
@@ -2332,6 +2338,8 @@ const translations: Record<AllLanguages, Translations> = {
       analytics: '性能分析',
       articlesManagement: '文章管理',
       usersManagement: '用户管理',
+      commentsManagement: '评论管理',
+      ratingsManagement: '评分管理',
       monitoring: '监控',
       riskManagement: '风险管理',
       apiManagement: 'API管理',
@@ -2917,6 +2925,8 @@ const translations: Record<AllLanguages, Translations> = {
       analytics: 'การวิเคราะห์ประสิทธิภาพ',
       articlesManagement: 'จัดการบทความ',
       usersManagement: 'จัดการผู้ใช้',
+      commentsManagement: 'จัดการความคิดเห็น',
+      ratingsManagement: 'จัดการการให้คะแนน',
       monitoring: 'การตรวจสอบ',
       riskManagement: 'การจัดการความเสี่ยง',
       apiManagement: 'การจัดการ API',
@@ -3502,6 +3512,8 @@ const translations: Record<AllLanguages, Translations> = {
       analytics: 'パフォーマンス分析',
       articlesManagement: '記事管理',
       usersManagement: 'ユーザー管理',
+      commentsManagement: 'コメント管理',
+      ratingsManagement: '評価管理',
       monitoring: 'モニタリング',
       riskManagement: 'リスク管理',
       apiManagement: 'API管理',
@@ -4087,6 +4099,8 @@ const translations: Record<AllLanguages, Translations> = {
       analytics: '성능 분석',
       articlesManagement: '기사 관리',
       usersManagement: '사용자 관리',
+      commentsManagement: '댓글 관리',
+      ratingsManagement: '평점 관리',
       monitoring: '모니터링',
       riskManagement: '위험 관리',
       apiManagement: 'API 관리',

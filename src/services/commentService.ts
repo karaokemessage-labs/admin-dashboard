@@ -9,6 +9,7 @@ import {
 
 export interface CommentService {
   createComment: (data: CreateCommentRequestDto) => Promise<CommentResponseDto>;
+  getAllComments: (page?: number, limit?: number) => Promise<GetCommentsResponseDto>;
   getCommentsByArticle: (articleId: string, page?: number, limit?: number) => Promise<GetCommentsResponseDto>;
   getComment: (id: string) => Promise<CommentResponseDto>;
   updateComment: (id: string, data: UpdateCommentRequestDto) => Promise<CommentResponseDto>;
@@ -27,6 +28,24 @@ class CommentServiceImpl implements CommentService {
       const apiError = error as ApiError;
       throw new Error(
         apiError.message || 'Tạo bình luận thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async getAllComments(page: number = 1, limit: number = 10): Promise<GetCommentsResponseDto> {
+    try {
+      const params = new URLSearchParams();
+      params.append('page', page.toString());
+      params.append('limit', limit.toString());
+      
+      const response = await apiClient.get<GetCommentsResponseDto>(
+        `${API_ENDPOINTS.COMMENTS.BASE}?${params.toString()}`
+      );
+      return response.data;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Không thể lấy danh sách bình luận. Vui lòng thử lại.'
       );
     }
   }
