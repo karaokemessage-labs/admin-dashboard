@@ -147,22 +147,27 @@ class ClubServiceImpl implements ClubService {
         API_ENDPOINTS.CLUBS.BY_ID(id)
       );
       
-      // Ensure comments array exists even if API doesn't return it
-      const data = response.data.data || response.data;
-      if (data && 'facility' in data) {
-        return {
-          ...data,
-          comments: data.comments || [],
-          totalComments: data.totalComments || data.comments?.length || 0,
-        };
+      // Extract data from response
+      let data: any = null;
+      if (response.data && typeof response.data === 'object') {
+        if ('data' in response.data && response.data.data) {
+          data = response.data.data;
+        } else if ('facility' in response.data) {
+          data = response.data;
+        }
       }
       
-      // If response doesn't have the expected structure, try to extract from response.data
-      if (response.data && typeof response.data === 'object' && 'facility' in response.data) {
+      // Ensure we have the correct structure
+      if (data && typeof data === 'object' && 'facility' in data) {
+        const facilityData = data as any;
         return {
-          ...(response.data as FacilityWithRatingsAndComments),
-          comments: (response.data as any).comments || [],
-          totalComments: (response.data as any).totalComments || ((response.data as any).comments?.length || 0),
+          facility: facilityData.facility,
+          ratings: facilityData.ratings || [],
+          comments: facilityData.comments || [],
+          totalRatings: facilityData.totalRatings || (facilityData.ratings?.length || 0),
+          totalComments: facilityData.totalComments || (facilityData.comments?.length || 0),
+          page: facilityData.page || 1,
+          limit: facilityData.limit || 50,
         };
       }
       
@@ -202,9 +207,17 @@ class ClubServiceImpl implements ClubService {
           clubs = responseData.data;
           total = responseData.total || responseData.data.length;
           currentPage = responseData.page || page;
-        } else {
-          clubs = [responseData.data];
-          total = 1;
+        } else if (responseData.data && typeof responseData.data === 'object') {
+          // Check if it's a FacilityWithRatingsAndComments structure
+          if ('facility' in responseData.data) {
+            // Extract facility from FacilityWithRatingsAndComments
+            clubs = [(responseData.data as FacilityWithRatingsAndComments).facility];
+            total = 1;
+          } else {
+            // Regular Club object
+            clubs = [responseData.data as Club];
+            total = 1;
+          }
         }
       } else if (responseData?.items) {
         clubs = responseData.items;
