@@ -21,6 +21,28 @@ const SystemSettings = () => {
     fetchSystemSettings();
   }, []);
 
+  // Helper function to convert string/number to boolean
+  const toBoolean = (value: any): boolean => {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      return value.toLowerCase() === 'true' || value === '1';
+    }
+    if (typeof value === 'number') {
+      return value !== 0;
+    }
+    return Boolean(value);
+  };
+
+  // Helper function to convert to number
+  const toNumber = (value: any, defaultValue: number): number => {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const parsed = parseFloat(value);
+      return isNaN(parsed) ? defaultValue : parsed;
+    }
+    return defaultValue;
+  };
+
   const transformSettingsFromKeyValue = (settingsArray: any[]): SystemSettingsResponseDto => {
     // Transform array of {key, value} objects to structured format
     const settingsMap: Record<string, any> = {};
@@ -33,28 +55,28 @@ const SystemSettings = () => {
       });
     }
     
-    // Map keys to structured format
+    // Map keys to structured format with proper type conversion
     return {
       general: {
-        systemName: settingsMap['system_name'] || settingsMap['systemName'] || 'KaKa Club Admin Portal',
-        systemDescription: settingsMap['system_description'] || settingsMap['systemDescription'] || 'Hệ thống quản lý karaoke club, massage và các dịch vụ giải trí',
-        defaultLanguage: settingsMap['default_language'] || settingsMap['defaultLanguage'] || 'vi',
+        systemName: String(settingsMap['system_name'] || settingsMap['systemName'] || 'KaKa Club Admin Portal'),
+        systemDescription: String(settingsMap['system_description'] || settingsMap['systemDescription'] || 'Hệ thống quản lý karaoke club, massage và các dịch vụ giải trí'),
+        defaultLanguage: String(settingsMap['default_language'] || settingsMap['defaultLanguage'] || 'vi'),
       },
       notifications: {
-        emailNotification: settingsMap['email_notification'] ?? settingsMap['emailNotification'] ?? true,
-        pushNotification: settingsMap['push_notification'] ?? settingsMap['pushNotification'] ?? true,
-        smsAlert: settingsMap['sms_alert'] ?? settingsMap['smsAlert'] ?? false,
+        emailNotification: toBoolean(settingsMap['email_notification'] ?? settingsMap['emailNotification'] ?? true),
+        pushNotification: toBoolean(settingsMap['push_notification'] ?? settingsMap['pushNotification'] ?? true),
+        smsAlert: toBoolean(settingsMap['sms_alert'] ?? settingsMap['smsAlert'] ?? false),
       },
       security: {
-        sessionTimeout: settingsMap['session_timeout'] ?? settingsMap['sessionTimeout'] ?? 30,
-        maxLoginAttempts: settingsMap['max_login_attempts'] ?? settingsMap['maxLoginAttempts'] ?? 5,
-        require2FA: settingsMap['require_2fa'] ?? settingsMap['require2FA'] ?? false,
+        sessionTimeout: toNumber(settingsMap['session_timeout'] ?? settingsMap['sessionTimeout'], 30),
+        maxLoginAttempts: toNumber(settingsMap['max_login_attempts'] ?? settingsMap['maxLoginAttempts'], 5),
+        require2FA: toBoolean(settingsMap['require_2fa'] ?? settingsMap['require2FA'] ?? false),
       },
       booking: {
-        minBookingDuration: settingsMap['min_booking_duration'] ?? settingsMap['minBookingDuration'] ?? 60,
-        maxBookingDuration: settingsMap['max_booking_duration'] ?? settingsMap['maxBookingDuration'] ?? 480,
-        cancellationTimeBefore: settingsMap['cancellation_time_before'] ?? settingsMap['cancellationTimeBefore'] ?? 30,
-        allowOnlineBooking: settingsMap['allow_online_booking'] ?? settingsMap['allowOnlineBooking'] ?? true,
+        minBookingDuration: toNumber(settingsMap['min_booking_duration'] ?? settingsMap['minBookingDuration'], 60),
+        maxBookingDuration: toNumber(settingsMap['max_booking_duration'] ?? settingsMap['maxBookingDuration'], 480),
+        cancellationTimeBefore: toNumber(settingsMap['cancellation_time_before'] ?? settingsMap['cancellationTimeBefore'], 30),
+        allowOnlineBooking: toBoolean(settingsMap['allow_online_booking'] ?? settingsMap['allowOnlineBooking'] ?? true),
       },
     };
   };
@@ -70,7 +92,30 @@ const SystemSettings = () => {
       
       // Check if response is already in the expected format
       if (data && data.general && data.notifications && data.security && data.booking) {
-        transformedSettings = data;
+        // Ensure boolean values are properly converted
+        transformedSettings = {
+          general: {
+            systemName: String(data.general.systemName || 'KaKa Club Admin Portal'),
+            systemDescription: String(data.general.systemDescription || 'Hệ thống quản lý karaoke club, massage và các dịch vụ giải trí'),
+            defaultLanguage: String(data.general.defaultLanguage || 'vi'),
+          },
+          notifications: {
+            emailNotification: toBoolean(data.notifications.emailNotification ?? true),
+            pushNotification: toBoolean(data.notifications.pushNotification ?? true),
+            smsAlert: toBoolean(data.notifications.smsAlert ?? false),
+          },
+          security: {
+            sessionTimeout: toNumber(data.security.sessionTimeout, 30),
+            maxLoginAttempts: toNumber(data.security.maxLoginAttempts, 5),
+            require2FA: toBoolean(data.security.require2FA ?? false),
+          },
+          booking: {
+            minBookingDuration: toNumber(data.booking.minBookingDuration, 60),
+            maxBookingDuration: toNumber(data.booking.maxBookingDuration, 480),
+            cancellationTimeBefore: toNumber(data.booking.cancellationTimeBefore, 30),
+            allowOnlineBooking: toBoolean(data.booking.allowOnlineBooking ?? true),
+          },
+        };
       } 
       // Check if response is an array of key-value pairs
       else if (Array.isArray(data)) {
@@ -299,7 +344,7 @@ const SystemSettings = () => {
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={formData.notifications?.emailNotification ?? currentSettings.notifications.emailNotification}
+                  checked={Boolean(formData.notifications?.emailNotification ?? currentSettings.notifications.emailNotification)}
                   onChange={(e) => handleInputChange('notifications', 'emailNotification', e.target.checked)}
                   className="sr-only peer"
                 />
@@ -314,7 +359,7 @@ const SystemSettings = () => {
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={formData.notifications?.pushNotification ?? currentSettings.notifications.pushNotification}
+                  checked={Boolean(formData.notifications?.pushNotification ?? currentSettings.notifications.pushNotification)}
                   onChange={(e) => handleInputChange('notifications', 'pushNotification', e.target.checked)}
                   className="sr-only peer"
                 />
@@ -329,7 +374,7 @@ const SystemSettings = () => {
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={formData.notifications?.smsAlert ?? currentSettings.notifications.smsAlert}
+                  checked={Boolean(formData.notifications?.smsAlert ?? currentSettings.notifications.smsAlert)}
                   onChange={(e) => handleInputChange('notifications', 'smsAlert', e.target.checked)}
                   className="sr-only peer"
                 />
@@ -372,7 +417,7 @@ const SystemSettings = () => {
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={formData.security?.require2FA ?? currentSettings.security.require2FA}
+                  checked={Boolean(formData.security?.require2FA ?? currentSettings.security.require2FA)}
                   onChange={(e) => handleInputChange('security', 'require2FA', e.target.checked)}
                   className="sr-only peer"
                 />
@@ -427,7 +472,7 @@ const SystemSettings = () => {
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={formData.booking?.allowOnlineBooking ?? currentSettings.booking.allowOnlineBooking}
+                  checked={Boolean(formData.booking?.allowOnlineBooking ?? currentSettings.booking.allowOnlineBooking)}
                   onChange={(e) => handleInputChange('booking', 'allowOnlineBooking', e.target.checked)}
                   className="sr-only peer"
                 />
