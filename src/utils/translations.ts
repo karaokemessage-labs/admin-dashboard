@@ -570,6 +570,9 @@ export interface Translations {
     usersManagement: string;
     commentsManagement: string;
     ratingsManagement: string;
+    notificationsManagement: string;
+    feedsManagement: string;
+    kycManagement: string;
     monitoring: string;
     riskManagement: string;
     apiManagement: string;
@@ -1166,6 +1169,9 @@ const translations: Record<AllLanguages, Translations> = {
       usersManagement: 'Users Management',
       commentsManagement: 'Comments Management',
       ratingsManagement: 'Ratings Management',
+      notificationsManagement: 'Notifications Management',
+      feedsManagement: 'Feeds Management',
+      kycManagement: 'KYC Management',
       monitoring: 'Monitoring',
       riskManagement: 'Risk Management',
       apiManagement: 'API Management',
@@ -1753,6 +1759,9 @@ const translations: Record<AllLanguages, Translations> = {
       usersManagement: 'Quản lý Người dùng',
       commentsManagement: 'Quản lý Bình luận',
       ratingsManagement: 'Quản lý Đánh giá',
+      notificationsManagement: 'Quản lý Thông báo',
+      feedsManagement: 'Quản lý Feeds',
+      kycManagement: 'Quản lý KYC',
       monitoring: 'Monitoring',
       riskManagement: 'Quản lý rủi ro',
       apiManagement: 'API Management',
@@ -2340,6 +2349,9 @@ const translations: Record<AllLanguages, Translations> = {
       usersManagement: '用户管理',
       commentsManagement: '评论管理',
       ratingsManagement: '评分管理',
+      notificationsManagement: '通知管理',
+      feedsManagement: '动态管理',
+      kycManagement: 'KYC管理',
       monitoring: '监控',
       riskManagement: '风险管理',
       apiManagement: 'API管理',
@@ -2927,6 +2939,9 @@ const translations: Record<AllLanguages, Translations> = {
       usersManagement: 'จัดการผู้ใช้',
       commentsManagement: 'จัดการความคิดเห็น',
       ratingsManagement: 'จัดการการให้คะแนน',
+      notificationsManagement: 'จัดการการแจ้งเตือน',
+      feedsManagement: 'จัดการ Feeds',
+      kycManagement: 'จัดการ KYC',
       monitoring: 'การตรวจสอบ',
       riskManagement: 'การจัดการความเสี่ยง',
       apiManagement: 'การจัดการ API',
@@ -3514,6 +3529,9 @@ const translations: Record<AllLanguages, Translations> = {
       usersManagement: 'ユーザー管理',
       commentsManagement: 'コメント管理',
       ratingsManagement: '評価管理',
+      notificationsManagement: '通知管理',
+      feedsManagement: 'フィード管理',
+      kycManagement: 'KYC管理',
       monitoring: 'モニタリング',
       riskManagement: 'リスク管理',
       apiManagement: 'API管理',
@@ -4101,6 +4119,9 @@ const translations: Record<AllLanguages, Translations> = {
       usersManagement: '사용자 관리',
       commentsManagement: '댓글 관리',
       ratingsManagement: '평점 관리',
+      notificationsManagement: '알림 관리',
+      feedsManagement: '피드 관리',
+      kycManagement: 'KYC 관리',
       monitoring: '모니터링',
       riskManagement: '위험 관리',
       apiManagement: 'API 관리',

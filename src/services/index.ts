@@ -9,9 +9,12 @@ export * from './userService';
 export * from './articleService';
 export * from './commentService';
 export * from './ratingService';
+export * from './documentService';
 export * from './rbacService';
 export * from './karaokeService';
 export * from './massageService';
 export * from './clubService';
 export * from './systemSettingsService';
+export * from './notificationService';
+export * from './feedService';
 

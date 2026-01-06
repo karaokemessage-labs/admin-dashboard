@@ -103,5 +103,24 @@ export const API_ENDPOINTS = {
     BY_ARTICLE: (articleId: string) => `/ratings/article/${articleId}`,
     BY_USER: (userId: string) => `/ratings/user/${userId}`,
   },
+  // Document/KYC endpoints
+  DOCUMENTS: {
+    BASE: '/documents',
+    BY_ID: (id: string) => `/documents/${id}`,
+    VERIFY: (id: string) => `/documents/${id}/verify`,
+  },
+  // Notification endpoints
+  NOTIFICATIONS: {
+    BASE: '/notifications',
+    BY_ID: (id: string) => `/notifications/${id}`,
+    MARK_READ: (id: string) => `/notifications/${id}/read`,
+    MARK_UNREAD: (id: string) => `/notifications/${id}/unread`,
+    ARCHIVE: (id: string) => `/notifications/${id}/archive`,
+  },
+  // Feed endpoints
+  FEEDS: {
+    BASE: '/feeds',
+    BY_ID: (id: string) => `/feeds/${id}`,
+  },
 };
 

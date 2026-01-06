@@ -8,6 +8,9 @@ import {
   Shield,
   MessageSquare,
   Star,
+  FileCheck,
+  Bell,
+  Rss,
   LucideIcon
 } from 'lucide-react';
 
@@ -39,6 +42,9 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
   { id: 'users', label: 'Users Management', path: '/dashboard/users', icon: User, translationKey: 'menu.usersManagement' },
   { id: 'comments', label: 'Comments Management', path: '/dashboard/comments', icon: MessageSquare, translationKey: 'menu.commentsManagement' },
   { id: 'ratings', label: 'Ratings Management', path: '/dashboard/ratings', icon: Star, translationKey: 'menu.ratingsManagement' },
+  { id: 'notifications', label: 'Notifications Management', path: '/dashboard/notifications', icon: Bell, translationKey: 'menu.notificationsManagement' },
+  { id: 'feeds', label: 'Feeds Management', path: '/dashboard/feeds', icon: Rss, translationKey: 'menu.feedsManagement' },
+  { id: 'kyc', label: 'KYC Management', path: '/dashboard/kyc', icon: FileCheck, translationKey: 'menu.kycManagement' },
   // { id: 'monitoring', label: 'Monitoring', path: '/dashboard/monitoring', icon: Activity, translationKey: 'menu.monitoring' },
   // { id: 'risk', label: 'Risk Management', path: '/dashboard/risk', icon: Shield, translationKey: 'menu.riskManagement' },
   // { id: 'api', label: 'API Management', path: '/dashboard/api', icon: Network, translationKey: 'menu.apiManagement' },

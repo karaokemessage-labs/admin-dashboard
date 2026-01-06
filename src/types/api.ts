@@ -379,6 +379,56 @@ export interface GetRatingsResponseDto {
   limit: number;
 }
 
+// Document/KYC Types
+export type DocumentType = 'ID_CARD' | 'PASSPORT' | 'DRIVER_LICENSE' | 'OTHER';
+export type DocumentStatus = 'PENDING' | 'VERIFIED' | 'REJECTED' | 'EXPIRED';
+
+export interface CreateDocumentRequestDto {
+  type: DocumentType;
+  file: File | string; // File object or base64 string
+  userId?: string;
+  description?: string;
+}
+
+export interface UpdateDocumentRequestDto {
+  type?: DocumentType;
+  description?: string;
+}
+
+export interface DocumentResponseDto {
+  id: string;
+  type: DocumentType;
+  status: DocumentStatus;
+  fileUrl: string;
+  userId: string;
+  description: string | null;
+  verifiedBy: string | null;
+  verifiedAt: string | null;
+  rejectionReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetDocumentsResponseDto {
+  data: DocumentResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface VerifyDocumentRequestDto {
+  status: 'VERIFIED' | 'REJECTED';
+  rejectionReason?: string;
+}
+
+export interface VerifyDocumentResponseDto {
+  id: string;
+  status: DocumentStatus;
+  verifiedBy: string;
+  verifiedAt: string;
+  rejectionReason: string | null;
+}
+
 // System Settings Types
 export interface SystemSettingsResponseDto {
   general: {
@@ -444,4 +494,82 @@ export interface SystemSettingResponseDto {
   value: string | number | boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+// Notification Types
+export type NotificationStatus = 'READ' | 'UNREAD' | 'ARCHIVED';
+
+export interface CreateNotificationRequestDto {
+  title: string;
+  message: string;
+  userId?: string; // Optional, if not provided, notification is for current user
+  type?: string; // Optional notification type
+  metadata?: Record<string, any>; // Optional metadata
+}
+
+export interface UpdateNotificationRequestDto {
+  title?: string;
+  message?: string;
+  type?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface NotificationResponseDto {
+  id: string;
+  title: string;
+  message: string;
+  userId: string;
+  type: string | null;
+  status: NotificationStatus;
+  metadata: Record<string, any> | null;
+  readAt: string | null;
+  archivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetNotificationsResponseDto {
+  data: NotificationResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// Feed Types
+export interface CreateFeedRequestDto {
+  title: string;
+  content: string;
+  imageUrl?: string;
+  tags?: string[];
+  published?: boolean;
+  authorId?: string;
+}
+
+export interface UpdateFeedRequestDto {
+  title?: string;
+  content?: string;
+  imageUrl?: string;
+  tags?: string[];
+  published?: boolean;
+}
+
+export interface FeedResponseDto {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl: string | null;
+  tags: string[];
+  published: boolean;
+  authorId: string;
+  views: number;
+  likes: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetFeedsResponseDto {
+  data: FeedResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
 }

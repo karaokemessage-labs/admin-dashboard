@@ -11,6 +11,7 @@ import AdminDashboard from '../modules/admin/pages/Dashboard';
 import UsersManagement from '../modules/admin/pages/UsersManagement';
 import CommentsManagement from '../modules/admin/pages/CommentsManagement';
 import RatingManagement from '../modules/admin/pages/RatingManagement';
+import KYCManagement from '../modules/admin/pages/KYCManagement';
 // import AdminMonitoring from '../modules/admin/pages/Monitoring';
 // import AdminAlerts from '../modules/admin/pages/Alerts';
 // import AdminAuditLogs from '../modules/admin/pages/AuditLogs';
@@ -26,6 +27,8 @@ import UserDetails from '../modules/admin/pages/UserDetails';
 import AdminMyProfile from '../modules/admin/pages/MyProfile';
 import AdminUserSettings from '../modules/admin/pages/UserSettings';
 import HelpSupport from '../modules/admin/pages/HelpSupport';
+import NotificationsManagement from '../modules/admin/pages/NotificationsManagement';
+import FeedsManagement from '../modules/admin/pages/FeedsManagement';
 
 /**
  * Get all routes for admin portal
@@ -48,6 +51,9 @@ export const getRoutesByRole = (): ReactElement[] => {
     <Route key="user-details" path="/users/:id" element={<UserDetails />} />,
     <Route key="comments" path="/comments" element={<CommentsManagement />} />,
     <Route key="ratings" path="/ratings" element={<RatingManagement />} />,
+    <Route key="notifications" path="/notifications" element={<NotificationsManagement />} />,
+    <Route key="feeds" path="/feeds" element={<FeedsManagement />} />,
+    <Route key="kyc" path="/kyc" element={<KYCManagement />} />,
     // <Route key="monitoring" path="/monitoring" element={<AdminMonitoring />} />,
     // <Route key="risk" path="/risk" element={<AdminRiskManagement />} />,
     // <Route key="api" path="/api" element={<ApiManagement />} />,
