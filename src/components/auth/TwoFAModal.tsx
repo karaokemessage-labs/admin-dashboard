@@ -48,9 +48,9 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
           const response = await authService.setup2FATOTP(userId);
           console.log('Setup 2FA Response:', response);
           
-          // Handle response - check for qrCode and secret in various possible locations
-          const qrCodeValue = response.qrCode || response.data?.qrCode || response.qrCodeUrl;
-          const secretValue = response.secret || response.data?.secret || response.secretKey;
+          // Handle response - check for qrCodeUrl and secret in various possible locations
+          const qrCodeValue = response.qrCodeUrl || response.qrCode || response.data?.qrCodeUrl || response.data?.qrCode;
+          const secretValue = response.secret || response.secretKey || response.data?.secret || response.data?.secretKey || response.data?.config?.secret;
           
           if (qrCodeValue) {
             setQrCode(qrCodeValue);
@@ -97,9 +97,9 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
       const response = await authService.setup2FATOTP(user.id);
       console.log('Setup 2FA Response after regenerate:', response);
       
-      // Handle response - check for qrCode and secret in various possible locations
-      const qrCodeValue = response.qrCode || response.data?.qrCode || response.qrCodeUrl;
-      const secretValue = response.secret || response.data?.secret || response.secretKey;
+      // Handle response - check for qrCodeUrl and secret in various possible locations
+      const qrCodeValue = response.qrCodeUrl || response.qrCode || response.data?.qrCodeUrl || response.data?.qrCode;
+      const secretValue = response.secret || response.secretKey || response.data?.secret || response.data?.secretKey || response.data?.config?.secret;
       
       if (qrCodeValue) {
         setQrCode(qrCodeValue);
@@ -196,7 +196,7 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
           )}
 
           {/* QR Code - Step 1 */}
-          {secret && (
+          {(qrCode || secret) && (
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center mt-1">
                 <span className="text-white text-xs font-bold">1</span>
@@ -206,8 +206,8 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
                   {qrCode && (qrCode.startsWith('data:') || qrCode.startsWith('http')) ? (
                     // If API returns QR code URL/data URL, use it
                     <img src={qrCode} alt="QR Code" className="w-64 h-64" />
-                  ) : (
-                    // Generate QR code from secret (always available)
+                  ) : secret ? (
+                    // Generate QR code from secret (fallback)
                     <QRCode
                       value={`otpauth://totp/${user?.email || user?.username || 'Account'}:${user?.email || user?.username || 'Account'}?secret=${secret}&issuer=${encodeURIComponent('Provider Operator Portal')}`}
                       size={256}
@@ -215,6 +215,10 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
                       bgColor="#FFFFFF"
                       fgColor="#000000"
                     />
+                  ) : (
+                    <div className="w-64 h-64 flex items-center justify-center text-gray-400">
+                      Đang tải QR code...
+                    </div>
                   )}
                 </div>
               </div>
@@ -242,6 +246,20 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
                     <Copy className="w-4 h-4 text-gray-600" />
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Show message if no secret available */}
+          {!secret && !loading && (
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center mt-1">
+                <span className="text-white text-xs font-bold">2</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-600 italic">
+                  Secret key không có sẵn. Vui lòng quét QR code để thiết lập.
+                </p>
               </div>
             </div>
           )}

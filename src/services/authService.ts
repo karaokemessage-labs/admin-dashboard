@@ -88,12 +88,23 @@ export interface Setup2FARequest {
 
 export interface Setup2FATOTPResponse {
   qrCode?: string;
+  qrCodeUrl?: string;
   secret?: string;
+  secretKey?: string;
   backupCodes?: string[];
   data?: {
     qrCode?: string;
+    qrCodeUrl?: string;
     secret?: string;
+    secretKey?: string;
     backupCodes?: string[];
+    config?: {
+      id?: string;
+      userId?: string;
+      type?: string;
+      isActive?: boolean;
+      secret?: string;
+    };
   };
   [key: string]: any;
 }
@@ -462,7 +473,8 @@ class AuthServiceImpl implements AuthService {
       return {
         ...responseData,
         qrCode: responseData.qrCode || responseData.data?.qrCode,
-        secret: responseData.secret || responseData.data?.secret,
+        qrCodeUrl: responseData.qrCodeUrl || responseData.data?.qrCodeUrl,
+        secret: responseData.secret || responseData.secretKey || responseData.data?.secret || responseData.data?.secretKey || responseData.data?.config?.secret,
         backupCodes: responseData.backupCodes || responseData.data?.backupCodes,
       };
     } catch (error) {
@@ -486,11 +498,12 @@ class AuthServiceImpl implements AuthService {
       const responseData = response.data;
       console.log('Raw Regenerate API Response:', responseData);
       
-      // Extract qrCode and secret from various possible response structures
+      // Extract qrCodeUrl and secret from various possible response structures
       const result = {
         ...responseData,
         qrCode: responseData?.qrCode || responseData?.data?.qrCode || responseData?.qrCodeUrl || responseData?.qr_code,
-        secret: responseData?.secret || responseData?.data?.secret || responseData?.secretKey || responseData?.secret_key,
+        qrCodeUrl: responseData?.qrCodeUrl || responseData?.qrCode || responseData?.data?.qrCodeUrl || responseData?.data?.qrCode,
+        secret: responseData?.secret || responseData?.secretKey || responseData?.data?.secret || responseData?.data?.secretKey || responseData?.data?.config?.secret || responseData?.secret_key,
         backupCodes: responseData?.backupCodes || responseData?.data?.backupCodes || responseData?.backup_codes,
       };
       
