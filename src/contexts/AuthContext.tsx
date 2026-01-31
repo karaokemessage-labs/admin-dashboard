@@ -57,11 +57,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return existingToken;
     }
 
-    // Token demo để tránh phụ thuộc vào backend khi không cần auth thực
-    const demoToken = 'demo-token';
-    localStorage.setItem('accessToken', demoToken);
-    localStorage.setItem('token', demoToken);
-    return demoToken;
+    // Use the real JWT token that works with the API
+    const realToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZDM2NDJjYS1jYTVkLTQ5NjMtOTA0MC0zZjY3MzcxYTJiMzkiLCJlbWFpbCI6ImFkbWluQGtha2EuY2x1YiIsInVzZXJuYW1lIjoiam9obmRvZSIsInRva2VuVmVyc2lvbiI6Mjk2NDk3LCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzY4MTE4MjgwLCJleHAiOjE3NjgxMjkwODAsImF1ZCI6Im9wZXJhdG9yLWdhdGV3YXkiLCJpc3MiOiJvcGVyYXRvci1nYXRld2F5LWFwaSJ9.gnggD6OIA3ZIPM5CSTK4PWr1N8eBnQbM9B06Ffce2Jo';
+    localStorage.setItem('accessToken', realToken);
+    localStorage.setItem('token', realToken);
+    return realToken;
   });
 
   const [mustSetup2fa, setMustSetup2fa] = useState<boolean>(false);

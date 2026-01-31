@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Edit, Trash2, Filter, X, Loader2, Eye } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -6,16 +7,15 @@ import { karaokeService, CreateKaraokeRequest, Karaoke } from '../../../services
 
 const KaraokesManagement = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [operatorToDelete, setOperatorToDelete] = useState<{ id: string; name: string } | null>(null);
-  const [selectedOperator, setSelectedOperator] = useState<Karaoke | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
-  const [fetchingDetail, setFetchingDetail] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingOperatorId, setEditingOperatorId] = useState<string | null>(null);
   const [editStatus, setEditStatus] = useState<string>('inactive');
@@ -47,10 +47,22 @@ const KaraokesManagement = () => {
     fetchKaraokes(1);
   }, []);
 
+  // Fetch karaokes when search or status filter changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setCurrentPage(1);
+      fetchKaraokes(1);
+    }, 500); // Debounce search by 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, statusFilter]);
+
   const fetchKaraokes = async (page: number) => {
     setFetching(true);
     try {
-      const { karaokes, page: apiPage, total } = await karaokeService.getKaraokes(page, pageSize);
+      const status = statusFilter === 'ALL' ? undefined : statusFilter;
+      const search = searchQuery.trim() || undefined;
+      const { karaokes, page: apiPage, total } = await karaokeService.getKaraokes(page, pageSize, status, search);
       setOperators(karaokes);
       setCurrentPage(apiPage);
       setTotalItems(total);
@@ -209,34 +221,9 @@ const KaraokesManagement = () => {
     setOperatorToDelete(null);
   };
 
-  const handleViewDetail = async (karaoke: Karaoke) => {
-    setIsDetailModalOpen(true);
-    setFetchingDetail(true);
-    setSelectedOperator(null);
-    
-    try {
-      const response = await karaokeService.getKaraoke(karaoke.id);
-      if (response.data) {
-        const karaokeData = Array.isArray(response.data) ? response.data[0] : response.data;
-        setSelectedOperator(karaokeData);
-      }
-    } catch (error: any) {
-      toast.error(error.message || t('common.error'));
-      setIsDetailModalOpen(false);
-    } finally {
-      setFetchingDetail(false);
-    }
+  const handleViewDetail = (karaoke: Karaoke) => {
+    navigate(`/dashboard/karaoke/${karaoke.id}`);
   };
-
-  const handleCloseDetailModal = () => {
-    setIsDetailModalOpen(false);
-    setSelectedOperator(null);
-  };
-
-  const filteredOperators = operators.filter(operator =>
-    operator.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    operator.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
 
@@ -252,16 +239,33 @@ const KaraokesManagement = () => {
         {/* Actions Bar */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            {/* Search */}
-            <div className="relative flex-1 w-full sm:w-auto">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder={t('pages.operators.searchPlaceholder')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
+            {/* Search and Filter */}
+            <div className="flex flex-col sm:flex-row gap-4 flex-1 w-full sm:w-auto">
+              {/* Search */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder={t('pages.operators.searchPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div className="relative">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full sm:w-48 pl-4 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white"
+                >
+                  <option value="ALL">{t('common.allStatus') || 'All Status'}</option>
+                  <option value="ACTIVE">{t('common.active')}</option>
+                  <option value="INACTIVE">{t('common.inactive')}</option>
+                </select>
+                <Filter className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              </div>
             </div>
 
             {/* Action Buttons */}
@@ -361,7 +365,7 @@ const KaraokesManagement = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredOperators.map((karaoke) => (
+                {operators.map((karaoke) => (
                   <tr key={karaoke.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -462,10 +466,10 @@ const KaraokesManagement = () => {
             </div>
           )}
 
-          {!fetching && filteredOperators.length === 0 && (
+          {!fetching && operators.length === 0 && (
             <div className="text-center py-12">
               <p className="text-gray-500">
-                {searchQuery ? t('pages.operators.noOperatorsFound') : t('pages.operators.noOperatorsYet')}
+                {searchQuery || statusFilter !== 'ALL' ? t('pages.operators.noOperatorsFound') : t('pages.operators.noOperatorsYet')}
               </p>
             </div>
           )}
@@ -902,225 +906,6 @@ const KaraokesManagement = () => {
         </div>
       )}
 
-      {/* View Detail Modal */}
-      {isDetailModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-              <h2 className="text-xl font-bold text-gray-900">{t('pages.operators.operatorDetails')}</h2>
-              <button
-                onClick={handleCloseDetailModal}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6">
-              {fetchingDetail ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-                  <span className="ml-3 text-gray-600">{t('common.loadingData')}</span>
-                </div>
-              ) : selectedOperator ? (
-                <>
-                  {/* Operator Avatar and Name */}
-                  <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200">
-                    <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                      <span className="text-purple-600 font-bold text-2xl">
-                        {selectedOperator.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-gray-900">{selectedOperator.name}</h3>
-                      <span
-                        className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full mt-2 ${
-                          selectedOperator.status?.toUpperCase() === 'ACTIVE'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {selectedOperator.status?.toUpperCase() === 'ACTIVE' ? t('common.active') : t('common.inactive')}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Karaoke Details */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">{t('common.email')}</label>
-                      <p className="text-base text-gray-900">{selectedOperator.email || '-'}</p>
-                    </div>
-
-                    {(selectedOperator as any).username && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">Username</label>
-                        <p className="text-base text-gray-900">{(selectedOperator as any).username}</p>
-                      </div>
-                    )}
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">{t('common.status')}</label>
-                      <p className="text-base text-gray-900">
-                        {selectedOperator.status?.toUpperCase() === 'ACTIVE' ? t('common.active') : t('common.inactive')}
-                      </p>
-                    </div>
-
-                    {(selectedOperator as any).phone && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">Số điện thoại</label>
-                        <p className="text-base text-gray-900">{(selectedOperator as any).phone}</p>
-                      </div>
-                    )}
-
-                    {(selectedOperator as any).address && (
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-500 mb-1">Địa chỉ</label>
-                        <p className="text-base text-gray-900">{(selectedOperator as any).address}</p>
-                      </div>
-                    )}
-
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-500 mb-1">Mô tả</label>
-                      <p className="text-base text-gray-900">{selectedOperator.description || '-'}</p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">{t('pages.tables.id')}</label>
-                      <p className="text-base text-gray-900 font-mono text-sm break-all">{selectedOperator.id}</p>
-                    </div>
-
-                    {(selectedOperator as any).region && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">Region</label>
-                        <p className="text-base text-gray-900">{(selectedOperator as any).region}</p>
-                      </div>
-                    )}
-
-                    {(selectedOperator as any).code && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">{t('common.code')}</label>
-                        <p className="text-base text-gray-900 font-mono">{(selectedOperator as any).code}</p>
-                      </div>
-                    )}
-
-                    {(selectedOperator as any).userId && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">User ID</label>
-                        <p className="text-base text-gray-900 font-mono text-sm">
-                          {(selectedOperator as any).userId}
-                        </p>
-                      </div>
-                    )}
-
-                    {(selectedOperator as any).createdBy && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">Created By</label>
-                        <p className="text-base text-gray-900 font-mono text-sm">
-                          {(selectedOperator as any).createdBy}
-                        </p>
-                      </div>
-                    )}
-
-                    {(selectedOperator as any).activeAt && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">Active At</label>
-                        <p className="text-base text-gray-900">
-                          {new Date((selectedOperator as any).activeAt).toLocaleDateString('vi-VN', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </p>
-                      </div>
-                    )}
-
-                    {(selectedOperator as any).lastLogin && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">{t('common.lastLogin')}</label>
-                        <p className="text-base text-gray-900">
-                          {new Date((selectedOperator as any).lastLogin).toLocaleDateString('vi-VN', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </p>
-                      </div>
-                    )}
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">{t('common.createdAt')}</label>
-                      <p className="text-base text-gray-900">
-                        {selectedOperator.createdAt
-                          ? new Date(selectedOperator.createdAt).toLocaleDateString('vi-VN', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
-                          : '-'}
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">Updated At</label>
-                      <p className="text-base text-gray-900">
-                        {selectedOperator.updatedAt
-                          ? new Date(selectedOperator.updatedAt).toLocaleDateString('vi-VN', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
-                          : '-'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Config Section */}
-                  {(selectedOperator as any).config && (
-                    <div className="mt-6 pt-6 border-t border-gray-200">
-                      <h4 className="text-lg font-semibold text-gray-900 mb-4">Config</h4>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <pre className="text-sm text-gray-600 overflow-x-auto">
-                          {JSON.stringify((selectedOperator as any).config, null, 2)}
-                        </pre>
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">{t('common.error')}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
-              <button
-                onClick={handleCloseDetailModal}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                {t('common.close')}
-              </button>
-              {selectedOperator && (
-                <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                  {t('common.edit')}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

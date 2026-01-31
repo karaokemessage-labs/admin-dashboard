@@ -9,10 +9,20 @@ import {
 
 export interface UserService {
   createUser: (data: CreateUserRequestDto) => Promise<UserResponseDto>;
-  getUsers: (page?: number, limit?: number) => Promise<GetUsersResponseDto>;
+  getUsers: (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    role?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }) => Promise<GetUsersResponseDto>;
   getUser: (id: string) => Promise<UserResponseDto>;
   updateUser: (id: string, data: UpdateUserRequestDto) => Promise<UserResponseDto>;
   deleteUser: (id: string) => Promise<void>;
+  activateUser: (id: string) => Promise<UserResponseDto>;
+  deactivateUser: (id: string) => Promise<UserResponseDto>;
 }
 
 class UserServiceImpl implements UserService {
@@ -31,15 +41,31 @@ class UserServiceImpl implements UserService {
     }
   }
 
-  async getUsers(page: number = 1, limit: number = 10): Promise<GetUsersResponseDto> {
+  async getUsers(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    role?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<GetUsersResponseDto> {
     try {
-      const params = new URLSearchParams();
-      params.append('page', page.toString());
-      params.append('limit', limit.toString());
-      
-      const response = await apiClient.get<GetUsersResponseDto>(
-        `${API_ENDPOINTS.USERS.BASE}?${params.toString()}`
-      );
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.status) searchParams.append('status', params.status);
+      if (params?.role) searchParams.append('role', params.role);
+      if (params?.sortBy) searchParams.append('sortBy', params.sortBy);
+      if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
+
+      const queryString = searchParams.toString();
+      const endpoint = queryString
+        ? `${API_ENDPOINTS.USERS.BASE}?${queryString}`
+        : API_ENDPOINTS.USERS.BASE;
+
+      const response = await apiClient.get<GetUsersResponseDto>(endpoint);
       return response.data;
     } catch (error) {
       const apiError = error as ApiError;
@@ -88,7 +114,36 @@ class UserServiceImpl implements UserService {
       );
     }
   }
+
+  async activateUser(id: string): Promise<UserResponseDto> {
+    try {
+      const response = await apiClient.patch<UserResponseDto>(
+        API_ENDPOINTS.USERS.BY_ID(id),
+        { status: 'ACTIVE' }
+      );
+      return response.data;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Kích hoạt người dùng thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async deactivateUser(id: string): Promise<UserResponseDto> {
+    try {
+      const response = await apiClient.patch<UserResponseDto>(
+        API_ENDPOINTS.USERS.BY_ID(id),
+        { status: 'INACTIVE' }
+      );
+      return response.data;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Vô hiệu hóa người dùng thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
 }
 
 export const userService: UserService = new UserServiceImpl();
-

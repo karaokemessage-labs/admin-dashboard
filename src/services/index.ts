@@ -17,4 +17,11 @@ export * from './clubService';
 export * from './systemSettingsService';
 export * from './notificationService';
 export * from './feedService';
-
+export * from './friendService';
+export * from './chatService';
+export * from './followService';
+export * from './reactionService';
+export * from './favoriteService';
+export * from './imageService';
+export * from './publicService';
+export * from './twoFactorService';

@@ -55,14 +55,15 @@ export interface CreateKaraokeResponse {
 export interface GetKaraokeResponse {
   success?: boolean;
   message?: string;
-  data?: Karaoke | Karaoke[];
+  messageCode?: string;
+  data?: Karaoke;
   [key: string]: any;
 }
 
 export interface KaraokeService {
   createKaraoke: (data: CreateKaraokeRequest) => Promise<CreateKaraokeResponse>;
   getKaraoke: (id: string) => Promise<GetKaraokeResponse>;
-  getKaraokes: (page?: number, pageSize?: number) => Promise<{ karaokes: Karaoke[]; page: number; total: number }>;
+  getKaraokes: (page?: number, pageSize?: number, status?: string, search?: string) => Promise<{ karaokes: Karaoke[]; page: number; total: number }>;
   updateKaraoke: (id: string, data: UpdateKaraokeRequest) => Promise<CreateKaraokeResponse>;
   deleteKaraoke: (id: string) => Promise<void>;
 }
@@ -87,12 +88,12 @@ class KaraokeServiceImpl implements KaraokeService {
     }
   }
 
-  async getKaraoke(id: string): Promise<GetKaraokeResponse> {
+  async getKaraoke(id: string): Promise<{ data: any; status?: number; message?: string }> {
     try {
       const response = await apiClient.get<GetKaraokeResponse>(
         API_ENDPOINTS.KARAOKE.BY_ID(id)
       );
-      return response.data;
+      return response; // Return the full response object
     } catch (error) {
       const apiError = error as ApiError;
       throw new Error(
@@ -101,13 +102,21 @@ class KaraokeServiceImpl implements KaraokeService {
     }
   }
 
-  async getKaraokes(page: number = 1, limit: number = 10): Promise<{ karaokes: Karaoke[]; page: number; total: number }> {
+  async getKaraokes(page: number = 1, limit: number = 10, status?: string, search?: string): Promise<{ karaokes: Karaoke[]; page: number; total: number }> {
     try {
-      console.log('Fetching karaokes with page:', page, 'limit:', limit);
+      console.log('Fetching karaokes with page:', page, 'limit:', limit, 'status:', status, 'search:', search);
       const params = new URLSearchParams();
       params.append('page', page.toString());
       params.append('limit', limit.toString());
-      
+
+      if (status) {
+        params.append('status', status);
+      }
+
+      if (search) {
+        params.append('search', search);
+      }
+
       const response = await apiClient.get<GetKaraokeResponse>(
         `${API_ENDPOINTS.KARAOKE.BASE}?${params.toString()}`
       );
@@ -124,7 +133,12 @@ class KaraokeServiceImpl implements KaraokeService {
         karaokes = responseData;
         total = responseData.length;
       } else if (responseData?.data) {
-        if (Array.isArray(responseData.data)) {
+        // Check if responseData.data is an object with pagination (data.data.data structure)
+        if (responseData.data && typeof responseData.data === 'object' && !Array.isArray(responseData.data) && responseData.data.data) {
+          karaokes = responseData.data.data;
+          total = responseData.data.total || responseData.data.data.length;
+          currentPage = responseData.data.page || page;
+        } else if (Array.isArray(responseData.data)) {
           karaokes = responseData.data;
           total = responseData.total || responseData.data.length;
           currentPage = responseData.page || page;

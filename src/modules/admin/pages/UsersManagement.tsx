@@ -4,9 +4,9 @@ import { Search, Filter, X, Loader2, Edit, Trash2, User, Shield, Eye } from 'luc
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { userService } from '../../../services/userService';
-import { 
-  CreateUserRequestDto, 
-  UpdateUserRequestDto, 
+import {
+  CreateUserRequestDto,
+  UpdateUserRequestDto,
   UserResponseDto
 } from '../../../types/api';
 
@@ -40,7 +40,7 @@ const UsersManagement = () => {
   const fetchUsers = async (page: number) => {
     setFetching(true);
     try {
-      const response = await userService.getUsers(page, pageSize);
+      const response = await userService.getUsers({ page, limit: pageSize });
       setUsers(response.users || []);
       setCurrentPage(response.page || page);
       setTotalItems(response.total || 0);
@@ -75,7 +75,7 @@ const UsersManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate required fields
     if (!formData.name.trim() || !formData.email.trim() || !formData.username.trim()) {
       toast.error(t('common.pleaseFillAllFields'));
@@ -116,7 +116,7 @@ const UsersManagement = () => {
         });
         toast.success('Tạo người dùng thành công');
       }
-      
+
       handleCloseModal();
       await fetchUsers(currentPage);
     } catch (error: any) {
@@ -248,11 +248,10 @@ const UsersManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.username}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.isActive 
-                          ? 'bg-green-100 text-green-800' 
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive
+                          ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
-                      }`}>
+                        }`}>
                         {user.isActive ? 'Hoạt động' : 'Không hoạt động'}
                       </span>
                     </td>

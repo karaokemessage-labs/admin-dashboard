@@ -2,7 +2,7 @@
 // Get API base URL from environment variable
 // Default to localhost:3000 for development
 const getApiBaseUrl = (): string => {
-  const envUrl = import.meta.env.VITE_API_BASE_URL || "https://kaka-club-api-gateway.ngrok.dev"
+  const envUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:9000"
   return envUrl;
 };
 
@@ -83,8 +83,8 @@ export const API_ENDPOINTS = {
   },
   // Karaoke endpoints
   KARAOKE: {
-    BASE: '/karaoke',
-    BY_ID: (id: string) => `/karaoke/${id}`,
+    BASE: '/karaokes',
+    BY_ID: (id: string) => `/karaokes/${id}`,
   },
   // Massage endpoints
   MASSAGE: {
@@ -121,6 +121,71 @@ export const API_ENDPOINTS = {
   FEEDS: {
     BASE: '/feeds',
     BY_ID: (id: string) => `/feeds/${id}`,
+  },
+  // Friend endpoints
+  FRIENDS: {
+    REQUESTS: '/friends/requests',
+    REQUEST_BY_ID: (id: string) => `/friends/requests/${id}`,
+    ACCEPT_REQUEST: (id: string) => `/friends/requests/${id}/accept`,
+    REJECT_REQUEST: (id: string) => `/friends/requests/${id}/reject`,
+    LIST: '/friends',
+    BY_ID: (friendId: string) => `/friends/${friendId}`,
+  },
+  // Chat endpoints
+  CHATS: {
+    ROOMS: '/chats/rooms',
+    ROOM_BY_ID: (id: string) => `/chats/rooms/${id}`,
+    ROOM_PARTICIPANTS: (id: string) => `/chats/rooms/${id}/participants`,
+    REMOVE_PARTICIPANT: (roomId: string, userId: string) => `/chats/rooms/${roomId}/participants/${userId}`,
+    MESSAGES: (roomId: string) => `/chats/rooms/${roomId}/messages`,
+    MARK_READ: (roomId: string) => `/chats/rooms/${roomId}/messages/read`,
+    DELETE_MESSAGE: (id: string) => `/chats/messages/${id}`,
+  },
+  // Follow endpoints
+  FOLLOW: {
+    BY_USER: (userId: string) => `/follow/${userId}`,
+    FOLLOWERS: '/follow/followers',
+    FOLLOWERS_BY_USER: (userId: string) => `/follow/followers/${userId}`,
+    FOLLOWING: '/follow/following',
+    FOLLOWING_BY_USER: (userId: string) => `/follow/following/${userId}`,
+    STATS: (userId: string) => `/follow/stats/${userId}`,
+    STATUS: (userId: string) => `/follow/status/${userId}`,
+  },
+  // Reaction endpoints
+  REACTIONS: {
+    BY_ARTICLE: (articleId: string) => `/articles/${articleId}/reactions`,
+    STATS: (articleId: string) => `/articles/${articleId}/reactions/stats`,
+  },
+  // Favorite endpoints
+  FAVORITES: {
+    KARAOKE: (karaokeId: string) => `/favorites/karaoke/${karaokeId}`,
+  },
+  // Image endpoints
+  IMAGES: {
+    BASE: '/images',
+    BY_ID: (id: string) => `/images/${id}`,
+  },
+  // Public endpoints
+  PUBLIC: {
+    FACILITIES: '/public/facilities',
+    FACILITY_BY_ID: (id: string) => `/public/facilities/${id}`,
+    FACILITY_COUPONS: (id: string) => `/public/facilities/${id}/coupons`,
+    KARAOKES: '/public/karaokes',
+    MASSAGES: '/public/massages',
+    CLUBS: '/public/clubs',
+    ALL: '/public/all',
+  },
+  // Two-Factor endpoints (explicit)
+  TWO_FACTOR: {
+    SETUP: '/two-factor/setup',
+    VERIFY: '/two-factor/verify',
+    RESEND_EMAIL_OTP: '/two-factor/resend-email-otp',
+    REGENERATE_SECRET: '/two-factor/regenerate-secret',
+    RECOVERY_CODES: '/two-factor/recovery-codes',
+    USE_RECOVERY_CODE: '/two-factor/recovery-codes/use',
+    DISABLE_CHALLENGE: '/two-factor/disable-2fa-challenge',
+    CONFIGS: '/two-factor/configs',
+    DISABLE: '/two-factor/disable',
   },
 };
 

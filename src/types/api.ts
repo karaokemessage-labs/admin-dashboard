@@ -573,3 +573,434 @@ export interface GetFeedsResponseDto {
   page: number;
   limit: number;
 }
+
+// Friend Types
+export interface SendFriendRequestRequestDto {
+  receiverId: string;
+}
+
+export interface FriendRequestResponseDto {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FriendshipResponseDto {
+  id: string;
+  userId: string;
+  friendId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetFriendRequestsResponseDto {
+  data: FriendRequestResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface GetFriendsResponseDto {
+  data: FriendshipResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// Chat Types
+export type ChatRoomType = 'DIRECT' | 'GROUP';
+
+export interface CreateChatRoomRequestDto {
+  name?: string;
+  type: ChatRoomType;
+  participantIds: string[];
+}
+
+export interface ChatRoomResponseDto {
+  id: string;
+  name: string | null;
+  type: ChatRoomType;
+  createdBy: string;
+  participants: ChatParticipantDto[];
+  lastMessage?: ChatMessageResponseDto | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatParticipantDto {
+  id: string;
+  userId: string;
+  joinedAt: string;
+}
+
+export interface SendMessageRequestDto {
+  content: string;
+  type?: 'TEXT' | 'IMAGE' | 'FILE';
+}
+
+export interface ChatMessageResponseDto {
+  id: string;
+  roomId: string;
+  senderId: string;
+  content: string;
+  type: 'TEXT' | 'IMAGE' | 'FILE';
+  readBy: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MarkMessagesReadRequestDto {
+  messageIds: string[];
+}
+
+export interface GetChatRoomsResponseDto {
+  data: ChatRoomResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface GetMessagesResponseDto {
+  data: ChatMessageResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// Follow Types
+export interface FollowResponseDto {
+  id: string;
+  followerId: string;
+  followingId: string;
+  createdAt: string;
+}
+
+export interface FollowListResponseDto {
+  data: FollowResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface FollowStatsResponseDto {
+  followersCount: number;
+  followingCount: number;
+}
+
+export interface FollowStatusResponseDto {
+  isFollowing: boolean;
+}
+
+// Reaction Types
+export type ReactionType = 'LIKE' | 'LOVE' | 'HAHA' | 'WOW' | 'SAD' | 'ANGRY';
+
+export interface AddReactionRequestDto {
+  type: ReactionType;
+}
+
+export interface ReactionResponseDto {
+  id: string;
+  articleId: string;
+  userId: string;
+  type: ReactionType;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReactionListResponseDto {
+  data: ReactionResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ReactionStatsResponseDto {
+  total: number;
+  byType: Record<ReactionType, number>;
+  userReaction: ReactionType | null;
+}
+
+// Favorite Types
+export interface KaraokeFavoriteResponseDto {
+  id: string;
+  userId: string;
+  karaokeId: string;
+  createdAt: string;
+}
+
+// Image Types
+export interface UploadImageRequestDto {
+  file: File;
+  description?: string;
+}
+
+export interface ImageResponseDto {
+  id: string;
+  userId: string;
+  imageUrl: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Public/Facility Types
+export interface GetAllDataResponseDto {
+  karaokes: KaraokeResponseDto[];
+  clubs: ClubResponseDto[];
+  massages: MassageResponseDto[];
+}
+
+export interface GetFacilityWithRatingsResponseDto {
+  facility: KaraokeResponseDto | ClubResponseDto | MassageResponseDto;
+  ratings: RatingResponseDto[];
+  comments: CommentResponseDto[];
+  averageRating: number;
+  totalRatings: number;
+}
+
+// Karaoke Types
+export type KaraokeStatus = 'ACTIVE' | 'INACTIVE';
+
+export interface CreateKaraokeRequestDto {
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  description?: string;
+  openingHours?: string;
+  closingHours?: string;
+  priceRange?: string;
+  imageUrl?: string;
+  bannerUrl?: string;
+}
+
+export interface UpdateKaraokeRequestDto extends Partial<CreateKaraokeRequestDto> {
+  status?: KaraokeStatus;
+}
+
+export interface KaraokeResponseDto {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  description: string | null;
+  openingHours: string | null;
+  closingHours: string | null;
+  priceRange: string | null;
+  imageUrl: string | null;
+  bannerUrl: string | null;
+  status: KaraokeStatus;
+  rating?: number;
+  totalRatings?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetKaraokesResponseDto {
+  data: KaraokeResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// Club Types
+export type ClubStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+
+export interface CreateClubRequestDto {
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  description?: string;
+  openingHours?: string;
+  closingHours?: string;
+  priceRange?: string;
+  imageUrl?: string;
+  bannerUrl?: string;
+}
+
+export interface UpdateClubRequestDto extends Partial<CreateClubRequestDto> {
+  status?: ClubStatus;
+}
+
+export interface ClubResponseDto {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  description: string | null;
+  openingHours: string | null;
+  closingHours: string | null;
+  priceRange: string | null;
+  imageUrl: string | null;
+  bannerUrl: string | null;
+  status: ClubStatus;
+  rating?: number;
+  totalRatings?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetClubsResponseDto {
+  data: ClubResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// Massage Types
+export type MassageStatus = 'ACTIVE' | 'INACTIVE';
+
+export interface CreateMassageRequestDto {
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  description?: string;
+  openingHours?: string;
+  closingHours?: string;
+  priceRange?: string;
+  imageUrl?: string;
+  bannerUrl?: string;
+}
+
+export interface UpdateMassageRequestDto extends Partial<CreateMassageRequestDto> {
+  status?: MassageStatus;
+}
+
+export interface MassageResponseDto {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  description: string | null;
+  openingHours: string | null;
+  closingHours: string | null;
+  priceRange: string | null;
+  imageUrl: string | null;
+  bannerUrl: string | null;
+  status: MassageStatus;
+  rating?: number;
+  totalRatings?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetMassagesResponseDto {
+  data: MassageResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// Two-Factor Types
+export type TwoFactorType = 'TOTP' | 'EMAIL';
+
+export interface SetupTwoFactorRequestDto {
+  userId: string;
+  type: TwoFactorType;
+}
+
+export interface SetupTwoFactorResponseDto {
+  qrCodeUrl?: string;
+  qrCode?: string;
+  secret?: string;
+  secretKey?: string;
+  backupCodes?: string[];
+  config?: {
+    id: string;
+    userId: string;
+    type: TwoFactorType;
+    isActive: boolean;
+  };
+}
+
+export interface VerifyTwoFactorRequestDto {
+  userId: string;
+  code: string;
+  type: TwoFactorType;
+}
+
+export interface ResendEmailOtpRequestDto {
+  userId: string;
+}
+
+export interface RegenerateSecretRequestDto {
+  userId: string;
+}
+
+export interface UseRecoveryCodeRequestDto {
+  userId: string;
+  code: string;
+}
+
+export interface Disable2FAChallengeRequestDto {
+  userId: string;
+  code: string;
+  type: 'TOTP' | 'EMAIL' | 'RECOVERY';
+}
+
+export interface RecoveryCodeResponseDto {
+  id: string;
+  code: string;
+  isUsed: boolean;
+  usedAt: string | null;
+  createdAt: string;
+}
+
+export interface TwoFactorConfigResponseDto {
+  id: string;
+  userId: string;
+  type: TwoFactorType;
+  isActive: boolean;
+  email?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Pagination Common Types
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// Updated Rating Types for facility
+export interface CreateFacilityRatingRequestDto {
+  rating: number;
+  facilityType: 'KARAOKE' | 'CLUB' | 'MASSAGE';
+  facilityId: string;
+  comment?: string;
+}
+
+export interface FacilityRatingResponseDto {
+  id: string;
+  rating: number;
+  comment: string | null;
+  facilityType: 'KARAOKE' | 'CLUB' | 'MASSAGE';
+  facilityId: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetFacilityRatingsParams extends PaginationParams {
+  facilityType: 'KARAOKE' | 'CLUB' | 'MASSAGE';
+  facilityId: string;
+}
+

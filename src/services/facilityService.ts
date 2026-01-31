@@ -9,10 +9,20 @@ import {
 
 export interface FacilityService {
   createFacility: (data: CreateFacilityRequestDto) => Promise<FacilityResponseDto>;
-  getFacilities: (page?: number, limit?: number) => Promise<GetFacilitiesResponseDto>;
+  getFacilities: (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    type?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }) => Promise<GetFacilitiesResponseDto>;
   getFacility: (id: string) => Promise<FacilityResponseDto>;
   updateFacility: (id: string, data: UpdateFacilityRequestDto) => Promise<FacilityResponseDto>;
   deleteFacility: (id: string) => Promise<void>;
+  activateFacility: (id: string) => Promise<FacilityResponseDto>;
+  deactivateFacility: (id: string) => Promise<FacilityResponseDto>;
 }
 
 class FacilityServiceImpl implements FacilityService {
@@ -31,15 +41,31 @@ class FacilityServiceImpl implements FacilityService {
     }
   }
 
-  async getFacilities(page: number = 1, limit: number = 10): Promise<GetFacilitiesResponseDto> {
+  async getFacilities(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    type?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<GetFacilitiesResponseDto> {
     try {
-      const params = new URLSearchParams();
-      params.append('page', page.toString());
-      params.append('limit', limit.toString());
-      
-      const response = await apiClient.get<GetFacilitiesResponseDto>(
-        `${API_ENDPOINTS.FACILITIES.BASE}?${params.toString()}`
-      );
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.status) searchParams.append('status', params.status);
+      if (params?.type) searchParams.append('type', params.type);
+      if (params?.sortBy) searchParams.append('sortBy', params.sortBy);
+      if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
+
+      const queryString = searchParams.toString();
+      const endpoint = queryString
+        ? `${API_ENDPOINTS.FACILITIES.BASE}?${queryString}`
+        : API_ENDPOINTS.FACILITIES.BASE;
+
+      const response = await apiClient.get<GetFacilitiesResponseDto>(endpoint);
       return response.data;
     } catch (error) {
       const apiError = error as ApiError;
@@ -88,7 +114,36 @@ class FacilityServiceImpl implements FacilityService {
       );
     }
   }
+
+  async activateFacility(id: string): Promise<FacilityResponseDto> {
+    try {
+      const response = await apiClient.patch<FacilityResponseDto>(
+        API_ENDPOINTS.FACILITIES.BY_ID(id),
+        { status: 'ACTIVE' }
+      );
+      return response.data;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Kích hoạt cơ sở vật chất thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async deactivateFacility(id: string): Promise<FacilityResponseDto> {
+    try {
+      const response = await apiClient.patch<FacilityResponseDto>(
+        API_ENDPOINTS.FACILITIES.BY_ID(id),
+        { status: 'INACTIVE' }
+      );
+      return response.data;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Vô hiệu hóa cơ sở vật chất thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
 }
 
 export const facilityService: FacilityService = new FacilityServiceImpl();
-

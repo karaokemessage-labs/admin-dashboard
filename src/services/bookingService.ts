@@ -7,6 +7,12 @@ import {
   BookingStatus,
 } from '../types/api';
 
+export interface UpdateBookingRequestDto {
+  startTime?: string;
+  endTime?: string;
+  notes?: string;
+}
+
 export interface BookingService {
   createBooking: (data: CreateBookingRequestDto) => Promise<BookingResponseDto>;
   getBookings: (params?: {
@@ -15,8 +21,13 @@ export interface BookingService {
     status?: BookingStatus;
     page?: number;
     limit?: number;
+    startDate?: string;
+    endDate?: string;
   }) => Promise<GetBookingsResponseDto>;
   getBooking: (id: string) => Promise<BookingResponseDto>;
+  updateBooking: (id: string, data: UpdateBookingRequestDto) => Promise<BookingResponseDto>;
+  cancelBooking: (id: string) => Promise<BookingResponseDto>;
+  updateBookingStatus: (id: string, status: BookingStatus) => Promise<BookingResponseDto>;
 }
 
 class BookingServiceImpl implements BookingService {
@@ -49,12 +60,12 @@ class BookingServiceImpl implements BookingService {
       if (params?.status) searchParams.append('status', params.status);
       if (params?.page) searchParams.append('page', params.page.toString());
       if (params?.limit) searchParams.append('limit', params.limit.toString());
-      
+
       const queryString = searchParams.toString();
       const endpoint = queryString
         ? `${API_ENDPOINTS.BOOKINGS.BASE}?${queryString}`
         : API_ENDPOINTS.BOOKINGS.BASE;
-        
+
       const response = await apiClient.get<GetBookingsResponseDto>(endpoint);
       return response.data;
     } catch (error) {
@@ -75,6 +86,51 @@ class BookingServiceImpl implements BookingService {
       const apiError = error as ApiError;
       throw new Error(
         apiError.message || 'Không thể lấy thông tin đặt chỗ. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async updateBooking(id: string, data: UpdateBookingRequestDto): Promise<BookingResponseDto> {
+    try {
+      const response = await apiClient.patch<BookingResponseDto>(
+        API_ENDPOINTS.BOOKINGS.BY_ID(id),
+        data
+      );
+      return response.data;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Cập nhật đặt chỗ thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async cancelBooking(id: string): Promise<BookingResponseDto> {
+    try {
+      const response = await apiClient.patch<BookingResponseDto>(
+        API_ENDPOINTS.BOOKINGS.BY_ID(id),
+        { status: 'CANCELLED' }
+      );
+      return response.data;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Hủy đặt chỗ thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async updateBookingStatus(id: string, status: BookingStatus): Promise<BookingResponseDto> {
+    try {
+      const response = await apiClient.patch<BookingResponseDto>(
+        API_ENDPOINTS.BOOKINGS.BY_ID(id),
+        { status }
+      );
+      return response.data;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Cập nhật trạng thái đặt chỗ thất bại. Vui lòng thử lại.'
       );
     }
   }

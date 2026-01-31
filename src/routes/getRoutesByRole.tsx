@@ -20,6 +20,7 @@ import GamesManagement from '../modules/admin/pages/ClubsManagement';
 import KaraokesManagement from '../modules/admin/pages/KaraokesManagement';
 import MassagesManagement from '../modules/admin/pages/MassagesManagement';
 import RolePermissionManagement from '../modules/admin/pages/RolePermissionManagement';
+import KaraokeDetails from '../modules/admin/pages/KaraokeDetails';
 import UserDetails from '../modules/admin/pages/UserDetails';
 // import AdminPromotionsBonus from '../modules/admin/pages/PromotionsBonus';
 // import AdminRiskManagement from '../modules/admin/pages/RiskManagement';
@@ -39,6 +40,7 @@ export const getRoutesByRole = (): ReactElement[] => {
     <Route key="dashboard" path="/" element={<AdminDashboard />} />,
     <Route key="venues" path="/clubs" element={<GamesManagement />} />,
     <Route key="operators" path="/karaoke" element={<KaraokesManagement />} />,
+    <Route key="karaoke-details" path="/karaoke/:id" element={<KaraokeDetails />} />,
     <Route key="provider-accounts" path="/massages" element={<MassagesManagement />} />,
     <Route key="roles-permissions" path="/roles-permissions" element={<RolePermissionManagement />} />,
     // <Route key="transactions" path="/transactions" element={<AdminTransactions />} />,
