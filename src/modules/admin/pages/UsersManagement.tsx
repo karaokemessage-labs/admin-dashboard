@@ -26,10 +26,21 @@ const UsersManagement = () => {
   const [pageSize] = useState<number>(10);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [formData, setFormData] = useState<CreateUserRequestDto>({
+  const [formData, setFormData] = useState<CreateUserRequestDto & {
+    isActive?: boolean;
+    isEnable2FA?: boolean;
+    twoFaEnabled?: boolean;
+    requires2FAChallenge?: boolean;
+    mustChangePassword?: boolean;
+  }>({
     name: '',
     email: '',
     username: '',
+    isActive: true,
+    isEnable2FA: false,
+    twoFaEnabled: false,
+    requires2FAChallenge: false,
+    mustChangePassword: false,
   });
 
   // Fetch users on component mount
@@ -70,6 +81,11 @@ const UsersManagement = () => {
       name: '',
       email: '',
       username: '',
+      isActive: true,
+      isEnable2FA: false,
+      twoFaEnabled: false,
+      requires2FAChallenge: false,
+      mustChangePassword: false,
     });
   };
 
@@ -104,6 +120,11 @@ const UsersManagement = () => {
           name: formData.name,
           email: formData.email,
           username: formData.username,
+          isActive: formData.isActive,
+          isEnable2FA: formData.isEnable2FA,
+          twoFaEnabled: formData.twoFaEnabled,
+          requires2FAChallenge: formData.requires2FAChallenge,
+          mustChangePassword: formData.mustChangePassword,
         };
         await userService.updateUser(editingUserId, updateData);
         toast.success(t('common.update') + ' ' + t('common.success'));
@@ -249,8 +270,8 @@ const UsersManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.username}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
                         }`}>
                         {user.isActive ? 'Hoạt động' : 'Không hoạt động'}
                       </span>
@@ -288,6 +309,11 @@ const UsersManagement = () => {
                               name: user.name,
                               email: user.email,
                               username: user.username,
+                              isActive: user.isActive ?? true,
+                              isEnable2FA: user.isEnable2FA ?? false,
+                              twoFaEnabled: user.twoFaEnabled ?? user.isEnable2FA ?? false,
+                              requires2FAChallenge: user.requires2FAChallenge ?? false,
+                              mustChangePassword: user.mustChangePassword ?? false,
                             });
                           }}
                           className="text-purple-600 hover:text-purple-900 p-2 hover:bg-purple-50 rounded"
@@ -416,6 +442,105 @@ const UsersManagement = () => {
                 />
                 <p className="mt-1 text-xs text-gray-500">Chỉ được chứa chữ cái, số và dấu gạch dưới</p>
               </div>
+
+              {/* Status Options - Only show in edit mode */}
+              {isEditMode && (
+                <div className="mb-6 space-y-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cài đặt tài khoản
+                  </label>
+
+                  {/* isActive Toggle */}
+                  <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">Kích hoạt tài khoản</p>
+                      <p className="text-xs text-gray-500">Cho phép người dùng đăng nhập</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.isActive ?? true}
+                        onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                        disabled={loading}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+                    </label>
+                  </div>
+
+                  {/* isEnable2FA Toggle */}
+                  <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">Bật 2FA</p>
+                      <p className="text-xs text-gray-500">Kích hoạt xác thực 2 lớp</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.isEnable2FA ?? false}
+                        onChange={(e) => setFormData(prev => ({ ...prev, isEnable2FA: e.target.checked }))}
+                        disabled={loading}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+                    </label>
+                  </div>
+
+                  {/* twoFaEnabled Toggle */}
+                  <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">2FA đã kích hoạt</p>
+                      <p className="text-xs text-gray-500">Trạng thái 2FA hiện tại</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.twoFaEnabled ?? false}
+                        onChange={(e) => setFormData(prev => ({ ...prev, twoFaEnabled: e.target.checked }))}
+                        disabled={loading}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+                    </label>
+                  </div>
+
+                  {/* requires2FAChallenge Toggle */}
+                  <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">Yêu cầu xác thực 2FA</p>
+                      <p className="text-xs text-gray-500">Bắt buộc xác thực 2FA khi đăng nhập</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.requires2FAChallenge ?? false}
+                        onChange={(e) => setFormData(prev => ({ ...prev, requires2FAChallenge: e.target.checked }))}
+                        disabled={loading}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+                    </label>
+                  </div>
+
+                  {/* mustChangePassword Toggle */}
+                  <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">Bắt buộc đổi mật khẩu</p>
+                      <p className="text-xs text-gray-500">Yêu cầu đổi mật khẩu khi đăng nhập lần tới</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.mustChangePassword ?? false}
+                        onChange={(e) => setFormData(prev => ({ ...prev, mustChangePassword: e.target.checked }))}
+                        disabled={loading}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+                    </label>
+                  </div>
+                </div>
+              )}
 
               {/* Modal Footer */}
               <div className="flex items-center justify-end gap-3">

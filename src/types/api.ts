@@ -265,6 +265,11 @@ export interface UpdateUserRequestDto {
   name?: string;
   email?: string;
   username?: string;
+  isActive?: boolean;
+  isEnable2FA?: boolean;
+  twoFaEnabled?: boolean;
+  requires2FAChallenge?: boolean;
+  mustChangePassword?: boolean;
 }
 
 export interface UserResponseDto {
@@ -274,6 +279,9 @@ export interface UserResponseDto {
   username: string;
   isActive: boolean;
   isEnable2FA: boolean;
+  twoFaEnabled?: boolean;
+  requires2FAChallenge?: boolean;
+  mustChangePassword?: boolean;
   activeAt: string | null;
   createdAt: string;
   updatedAt: string;
