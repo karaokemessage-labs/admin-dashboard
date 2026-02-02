@@ -365,7 +365,7 @@ const PermissionsManagement = () => {
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-6 border-b border-gray-200">
                             <h2 className="text-xl font-bold text-gray-900">
-                                {isEditMode ? 'Chỉnh sửa Permission' : 'Tạo Permission mới'}
+                                {isEditMode ? t('pages.permissions.editPermission') : t('pages.permissions.createPermission')}
                             </h2>
                             <button
                                 onClick={handleCloseModal}
@@ -381,7 +381,7 @@ const PermissionsManagement = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="mb-4">
                                     <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Tên Permission <span className="text-red-500">*</span>
+                                        {t('pages.permissions.permission')} <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -392,13 +392,13 @@ const PermissionsManagement = () => {
                                         required
                                         disabled={loading}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                        placeholder="Nhập tên permission..."
+                                        placeholder={t('pages.permissions.enterPermissionName')}
                                     />
                                 </div>
 
                                 <div className="mb-4">
                                     <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Slug <span className="text-red-500">*</span>
+                                        {t('pages.permissions.slug')} <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -409,7 +409,7 @@ const PermissionsManagement = () => {
                                         required
                                         disabled={loading || isEditMode}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                        placeholder="vd: users.view, venues.manage..."
+                                        placeholder={t('pages.permissions.enterSlug')}
                                     />
                                 </div>
                             </div>
@@ -417,7 +417,7 @@ const PermissionsManagement = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="mb-4">
                                     <label htmlFor="resource" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Resource {!isEditMode && <span className="text-red-500">*</span>}
+                                        {t('pages.permissions.resource')} {!isEditMode && <span className="text-red-500">*</span>}
                                     </label>
                                     <input
                                         type="text"
@@ -427,13 +427,13 @@ const PermissionsManagement = () => {
                                         onChange={handleInputChange}
                                         disabled={loading || isEditMode}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                        placeholder="vd: users, venues, dashboard..."
+                                        placeholder={t('pages.permissions.enterResource')}
                                     />
                                 </div>
 
                                 <div className="mb-4">
                                     <label htmlFor="action" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Action {!isEditMode && <span className="text-red-500">*</span>}
+                                        {t('pages.permissions.action')} {!isEditMode && <span className="text-red-500">*</span>}
                                     </label>
                                     <select
                                         id="action"
@@ -443,7 +443,7 @@ const PermissionsManagement = () => {
                                         disabled={loading || isEditMode}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     >
-                                        <option value="">Chọn action...</option>
+                                        <option value="">{t('pages.permissions.selectAction')}</option>
                                         <option value="READ">READ</option>
                                         <option value="CREATE">CREATE</option>
                                         <option value="UPDATE">UPDATE</option>
@@ -455,7 +455,7 @@ const PermissionsManagement = () => {
 
                             <div className="mb-4">
                                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Mô tả
+                                    {t('pages.permissions.description')}
                                 </label>
                                 <textarea
                                     id="description"
@@ -465,13 +465,13 @@ const PermissionsManagement = () => {
                                     disabled={loading}
                                     rows={2}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                    placeholder="Nhập mô tả về permission..."
+                                    placeholder={t('pages.permissions.enterDescription')}
                                 />
                             </div>
 
                             <div className="mb-6">
                                 <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Nội dung chi tiết
+                                    {t('pages.permissions.detailedContent')}
                                 </label>
                                 <textarea
                                     id="content"
@@ -481,7 +481,7 @@ const PermissionsManagement = () => {
                                     disabled={loading}
                                     rows={3}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                    placeholder="Nhập nội dung chi tiết về permission (tùy chọn)..."
+                                    placeholder={t('pages.permissions.enterDetailedContent')}
                                 />
                             </div>
 
@@ -508,7 +508,7 @@ const PermissionsManagement = () => {
                                                 : t('common.creating')
                                             : isEditMode
                                                 ? t('common.update')
-                                                : 'Tạo Permission'}
+                                                : t('pages.permissions.createPermission')}
                                     </span>
                                 </button>
                             </div>
@@ -522,12 +522,12 @@ const PermissionsManagement = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
                         <div className="p-6 border-b border-gray-200">
-                            <h2 className="text-xl font-bold text-gray-900">{t('common.delete')} Permission</h2>
+                            <h2 className="text-xl font-bold text-gray-900">{t('pages.permissions.deletePermission')}</h2>
                         </div>
 
                         <div className="p-6">
                             <p className="text-gray-700 mb-4">
-                                Bạn có chắc chắn muốn xóa permission <strong>"{permissionToDelete.title}"</strong>?
+                                {t('pages.permissions.deleteConfirmMessage')} <strong>"{permissionToDelete.title}"</strong>?
                             </p>
                             <p className="text-sm text-red-600">
                                 {t('common.deleteWarning') || 'Hành động này không thể hoàn tác.'}
