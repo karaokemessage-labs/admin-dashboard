@@ -20,6 +20,8 @@ import GamesManagement from '../modules/admin/pages/ClubsManagement';
 import KaraokesManagement from '../modules/admin/pages/KaraokesManagement';
 import MassagesManagement from '../modules/admin/pages/MassagesManagement';
 import RolePermissionManagement from '../modules/admin/pages/RolePermissionManagement';
+import RolesManagement from '../modules/admin/pages/RolesManagement';
+import PermissionsManagement from '../modules/admin/pages/PermissionsManagement';
 import KaraokeDetails from '../modules/admin/pages/KaraokeDetails';
 import UserDetails from '../modules/admin/pages/UserDetails';
 // import AdminPromotionsBonus from '../modules/admin/pages/PromotionsBonus';
@@ -43,6 +45,8 @@ export const getRoutesByRole = (): ReactElement[] => {
     <Route key="karaoke-details" path="/karaoke/:id" element={<KaraokeDetails />} />,
     <Route key="provider-accounts" path="/massages" element={<MassagesManagement />} />,
     <Route key="roles-permissions" path="/roles-permissions" element={<RolePermissionManagement />} />,
+    <Route key="roles" path="/roles" element={<RolesManagement />} />,
+    <Route key="permissions" path="/permissions" element={<PermissionsManagement />} />,
     // <Route key="transactions" path="/transactions" element={<AdminTransactions />} />,
     // <Route key="wallet" path="/wallet" element={<AdminWalletPayment />} />,
     // <Route key="promotions" path="/promotions" element={<AdminPromotionsBonus />} />,

@@ -49,70 +49,70 @@ export interface Translations {
     password: string;
     forgotPassword: string;
     loggingIn: string;
-      // Messages
-      pleaseFillAllFields: string;
-      loginSuccess: string;
-      loginFailed: string;
-      checkLoginInfo: string;
-      logoutSuccess: string;
-      logoutLocal: string;
-      // Table & List
-      filter: string;
-      noData: string;
-      loadingData: string;
-      showing: string;
-      to: string;
-      of: string;
-      page: string;
-      // Status
-      paused: string;
-      banned: string;
-      suspicious: string;
-      // Actions
-      creating: string;
-      deleting: string;
-      updating: string;
-      saving: string;
-      // Forms
-      name: string;
-      email: string;
-      code: string;
-      description: string;
-      phone: string;
-      username: string;
-      // Modals
-      addNew: string;
-      confirmDelete: string;
-      deleteConfirmMessage: string;
-      // Placeholders
-      enterName: string;
-      enterEmail: string;
-      enterGameName: string;
-      enterProviderAccountEmail: string;
-      // Details
-      createdAt: string;
-      lastLogin: string;
-      neverLoggedIn: string;
-      additionalInfo: string;
-      edit: string;
-      // Dashboard
-      overview: string;
-      increased: string;
-      decreased: string;
-      weeklySales: string;
-      weeklyOrders: string;
-      visitorsOnline: string;
-      visitAndSalesStatistics: string;
-      trafficSources: string;
-      searchEngines: string;
-      directClick: string;
-      bookmarksClick: string;
-      recentTickets: string;
-      assignee: string;
-      subject: string;
-      lastUpdate: string;
-      trackingId: string;
-      done: string;
+    // Messages
+    pleaseFillAllFields: string;
+    loginSuccess: string;
+    loginFailed: string;
+    checkLoginInfo: string;
+    logoutSuccess: string;
+    logoutLocal: string;
+    // Table & List
+    filter: string;
+    noData: string;
+    loadingData: string;
+    showing: string;
+    to: string;
+    of: string;
+    page: string;
+    // Status
+    paused: string;
+    banned: string;
+    suspicious: string;
+    // Actions
+    creating: string;
+    deleting: string;
+    updating: string;
+    saving: string;
+    // Forms
+    name: string;
+    email: string;
+    code: string;
+    description: string;
+    phone: string;
+    username: string;
+    // Modals
+    addNew: string;
+    confirmDelete: string;
+    deleteConfirmMessage: string;
+    // Placeholders
+    enterName: string;
+    enterEmail: string;
+    enterGameName: string;
+    enterProviderAccountEmail: string;
+    // Details
+    createdAt: string;
+    lastLogin: string;
+    neverLoggedIn: string;
+    additionalInfo: string;
+    edit: string;
+    // Dashboard
+    overview: string;
+    increased: string;
+    decreased: string;
+    weeklySales: string;
+    weeklyOrders: string;
+    visitorsOnline: string;
+    visitAndSalesStatistics: string;
+    trafficSources: string;
+    searchEngines: string;
+    directClick: string;
+    bookmarksClick: string;
+    recentTickets: string;
+    assignee: string;
+    subject: string;
+    lastUpdate: string;
+    trackingId: string;
+    done: string;
   };
   pages: {
     dashboard: {
@@ -138,76 +138,76 @@ export interface Translations {
       bookingsCount: string;
       activeCustomers: string;
     };
-      operators: {
-        title: string;
-        addOperator: string;
-        createOperator: string;
-        deleteOperator: string;
-        operatorDetails: string;
-        searchPlaceholder: string;
-        createSuccess: string;
-        createFailed: string;
-        deleteSuccess: string;
-        deleteFailed: string;
-        viewDetails: string;
-        deleteOperatorTitle: string;
-        description: string;
-        noOperatorsFound: string;
-        noOperatorsYet: string;
-        operatorCode: string;
-        operatorName: string;
-        enterOperatorCode: string;
-        enterOperatorName: string;
-        randomData: string;
-        random: string;
-        edit: string;
-        userNotFound: string;
-        operatorsLabel: string;
-      };
-      games: {
-        title: string;
-        addGame: string;
-        createGame: string;
-        searchPlaceholder: string;
-        description: string;
-        venueManagement: string;
-        venueName: string;
-        venueType: string;
-        venueTypeKaraoke: string;
-        venueTypeMassage: string;
-        venueTypeClub: string;
-        bookingsCount: string;
-        revenue: string;
-        addVenue: string;
-        searchVenuePlaceholder: string;
-        enterVenueName: string;
-        actions: string;
-        noVenuesYet: string;
-        createSuccess: string;
-        deleteSuccess: string;
-        deleteFailed: string;
-      };
-      providerAccounts: {
-        title: string;
-        addAccount: string;
-        createAccount: string;
-        deleteAccount: string;
-        searchPlaceholder: string;
-        createSuccess: string;
-        createFailed: string;
-        deleteSuccess: string;
-        deleteFailed: string;
-        deleteAccountTitle: string;
-        description: string;
-        totalAccounts: string;
-        activeAccounts: string;
-        loadingAccounts: string;
-        providerAccount: string;
-        noAccountsFound: string;
-        noAccountsYet: string;
-        randomData: string;
-        random: string;
-      };
+    operators: {
+      title: string;
+      addOperator: string;
+      createOperator: string;
+      deleteOperator: string;
+      operatorDetails: string;
+      searchPlaceholder: string;
+      createSuccess: string;
+      createFailed: string;
+      deleteSuccess: string;
+      deleteFailed: string;
+      viewDetails: string;
+      deleteOperatorTitle: string;
+      description: string;
+      noOperatorsFound: string;
+      noOperatorsYet: string;
+      operatorCode: string;
+      operatorName: string;
+      enterOperatorCode: string;
+      enterOperatorName: string;
+      randomData: string;
+      random: string;
+      edit: string;
+      userNotFound: string;
+      operatorsLabel: string;
+    };
+    games: {
+      title: string;
+      addGame: string;
+      createGame: string;
+      searchPlaceholder: string;
+      description: string;
+      venueManagement: string;
+      venueName: string;
+      venueType: string;
+      venueTypeKaraoke: string;
+      venueTypeMassage: string;
+      venueTypeClub: string;
+      bookingsCount: string;
+      revenue: string;
+      addVenue: string;
+      searchVenuePlaceholder: string;
+      enterVenueName: string;
+      actions: string;
+      noVenuesYet: string;
+      createSuccess: string;
+      deleteSuccess: string;
+      deleteFailed: string;
+    };
+    providerAccounts: {
+      title: string;
+      addAccount: string;
+      createAccount: string;
+      deleteAccount: string;
+      searchPlaceholder: string;
+      createSuccess: string;
+      createFailed: string;
+      deleteSuccess: string;
+      deleteFailed: string;
+      deleteAccountTitle: string;
+      description: string;
+      totalAccounts: string;
+      activeAccounts: string;
+      loadingAccounts: string;
+      providerAccount: string;
+      noAccountsFound: string;
+      noAccountsYet: string;
+      randomData: string;
+      random: string;
+    };
     roles: {
       title: string;
       addRole: string;
@@ -457,95 +457,95 @@ export interface Translations {
       comparedToLastMonth: string;
       description: string;
     };
-      players: {
-        totalPlayers: string;
-        activePlayers: string;
-        inactivePlayers: string;
-        totalBalance: string;
-        username: string;
-        balance: string;
-        registrationDate: string;
-        description: string;
-      };
-      profile: {
-        description: string;
-        personalInfo: string;
-        accountSecurity: string;
-        changePassword: string;
-        changePasswordDesc: string;
-        twoFactorAuth: string;
-        twoFactorAuthDesc: string;
-        changePhoto: string;
-      };
-      userSettings: {
-        description: string;
-        notifications: string;
-        appearance: string;
-        privacy: string;
-        emailNotifications: string;
-        emailNotificationsDesc: string;
-        pushNotifications: string;
-        pushNotificationsDesc: string;
-        smsNotifications: string;
-        smsNotificationsDesc: string;
-        language: string;
-        theme: string;
-        light: string;
-        dark: string;
-        auto: string;
-        showEmail: string;
-        showEmailDesc: string;
-        showPhone: string;
-        showPhoneDesc: string;
-      };
-      helpSupport: {
-        description: string;
-        emailSupport: string;
-        emailSupportDesc: string;
-        liveChat: string;
-        liveChatDesc: string;
-        startChat: string;
-        phoneSupport: string;
-        phoneSupportDesc: string;
-        faq: string;
-        gettingStarted: string;
-        accountManagement: string;
-        faq1Question: string;
-        faq1Answer: string;
-        faq2Question: string;
-        faq2Answer: string;
-        faq3Question: string;
-        faq3Answer: string;
-        faq4Question: string;
-        faq4Answer: string;
-        resources: string;
-        userGuide: string;
-        userGuideDesc: string;
-        apiDocumentation: string;
-        apiDocumentationDesc: string;
-        community: string;
-        communityDesc: string;
-      };
-      tables: {
-        id: string;
-        player: string;
-        type: string;
-        severity: string;
-        description: string;
-        status: string;
-        time: string;
-        actions: string;
-        service: string;
-        uptime: string;
-        latency: string;
-        players: string;
-        gameName: string;
-        revenue: string;
-        totalWagered: string;
-        game: string;
-        wagered: string;
-      };
+    players: {
+      totalPlayers: string;
+      activePlayers: string;
+      inactivePlayers: string;
+      totalBalance: string;
+      username: string;
+      balance: string;
+      registrationDate: string;
+      description: string;
     };
+    profile: {
+      description: string;
+      personalInfo: string;
+      accountSecurity: string;
+      changePassword: string;
+      changePasswordDesc: string;
+      twoFactorAuth: string;
+      twoFactorAuthDesc: string;
+      changePhoto: string;
+    };
+    userSettings: {
+      description: string;
+      notifications: string;
+      appearance: string;
+      privacy: string;
+      emailNotifications: string;
+      emailNotificationsDesc: string;
+      pushNotifications: string;
+      pushNotificationsDesc: string;
+      smsNotifications: string;
+      smsNotificationsDesc: string;
+      language: string;
+      theme: string;
+      light: string;
+      dark: string;
+      auto: string;
+      showEmail: string;
+      showEmailDesc: string;
+      showPhone: string;
+      showPhoneDesc: string;
+    };
+    helpSupport: {
+      description: string;
+      emailSupport: string;
+      emailSupportDesc: string;
+      liveChat: string;
+      liveChatDesc: string;
+      startChat: string;
+      phoneSupport: string;
+      phoneSupportDesc: string;
+      faq: string;
+      gettingStarted: string;
+      accountManagement: string;
+      faq1Question: string;
+      faq1Answer: string;
+      faq2Question: string;
+      faq2Answer: string;
+      faq3Question: string;
+      faq3Answer: string;
+      faq4Question: string;
+      faq4Answer: string;
+      resources: string;
+      userGuide: string;
+      userGuideDesc: string;
+      apiDocumentation: string;
+      apiDocumentationDesc: string;
+      community: string;
+      communityDesc: string;
+    };
+    tables: {
+      id: string;
+      player: string;
+      type: string;
+      severity: string;
+      description: string;
+      status: string;
+      time: string;
+      actions: string;
+      service: string;
+      uptime: string;
+      latency: string;
+      players: string;
+      gameName: string;
+      revenue: string;
+      totalWagered: string;
+      game: string;
+      wagered: string;
+    };
+  };
   header: {
     providerPortal: string;
     operatorPortal: string;
@@ -560,6 +560,8 @@ export interface Translations {
     operatorsManagement: string;
     providerAccountsManagement: string;
     rolesPermissionsManagement: string;
+    rolesManagement: string;
+    permissionsManagement: string;
     playersManagement: string;
     transactions: string;
     walletPayment: string;
@@ -1159,6 +1161,8 @@ const translations: Record<AllLanguages, Translations> = {
       operatorsManagement: 'Karaoke Management',
       providerAccountsManagement: 'Massage Management',
       rolesPermissionsManagement: 'Roles & Permissions Management',
+      rolesManagement: 'Roles Management',
+      permissionsManagement: 'Permissions Management',
       playersManagement: 'Players Management',
       transactions: 'Transactions',
       walletPayment: 'Wallet & Payment',
@@ -1749,6 +1753,8 @@ const translations: Record<AllLanguages, Translations> = {
       operatorsManagement: 'Quản lý Karaoke',
       providerAccountsManagement: 'Quản lý Massage',
       rolesPermissionsManagement: 'Quản lý Role & Permission',
+      rolesManagement: 'Quản lý Roles',
+      permissionsManagement: 'Quản lý Permissions',
       playersManagement: 'Quản lý Players',
       transactions: 'Giao dịch',
       walletPayment: 'Ví & Thanh toán',
@@ -2339,6 +2345,8 @@ const translations: Record<AllLanguages, Translations> = {
       operatorsManagement: '运营商管理',
       providerAccountsManagement: '提供商账户管理',
       rolesPermissionsManagement: '角色和权限管理',
+      rolesManagement: '角色管理',
+      permissionsManagement: '权限管理',
       playersManagement: '玩家管理',
       transactions: '交易',
       walletPayment: '钱包和支付',
@@ -2929,6 +2937,8 @@ const translations: Record<AllLanguages, Translations> = {
       operatorsManagement: 'จัดการผู้ดำเนินการ',
       providerAccountsManagement: 'จัดการบัญชีผู้ให้บริการ',
       rolesPermissionsManagement: 'จัดการบทบาทและสิทธิ์',
+      rolesManagement: 'จัดการบทบาท',
+      permissionsManagement: 'จัดการสิทธิ์',
       playersManagement: 'จัดการผู้เล่น',
       transactions: 'ธุรกรรม',
       walletPayment: 'กระเป๋าเงินและการชำระเงิน',
@@ -3519,6 +3529,8 @@ const translations: Record<AllLanguages, Translations> = {
       operatorsManagement: 'オペレーター管理',
       providerAccountsManagement: 'プロバイダーアカウント管理',
       rolesPermissionsManagement: 'ロールと権限管理',
+      rolesManagement: 'ロール管理',
+      permissionsManagement: '権限管理',
       playersManagement: 'プレイヤー管理',
       transactions: '取引',
       walletPayment: 'ウォレットと支払い',
@@ -4109,6 +4121,8 @@ const translations: Record<AllLanguages, Translations> = {
       operatorsManagement: '운영자 관리',
       providerAccountsManagement: '제공자 계정 관리',
       rolesPermissionsManagement: '역할 및 권한 관리',
+      rolesManagement: '역할 관리',
+      permissionsManagement: '권한 관리',
       playersManagement: '플레이어 관리',
       transactions: '거래',
       walletPayment: '지갑 및 결제',
@@ -4147,11 +4161,11 @@ export default translations;
 export const getTranslation = (lang: SupportedLanguage, key: string): string => {
   const keys = key.split('.');
   let value: any = translations[lang];
-  
+
   for (const k of keys) {
     value = value?.[k];
   }
-  
+
   return value || key;
 };
 
