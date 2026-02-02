@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, Plus, X, Loader2, Edit, Trash2, Shield } from 'lucide-react';
+import { Search, Filter, Plus, X, Loader2, Edit, Trash2, Shield, Key } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { rbacService } from '../../../services/rbacService';
-import { RoleResponseDto } from '../../../types/api';
+import { RoleResponseDto, PermissionResponseDto } from '../../../types/api';
 
 const RolesManagement = () => {
     const { t } = useLanguage();
@@ -25,6 +25,14 @@ const RolesManagement = () => {
         slug: '',
         description: '',
     });
+
+    // Assign permissions modal state
+    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [assigningRole, setAssigningRole] = useState<{ id: string; title: string } | null>(null);
+    const [allPermissions, setAllPermissions] = useState<PermissionResponseDto[]>([]);
+    const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+    const [loadingPermissions, setLoadingPermissions] = useState(false);
+    const [savingPermissions, setSavingPermissions] = useState(false);
 
     // Fetch roles on component mount
     useEffect(() => {
@@ -141,6 +149,69 @@ const RolesManagement = () => {
         setRoleToDelete(null);
     };
 
+    // Handle opening assign permissions modal
+    const handleAssignClick = async (roleId: string, roleTitle: string) => {
+        setAssigningRole({ id: roleId, title: roleTitle });
+        setIsAssignModalOpen(true);
+        setLoadingPermissions(true);
+
+        try {
+            // Fetch all permissions
+            const permissionsResponse = await rbacService.getPermissions(1, 100);
+            const permissionsList = (permissionsResponse as any)?.data || [];
+            setAllPermissions(permissionsList);
+
+            // Fetch current role permissions
+            const rolePermissions = await rbacService.getRolePermissions(roleId);
+            const rolePermissionIds = (rolePermissions || []).map((p: PermissionResponseDto) => p.id);
+            setSelectedPermissions(rolePermissionIds);
+        } catch (error: any) {
+            toast.error(error.message || t('pages.roles.loadPermissionsFailed'));
+        } finally {
+            setLoadingPermissions(false);
+        }
+    };
+
+    const handleCloseAssignModal = () => {
+        setIsAssignModalOpen(false);
+        setAssigningRole(null);
+        setSelectedPermissions([]);
+        setAllPermissions([]);
+    };
+
+    const handlePermissionToggle = (permissionId: string) => {
+        setSelectedPermissions(prev =>
+            prev.includes(permissionId)
+                ? prev.filter(id => id !== permissionId)
+                : [...prev, permissionId]
+        );
+    };
+
+    const handleSelectAllPermissions = () => {
+        if (selectedPermissions.length === allPermissions.length) {
+            setSelectedPermissions([]);
+        } else {
+            setSelectedPermissions(allPermissions.map(p => p.id));
+        }
+    };
+
+    const handleSavePermissions = async () => {
+        if (!assigningRole) return;
+
+        setSavingPermissions(true);
+        try {
+            await rbacService.assignPermissionsToRole(assigningRole.id, {
+                permissionIds: selectedPermissions,
+            });
+            toast.success(t('pages.roles.assignSuccess'));
+            handleCloseAssignModal();
+        } catch (error: any) {
+            toast.error(error.message || t('pages.roles.assignFailed'));
+        } finally {
+            setSavingPermissions(false);
+        }
+    };
+
     // Filter roles based on search query
     const filteredRoles = roles.filter(role => {
         if (!searchQuery.trim()) return true;
@@ -155,8 +226,8 @@ const RolesManagement = () => {
     return (
         <div className="flex-1 bg-gray-50 p-6">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800 mb-1">Quản lý Roles</h1>
-                <p className="text-gray-500 text-sm">Quản lý các vai trò trong hệ thống</p>
+                <h1 className="text-2xl font-bold text-gray-800 mb-1">{t('pages.roles.title')}</h1>
+                <p className="text-gray-500 text-sm">{t('pages.roles.description') || 'Quản lý các vai trò trong hệ thống'}</p>
             </div>
 
             {/* Filters */}
@@ -166,7 +237,7 @@ const RolesManagement = () => {
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Tìm kiếm theo tên, slug hoặc mô tả..."
+                            placeholder={t('pages.roles.searchPlaceholder')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -177,7 +248,7 @@ const RolesManagement = () => {
                         className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                     >
                         <Plus className="w-4 h-4" />
-                        Thêm Role
+                        {t('pages.roles.addRole')}
                     </button>
                     <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                         <Filter className="w-4 h-4" />
@@ -192,12 +263,12 @@ const RolesManagement = () => {
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Slug</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Mô tả</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Trạng thái</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ngày tạo</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Thao tác</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.roles.role')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.roles.slug')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.roles.description')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('common.status')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('common.createdAt')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('common.actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -211,7 +282,7 @@ const RolesManagement = () => {
                             ) : filteredRoles.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                                        {searchQuery ? 'Không tìm thấy role nào' : 'Chưa có role nào'}
+                                        {searchQuery ? t('pages.roles.noRolesFound') : t('pages.roles.noRolesYet')}
                                     </td>
                                 </tr>
                             ) : (
@@ -248,6 +319,13 @@ const RolesManagement = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handleAssignClick(role.id, role.title)}
+                                                    className="text-green-600 hover:text-green-900 p-2 hover:bg-green-50 rounded"
+                                                    title="Gán Permissions"
+                                                >
+                                                    <Key className="w-4 h-4" />
+                                                </button>
                                                 <button
                                                     onClick={() => {
                                                         setIsModalOpen(true);
@@ -450,6 +528,130 @@ const RolesManagement = () => {
                             >
                                 {deletingId === roleToDelete.id && <Loader2 className="w-4 h-4 animate-spin" />}
                                 <span>{deletingId === roleToDelete.id ? t('common.deleting') : t('common.delete')}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Assign Permissions Modal */}
+            {isAssignModalOpen && assigningRole && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">{t('pages.roles.assignPermissions')}</h2>
+                                <p className="text-sm text-gray-500 mt-1">
+                                    {t('pages.roles.role')}: <span className="font-medium text-purple-600">{assigningRole.title}</span>
+                                </p>
+                            </div>
+                            <button
+                                onClick={handleCloseAssignModal}
+                                disabled={savingPermissions}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 overflow-y-auto flex-1">
+                            {loadingPermissions ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                                    <span className="ml-2 text-gray-600">{t('pages.roles.loadingPermissions')}</span>
+                                </div>
+                            ) : allPermissions.length === 0 ? (
+                                <div className="text-center py-12 text-gray-500">
+                                    {t('pages.roles.noPermissionsYet')}
+                                </div>
+                            ) : (
+                                <>
+                                    {/* Select All */}
+                                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedPermissions.length === allPermissions.length}
+                                                onChange={handleSelectAllPermissions}
+                                                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                            />
+                                            <span className="text-sm font-medium text-gray-700">
+                                                {t('pages.roles.selectAll')} ({allPermissions.length} permissions)
+                                            </span>
+                                        </label>
+                                        <span className="text-sm text-gray-500">
+                                            {t('pages.roles.selectedCount')}: {selectedPermissions.length}
+                                        </span>
+                                    </div>
+
+                                    {/* Permissions List */}
+                                    <div className="space-y-2">
+                                        {allPermissions.map((permission) => (
+                                            <label
+                                                key={permission.id}
+                                                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer border border-gray-200"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedPermissions.includes(permission.id)}
+                                                    onChange={() => handlePermissionToggle(permission.id)}
+                                                    className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                                />
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <Key className="w-4 h-4 text-green-600" />
+                                                        <span className="text-sm font-medium text-gray-900">
+                                                            {permission.title}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <span className="px-2 py-0.5 rounded text-xs font-mono bg-gray-100 text-gray-600">
+                                                            {permission.slug}
+                                                        </span>
+                                                        {permission.resource && (
+                                                            <span className="px-2 py-0.5 rounded text-xs bg-indigo-100 text-indigo-700">
+                                                                {permission.resource}
+                                                            </span>
+                                                        )}
+                                                        {permission.action && (
+                                                            <span className={`px-2 py-0.5 rounded text-xs ${permission.action === 'READ' ? 'bg-blue-100 text-blue-700' :
+                                                                permission.action === 'CREATE' ? 'bg-green-100 text-green-700' :
+                                                                    permission.action === 'UPDATE' ? 'bg-yellow-100 text-yellow-700' :
+                                                                        permission.action === 'DELETE' ? 'bg-red-100 text-red-700' :
+                                                                            'bg-purple-100 text-purple-700'
+                                                                }`}>
+                                                                {permission.action}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+                            <button
+                                type="button"
+                                onClick={handleCloseAssignModal}
+                                disabled={savingPermissions}
+                                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {t('common.cancel')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSavePermissions}
+                                disabled={savingPermissions || loadingPermissions}
+                                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                {savingPermissions && <Loader2 className="w-4 h-4 animate-spin" />}
+                                <span>{savingPermissions ? t('pages.roles.saving') : t('pages.roles.saveChanges')}</span>
                             </button>
                         </div>
                     </div>

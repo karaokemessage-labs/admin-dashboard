@@ -55,6 +55,7 @@ export const API_ENDPOINTS = {
   RBAC: {
     ROLES: '/rbac/roles',
     ROLE_BY_ID: (id: string) => `/rbac/roles/${id}`,
+    ROLE_PERMISSIONS: (roleId: string) => `/rbac/roles/${roleId}/permissions`,
     PERMISSIONS: '/rbac/permissions',
     ASSIGN_ROLES_TO_USER: (userId: string) => `/rbac/users/${userId}/roles`,
   },

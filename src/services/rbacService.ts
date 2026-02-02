@@ -31,6 +31,10 @@ export interface GetPermissionsResponseDto {
   limit: number;
 }
 
+export interface AssignPermissionsToRoleRequestDto {
+  permissionIds: string[];
+}
+
 export interface RbacService {
   // Roles
   createRole: (data: CreateRoleRequestDto) => Promise<RoleResponseDto>;
@@ -45,6 +49,10 @@ export interface RbacService {
   getPermission: (id: string) => Promise<PermissionResponseDto>;
   updatePermission: (id: string, data: UpdatePermissionRequestDto) => Promise<PermissionResponseDto>;
   deletePermission: (id: string) => Promise<void>;
+
+  // Role permissions
+  getRolePermissions: (roleId: string) => Promise<PermissionResponseDto[]>;
+  assignPermissionsToRole: (roleId: string, data: AssignPermissionsToRoleRequestDto) => Promise<void>;
 
   // User roles
   assignRolesToUser: (userId: string, data: AssignRolesToUserRequestDto) => Promise<void>;
@@ -195,6 +203,34 @@ class RbacServiceImpl implements RbacService {
       const apiError = error as ApiError;
       throw new Error(
         apiError.message || 'Xóa quyền thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async getRolePermissions(roleId: string): Promise<PermissionResponseDto[]> {
+    try {
+      const response = await apiClient.get<PermissionResponseDto[]>(
+        API_ENDPOINTS.RBAC.ROLE_PERMISSIONS(roleId)
+      );
+      return response.data;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Không thể lấy danh sách quyền của vai trò. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async assignPermissionsToRole(roleId: string, data: AssignPermissionsToRoleRequestDto): Promise<void> {
+    try {
+      await apiClient.post(
+        API_ENDPOINTS.RBAC.ROLE_PERMISSIONS(roleId),
+        data
+      );
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Gán quyền cho vai trò thất bại. Vui lòng thử lại.'
       );
     }
   }

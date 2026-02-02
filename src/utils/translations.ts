@@ -212,13 +212,18 @@ export interface Translations {
       title: string;
       addRole: string;
       createRole: string;
+      editRole: string;
       deleteRole: string;
       searchPlaceholder: string;
       createSuccess: string;
       createFailed: string;
+      updateSuccess: string;
+      updateFailed: string;
       deleteSuccess: string;
       deleteFailed: string;
       role: string;
+      slug: string;
+      description: string;
       permissions: string;
       noRolesFound: string;
       noRolesYet: string;
@@ -227,6 +232,17 @@ export interface Translations {
       operatorAccounts: string;
       operatorAccount: string;
       selectPermissions: string;
+      // Assign permissions
+      assignPermissions: string;
+      assignPermissionsToRole: string;
+      saveChanges: string;
+      saving: string;
+      selectAll: string;
+      selectedCount: string;
+      noPermissionsYet: string;
+      assignSuccess: string;
+      assignFailed: string;
+      loadPermissionsFailed: string;
     };
     permissions: {
       title: string;
@@ -813,13 +829,18 @@ const translations: Record<AllLanguages, Translations> = {
         title: 'Roles Management',
         addRole: 'Add Role',
         createRole: 'Create Role',
+        editRole: 'Edit Role',
         deleteRole: 'Delete Role',
         searchPlaceholder: 'Search role...',
         createSuccess: 'Role created successfully!',
         createFailed: 'Failed to create role. Please try again.',
+        updateSuccess: 'Role updated successfully!',
+        updateFailed: 'Failed to update role. Please try again.',
         deleteSuccess: 'Role deleted successfully!',
         deleteFailed: 'Failed to delete role. Please try again.',
         role: 'Role',
+        slug: 'Slug',
+        description: 'Description',
         permissions: 'Permissions',
         noRolesFound: 'No roles found',
         noRolesYet: 'No roles yet',
@@ -828,6 +849,17 @@ const translations: Record<AllLanguages, Translations> = {
         operatorAccounts: 'Operator Accounts',
         operatorAccount: 'Operator Account',
         selectPermissions: 'Select Permissions',
+        // Assign permissions
+        assignPermissions: 'Assign Permissions',
+        assignPermissionsToRole: 'Assign permissions to role',
+        saveChanges: 'Save Changes',
+        saving: 'Saving...',
+        selectAll: 'Select all',
+        selectedCount: 'Selected',
+        noPermissionsYet: 'No permissions in the system yet',
+        assignSuccess: 'Permissions assigned successfully!',
+        assignFailed: 'Failed to assign permissions. Please try again.',
+        loadPermissionsFailed: 'Failed to load permissions list',
       },
       permissions: {
         title: 'Permissions Management',
@@ -1405,13 +1437,18 @@ const translations: Record<AllLanguages, Translations> = {
         title: 'Quản lý Role',
         addRole: 'Thêm Role',
         createRole: 'Tạo Role',
+        editRole: 'Chỉnh sửa Role',
         deleteRole: 'Xóa Role',
         searchPlaceholder: 'Tìm kiếm role...',
         createSuccess: 'Tạo Role thành công!',
         createFailed: 'Tạo Role thất bại. Vui lòng thử lại.',
+        updateSuccess: 'Cập nhật Role thành công!',
+        updateFailed: 'Cập nhật Role thất bại. Vui lòng thử lại.',
         deleteSuccess: 'Xóa Role thành công!',
         deleteFailed: 'Xóa Role thất bại. Vui lòng thử lại.',
         role: 'Role',
+        slug: 'Slug',
+        description: 'Mô tả',
         permissions: 'Permissions',
         noRolesFound: 'Không tìm thấy Role nào',
         noRolesYet: 'Chưa có Role nào',
@@ -1420,6 +1457,17 @@ const translations: Record<AllLanguages, Translations> = {
         operatorAccounts: 'Operator Accounts',
         operatorAccount: 'Operator Account',
         selectPermissions: 'Chọn Permissions',
+        // Assign permissions
+        assignPermissions: 'Gán Permissions',
+        assignPermissionsToRole: 'Gán permissions cho role',
+        saveChanges: 'Lưu thay đổi',
+        saving: 'Đang lưu...',
+        selectAll: 'Chọn tất cả',
+        selectedCount: 'Đã chọn',
+        noPermissionsYet: 'Chưa có permission nào trong hệ thống',
+        assignSuccess: 'Gán permissions thành công!',
+        assignFailed: 'Gán permissions thất bại. Vui lòng thử lại.',
+        loadPermissionsFailed: 'Không thể tải danh sách permissions',
       },
       permissions: {
         title: 'Quản lý Permission',
@@ -1997,13 +2045,18 @@ const translations: Record<AllLanguages, Translations> = {
         title: '角色管理',
         addRole: '添加角色',
         createRole: '创建角色',
+        editRole: '编辑角色',
         deleteRole: '删除角色',
         searchPlaceholder: '搜索角色...',
         createSuccess: '角色创建成功！',
         createFailed: '创建角色失败。请重试。',
+        updateSuccess: '角色更新成功！',
+        updateFailed: '更新角色失败。请重试。',
         deleteSuccess: '角色删除成功！',
         deleteFailed: '删除角色失败。请重试。',
         role: '角色',
+        slug: 'Slug',
+        description: '描述',
         permissions: '权限',
         noRolesFound: '未找到角色',
         noRolesYet: '暂无角色',
@@ -2012,6 +2065,17 @@ const translations: Record<AllLanguages, Translations> = {
         operatorAccounts: '运营商账户',
         operatorAccount: '运营商账户',
         selectPermissions: '选择权限',
+        // Assign permissions
+        assignPermissions: '分配权限',
+        assignPermissionsToRole: '为角色分配权限',
+        saveChanges: '保存更改',
+        saving: '保存中...',
+        selectAll: '全选',
+        selectedCount: '已选择',
+        noPermissionsYet: '系统中暂无权限',
+        assignSuccess: '权限分配成功！',
+        assignFailed: '分配权限失败。请重试。',
+        loadPermissionsFailed: '无法加载权限列表',
       },
       permissions: {
         title: '权限管理',
@@ -2589,13 +2653,18 @@ const translations: Record<AllLanguages, Translations> = {
         title: 'จัดการบทบาท',
         addRole: 'เพิ่มบทบาท',
         createRole: 'สร้างบทบาท',
+        editRole: 'แก้ไขบทบาท',
         deleteRole: 'ลบบทบาท',
         searchPlaceholder: 'ค้นหาบทบาท...',
         createSuccess: 'สร้างบทบาทสำเร็จ!',
         createFailed: 'สร้างบทบาทล้มเหลว กรุณาลองอีกครั้ง',
+        updateSuccess: 'อัปเดตบทบาทสำเร็จ!',
+        updateFailed: 'อัปเดตบทบาทล้มเหลว กรุณาลองอีกครั้ง',
         deleteSuccess: 'ลบบทบาทสำเร็จ!',
         deleteFailed: 'ลบบทบาทล้มเหลว กรุณาลองอีกครั้ง',
         role: 'บทบาท',
+        slug: 'Slug',
+        description: 'คำอธิบาย',
         permissions: 'สิทธิ์',
         noRolesFound: 'ไม่พบบทบาท',
         noRolesYet: 'ยังไม่มีบทบาท',
@@ -2604,6 +2673,17 @@ const translations: Record<AllLanguages, Translations> = {
         operatorAccounts: 'บัญชีผู้ดำเนินการ',
         operatorAccount: 'บัญชีผู้ดำเนินการ',
         selectPermissions: 'เลือกสิทธิ์',
+        // Assign permissions
+        assignPermissions: 'กำหนดสิทธิ์',
+        assignPermissionsToRole: 'กำหนดสิทธิ์ให้บทบาท',
+        saveChanges: 'บันทึกการเปลี่ยนแปลง',
+        saving: 'กำลังบันทึก...',
+        selectAll: 'เลือกทั้งหมด',
+        selectedCount: 'เลือกแล้ว',
+        noPermissionsYet: 'ยังไม่มีสิทธิ์ในระบบ',
+        assignSuccess: 'กำหนดสิทธิ์สำเร็จ!',
+        assignFailed: 'กำหนดสิทธิ์ล้มเหลว กรุณาลองอีกครั้ง',
+        loadPermissionsFailed: 'ไม่สามารถโหลดรายการสิทธิ์',
       },
       permissions: {
         title: 'จัดการสิทธิ์',
@@ -3181,13 +3261,18 @@ const translations: Record<AllLanguages, Translations> = {
         title: 'ロール管理',
         addRole: 'ロールを追加',
         createRole: 'ロールを作成',
+        editRole: 'ロールを編集',
         deleteRole: 'ロールを削除',
         searchPlaceholder: 'ロールを検索...',
         createSuccess: 'ロールの作成に成功しました！',
         createFailed: 'ロールの作成に失敗しました。もう一度お試しください。',
+        updateSuccess: 'ロールの更新に成功しました！',
+        updateFailed: 'ロールの更新に失敗しました。もう一度お試しください。',
         deleteSuccess: 'ロールの削除に成功しました！',
         deleteFailed: 'ロールの削除に失敗しました。もう一度お試しください。',
         role: 'ロール',
+        slug: 'Slug',
+        description: '説明',
         permissions: '権限',
         noRolesFound: 'ロールが見つかりません',
         noRolesYet: 'ロールがまだありません',
@@ -3196,6 +3281,17 @@ const translations: Record<AllLanguages, Translations> = {
         operatorAccounts: 'オペレーターアカウント',
         operatorAccount: 'オペレーターアカウント',
         selectPermissions: '権限を選択',
+        // Assign permissions
+        assignPermissions: '権限を割り当て',
+        assignPermissionsToRole: 'ロールに権限を割り当て',
+        saveChanges: '変更を保存',
+        saving: '保存中...',
+        selectAll: '全選択',
+        selectedCount: '選択済み',
+        noPermissionsYet: 'システムに権限がまだありません',
+        assignSuccess: '権限の割り当てに成功しました！',
+        assignFailed: '権限の割り当てに失敗しました。もう一度お試しください。',
+        loadPermissionsFailed: '権限リストを読み込めませんでした',
       },
       permissions: {
         title: '権限管理',
@@ -3773,13 +3869,18 @@ const translations: Record<AllLanguages, Translations> = {
         title: '역할 관리',
         addRole: '역할 추가',
         createRole: '역할 생성',
+        editRole: '역할 편집',
         deleteRole: '역할 삭제',
         searchPlaceholder: '역할 검색...',
         createSuccess: '역할 생성 성공!',
         createFailed: '역할 생성 실패. 다시 시도해주세요.',
+        updateSuccess: '역할 업데이트 성공!',
+        updateFailed: '역할 업데이트 실패. 다시 시도해주세요.',
         deleteSuccess: '역할 삭제 성공!',
         deleteFailed: '역할 삭제 실패. 다시 시도해주세요.',
         role: '역할',
+        slug: 'Slug',
+        description: '설명',
         permissions: '권한',
         noRolesFound: '역할을 찾을 수 없음',
         noRolesYet: '아직 역할 없음',
@@ -3788,6 +3889,17 @@ const translations: Record<AllLanguages, Translations> = {
         operatorAccounts: '운영자 계정',
         operatorAccount: '운영자 계정',
         selectPermissions: '권한 선택',
+        // Assign permissions
+        assignPermissions: '권한 할당',
+        assignPermissionsToRole: '역할에 권한 할당',
+        saveChanges: '변경사항 저장',
+        saving: '저장 중...',
+        selectAll: '전체 선택',
+        selectedCount: '선택됨',
+        noPermissionsYet: '시스템에 아직 권한이 없음',
+        assignSuccess: '권한 할당 성공!',
+        assignFailed: '권한 할당 실패. 다시 시도해주세요.',
+        loadPermissionsFailed: '권한 목록을 로드할 수 없음',
       },
       permissions: {
         title: '권한 관리',
