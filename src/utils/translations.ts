@@ -248,12 +248,40 @@ export interface Translations {
       title: string;
       addPermission: string;
       createPermission: string;
+      editPermission: string;
       deletePermission: string;
       searchPlaceholder: string;
       createSuccess: string;
       createFailed: string;
+      updateSuccess: string;
+      updateFailed: string;
       deleteSuccess: string;
       deleteFailed: string;
+      permission: string;
+      slug: string;
+      description: string;
+      resource: string;
+      action: string;
+      content: string;
+      detailedContent: string;
+      selectAction: string;
+      selectResourceAndAction: string;
+      enterPermissionName: string;
+      enterSlug: string;
+      enterResource: string;
+      enterDescription: string;
+      enterDetailedContent: string;
+      noPermissionsFound: string;
+      noPermissionsYet: string;
+      loadingPermissions: string;
+      // Pagination
+      showing: string;
+      of: string;
+      page: string;
+      previous: string;
+      next: string;
+      // Delete confirmation
+      deleteConfirmMessage: string;
     };
     wallet: {
       title: string;
@@ -865,12 +893,40 @@ const translations: Record<AllLanguages, Translations> = {
         title: 'Permissions Management',
         addPermission: 'Add Permission',
         createPermission: 'Create Permission',
+        editPermission: 'Edit Permission',
         deletePermission: 'Delete Permission',
-        searchPlaceholder: 'Search permission...',
+        searchPlaceholder: 'Search by name, slug, resource...',
         createSuccess: 'Permission created successfully!',
         createFailed: 'Failed to create permission. Please try again.',
+        updateSuccess: 'Permission updated successfully!',
+        updateFailed: 'Failed to update permission. Please try again.',
         deleteSuccess: 'Permission deleted successfully!',
         deleteFailed: 'Failed to delete permission. Please try again.',
+        permission: 'Permission',
+        slug: 'Slug',
+        description: 'Description',
+        resource: 'Resource',
+        action: 'Action',
+        content: 'Content',
+        detailedContent: 'Detailed Content',
+        selectAction: 'Select action...',
+        selectResourceAndAction: 'Please select Resource and Action',
+        enterPermissionName: 'Enter permission name...',
+        enterSlug: 'e.g., users.view, venues.manage...',
+        enterResource: 'e.g., users, venues, dashboard...',
+        enterDescription: 'Enter description about permission...',
+        enterDetailedContent: 'Enter detailed content about permission (optional)...',
+        noPermissionsFound: 'No permissions found',
+        noPermissionsYet: 'No permissions yet',
+        loadingPermissions: 'Loading permissions list...',
+        // Pagination
+        showing: 'Showing',
+        of: 'of',
+        page: 'Page',
+        previous: 'Previous',
+        next: 'Next',
+        // Delete confirmation
+        deleteConfirmMessage: 'Are you sure you want to delete permission',
       },
       wallet: {
         title: 'Wallet & Payment',
@@ -1473,12 +1529,40 @@ const translations: Record<AllLanguages, Translations> = {
         title: 'Quản lý Permission',
         addPermission: 'Thêm Permission',
         createPermission: 'Tạo Permission',
+        editPermission: 'Chỉnh sửa Permission',
         deletePermission: 'Xóa Permission',
-        searchPlaceholder: 'Tìm kiếm permission...',
+        searchPlaceholder: 'Tìm kiếm theo tên, slug, resource...',
         createSuccess: 'Tạo Permission thành công!',
         createFailed: 'Tạo Permission thất bại. Vui lòng thử lại.',
+        updateSuccess: 'Cập nhật Permission thành công!',
+        updateFailed: 'Cập nhật Permission thất bại. Vui lòng thử lại.',
         deleteSuccess: 'Xóa Permission thành công!',
         deleteFailed: 'Xóa Permission thất bại. Vui lòng thử lại.',
+        permission: 'Permission',
+        slug: 'Slug',
+        description: 'Mô tả',
+        resource: 'Resource',
+        action: 'Action',
+        content: 'Nội dung',
+        detailedContent: 'Nội dung chi tiết',
+        selectAction: 'Chọn action...',
+        selectResourceAndAction: 'Vui lòng chọn Resource và Action',
+        enterPermissionName: 'Nhập tên permission...',
+        enterSlug: 'vd: users.view, venues.manage...',
+        enterResource: 'vd: users, venues, dashboard...',
+        enterDescription: 'Nhập mô tả về permission...',
+        enterDetailedContent: 'Nhập nội dung chi tiết về permission (tùy chọn)...',
+        noPermissionsFound: 'Không tìm thấy permission nào',
+        noPermissionsYet: 'Chưa có permission nào',
+        loadingPermissions: 'Đang tải danh sách permissions...',
+        // Pagination
+        showing: 'Hiển thị',
+        of: 'của',
+        page: 'Trang',
+        previous: 'Trước',
+        next: 'Sau',
+        // Delete confirmation
+        deleteConfirmMessage: 'Bạn có chắc chắn muốn xóa permission',
       },
       wallet: {
         title: 'Ví & Thanh toán',
@@ -2081,12 +2165,40 @@ const translations: Record<AllLanguages, Translations> = {
         title: '权限管理',
         addPermission: '添加权限',
         createPermission: '创建权限',
+        editPermission: '编辑权限',
         deletePermission: '删除权限',
-        searchPlaceholder: '搜索权限...',
+        searchPlaceholder: '按名称、slug、资源搜索...',
         createSuccess: '权限创建成功！',
         createFailed: '创建权限失败。请重试。',
+        updateSuccess: '权限更新成功！',
+        updateFailed: '更新权限失败。请重试。',
         deleteSuccess: '权限删除成功！',
         deleteFailed: '删除权限失败。请重试。',
+        permission: '权限',
+        slug: 'Slug',
+        description: '描述',
+        resource: '资源',
+        action: '操作',
+        content: '内容',
+        detailedContent: '详细内容',
+        selectAction: '选择操作...',
+        selectResourceAndAction: '请选择资源和操作',
+        enterPermissionName: '输入权限名称...',
+        enterSlug: '例如: users.view, venues.manage...',
+        enterResource: '例如: users, venues, dashboard...',
+        enterDescription: '输入权限描述...',
+        enterDetailedContent: '输入权限详细内容（可选）...',
+        noPermissionsFound: '未找到权限',
+        noPermissionsYet: '暂无权限',
+        loadingPermissions: '正在加载权限列表...',
+        // Pagination
+        showing: '显示',
+        of: '共',
+        page: '页',
+        previous: '上一页',
+        next: '下一页',
+        // Delete confirmation
+        deleteConfirmMessage: '您确定要删除权限',
       },
       wallet: {
         title: '钱包和支付',
@@ -2689,12 +2801,40 @@ const translations: Record<AllLanguages, Translations> = {
         title: 'จัดการสิทธิ์',
         addPermission: 'เพิ่มสิทธิ์',
         createPermission: 'สร้างสิทธิ์',
+        editPermission: 'แก้ไขสิทธิ์',
         deletePermission: 'ลบสิทธิ์',
-        searchPlaceholder: 'ค้นหาสิทธิ์...',
+        searchPlaceholder: 'ค้นหาตามชื่อ, slug, ทรัพยากร...',
         createSuccess: 'สร้างสิทธิ์สำเร็จ!',
         createFailed: 'สร้างสิทธิ์ล้มเหลว กรุณาลองอีกครั้ง',
+        updateSuccess: 'อัปเดตสิทธิ์สำเร็จ!',
+        updateFailed: 'อัปเดตสิทธิ์ล้มเหลว กรุณาลองอีกครั้ง',
         deleteSuccess: 'ลบสิทธิ์สำเร็จ!',
         deleteFailed: 'ลบสิทธิ์ล้มเหลว กรุณาลองอีกครั้ง',
+        permission: 'สิทธิ์',
+        slug: 'Slug',
+        description: 'คำอธิบาย',
+        resource: 'ทรัพยากร',
+        action: 'การดำเนินการ',
+        content: 'เนื้อหา',
+        detailedContent: 'เนื้อหาโดยละเอียด',
+        selectAction: 'เลือกการดำเนินการ...',
+        selectResourceAndAction: 'กรุณาเลือกทรัพยากรและการดำเนินการ',
+        enterPermissionName: 'ใส่ชื่อสิทธิ์...',
+        enterSlug: 'เช่น: users.view, venues.manage...',
+        enterResource: 'เช่น: users, venues, dashboard...',
+        enterDescription: 'ใส่คำอธิบายเกี่ยวกับสิทธิ์...',
+        enterDetailedContent: 'ใส่เนื้อหาโดยละเอียดเกี่ยวกับสิทธิ์ (ตัวเลือก)...',
+        noPermissionsFound: 'ไม่พบสิทธิ์',
+        noPermissionsYet: 'ยังไม่มีสิทธิ์',
+        loadingPermissions: 'กำลังโหลดรายการสิทธิ์...',
+        // Pagination
+        showing: 'แสดง',
+        of: 'จาก',
+        page: 'หน้า',
+        previous: 'ก่อนหน้า',
+        next: 'ถัดไป',
+        // Delete confirmation
+        deleteConfirmMessage: 'คุณแน่ใจหรือไม่ว่าต้องการลบสิทธิ์',
       },
       wallet: {
         title: 'กระเป๋าเงินและการชำระเงิน',
@@ -3297,12 +3437,40 @@ const translations: Record<AllLanguages, Translations> = {
         title: '権限管理',
         addPermission: '権限を追加',
         createPermission: '権限を作成',
+        editPermission: '権限を編集',
         deletePermission: '権限を削除',
-        searchPlaceholder: '権限を検索...',
+        searchPlaceholder: '名前、slug、リソースで検索...',
         createSuccess: '権限の作成に成功しました！',
         createFailed: '権限の作成に失敗しました。もう一度お試しください。',
+        updateSuccess: '権限の更新に成功しました！',
+        updateFailed: '権限の更新に失敗しました。もう一度お試しください。',
         deleteSuccess: '権限の削除に成功しました！',
         deleteFailed: '権限の削除に失敗しました。もう一度お試しください。',
+        permission: '権限',
+        slug: 'Slug',
+        description: '説明',
+        resource: 'リソース',
+        action: 'アクション',
+        content: 'コンテンツ',
+        detailedContent: '詳細コンテンツ',
+        selectAction: 'アクションを選択...',
+        selectResourceAndAction: 'リソースとアクションを選択してください',
+        enterPermissionName: '権限名を入力...',
+        enterSlug: '例: users.view, venues.manage...',
+        enterResource: '例: users, venues, dashboard...',
+        enterDescription: '権限の説明を入力...',
+        enterDetailedContent: '権限の詳細コンテンツを入力（オプション）...',
+        noPermissionsFound: '権限が見つかりません',
+        noPermissionsYet: '権限がまだありません',
+        loadingPermissions: '権限リストを読み込み中...',
+        // Pagination
+        showing: '表示中',
+        of: '/',
+        page: 'ページ',
+        previous: '前へ',
+        next: '次へ',
+        // Delete confirmation
+        deleteConfirmMessage: '権限を削除してもよろしいですか',
       },
       wallet: {
         title: 'ウォレットと支払い',
@@ -3905,12 +4073,40 @@ const translations: Record<AllLanguages, Translations> = {
         title: '권한 관리',
         addPermission: '권한 추가',
         createPermission: '권한 생성',
+        editPermission: '권한 편집',
         deletePermission: '권한 삭제',
-        searchPlaceholder: '권한 검색...',
+        searchPlaceholder: '이름, slug, 리소스로 검색...',
         createSuccess: '권한 생성 성공!',
         createFailed: '권한 생성 실패. 다시 시도해주세요.',
+        updateSuccess: '권한 업데이트 성공!',
+        updateFailed: '권한 업데이트 실패. 다시 시도해주세요.',
         deleteSuccess: '권한 삭제 성공!',
         deleteFailed: '권한 삭제 실패. 다시 시도해주세요.',
+        permission: '권한',
+        slug: 'Slug',
+        description: '설명',
+        resource: '리소스',
+        action: '액션',
+        content: '콘텐츠',
+        detailedContent: '상세 콘텐츠',
+        selectAction: '액션 선택...',
+        selectResourceAndAction: '리소스와 액션을 선택해주세요',
+        enterPermissionName: '권한 이름 입력...',
+        enterSlug: '예: users.view, venues.manage...',
+        enterResource: '예: users, venues, dashboard...',
+        enterDescription: '권한에 대한 설명 입력...',
+        enterDetailedContent: '권한에 대한 상세 콘텐츠 입력 (선택사항)...',
+        noPermissionsFound: '권한을 찾을 수 없음',
+        noPermissionsYet: '아직 권한 없음',
+        loadingPermissions: '권한 목록 로딩 중...',
+        // Pagination
+        showing: '표시',
+        of: '/',
+        page: '페이지',
+        previous: '이전',
+        next: '다음',
+        // Delete confirmation
+        deleteConfirmMessage: '권한을 삭제하시겠습니까',
       },
       wallet: {
         title: '지갑 및 결제',

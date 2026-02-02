@@ -98,10 +98,10 @@ const PermissionsManagement = () => {
                     description: formData.description || undefined,
                     content: formData.content || undefined,
                 });
-                toast.success('Cập nhật permission thành công');
+                toast.success(t('pages.permissions.updateSuccess'));
             } else {
                 if (!formData.resource || !formData.action) {
-                    toast.error('Vui lòng chọn Resource và Action');
+                    toast.error(t('pages.permissions.selectResourceAndAction'));
                     setLoading(false);
                     return;
                 }
@@ -113,13 +113,13 @@ const PermissionsManagement = () => {
                     action: formData.action as PermissionAction,
                     content: formData.content || undefined,
                 });
-                toast.success('Tạo permission thành công');
+                toast.success(t('pages.permissions.createSuccess'));
             }
 
             handleCloseModal();
             await fetchPermissions(currentPage);
         } catch (error: any) {
-            toast.error(error.message || (isEditMode ? 'Cập nhật permission thất bại' : 'Tạo permission thất bại'));
+            toast.error(error.message || (isEditMode ? t('pages.permissions.updateFailed') : t('pages.permissions.createFailed')));
         } finally {
             setLoading(false);
         }
@@ -144,12 +144,12 @@ const PermissionsManagement = () => {
         setDeletingId(permissionToDelete.id);
         try {
             await rbacService.deletePermission(permissionToDelete.id);
-            toast.success('Xóa permission thành công');
+            toast.success(t('pages.permissions.deleteSuccess'));
             setIsDeleteModalOpen(false);
             setPermissionToDelete(null);
             await fetchPermissions(currentPage);
         } catch (error: any) {
-            toast.error(error.message || 'Xóa permission thất bại');
+            toast.error(error.message || t('pages.permissions.deleteFailed'));
         } finally {
             setDeletingId(null);
         }
@@ -192,8 +192,8 @@ const PermissionsManagement = () => {
     return (
         <div className="flex-1 bg-gray-50 p-6">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800 mb-1">Quản lý Permissions</h1>
-                <p className="text-gray-500 text-sm">Quản lý các quyền hạn trong hệ thống</p>
+                <h1 className="text-2xl font-bold text-gray-800 mb-1">{t('pages.permissions.title')}</h1>
+                <p className="text-gray-500 text-sm">{t('pages.permissions.description') || 'Quản lý các quyền hạn trong hệ thống'}</p>
             </div>
 
             {/* Filters */}
@@ -203,7 +203,7 @@ const PermissionsManagement = () => {
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Tìm kiếm theo tên, slug, resource..."
+                            placeholder={t('pages.permissions.searchPlaceholder')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -214,7 +214,7 @@ const PermissionsManagement = () => {
                         className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                     >
                         <Plus className="w-4 h-4" />
-                        Thêm Permission
+                        {t('pages.permissions.addPermission')}
                     </button>
                     <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                         <Filter className="w-4 h-4" />
@@ -229,13 +229,13 @@ const PermissionsManagement = () => {
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Permission</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Slug</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Resource</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Trạng thái</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ngày tạo</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Thao tác</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.permissions.permission')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.permissions.slug')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.permissions.resource')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.permissions.action')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('common.status')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('common.createdAt')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('common.actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -249,7 +249,7 @@ const PermissionsManagement = () => {
                             ) : filteredPermissions.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                                        {searchQuery ? 'Không tìm thấy permission nào' : 'Chưa có permission nào'}
+                                        {searchQuery ? t('pages.permissions.noPermissionsFound') : t('pages.permissions.noPermissionsYet')}
                                     </td>
                                 </tr>
                             ) : (
@@ -281,7 +281,7 @@ const PermissionsManagement = () => {
                                                 ? 'bg-green-100 text-green-800'
                                                 : 'bg-gray-100 text-gray-800'
                                                 }`}>
-                                                {permission.active ? 'Hoạt động' : 'Không hoạt động'}
+                                                {permission.active ? t('common.active') : t('common.inactive')}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
@@ -333,7 +333,7 @@ const PermissionsManagement = () => {
                 {totalItems > pageSize && (
                     <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                         <div className="text-sm text-gray-600">
-                            Hiển thị {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, totalItems)} của {totalItems} permissions
+                            {t('pages.permissions.showing')} {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, totalItems)} {t('pages.permissions.of')} {totalItems} permissions
                         </div>
                         <div className="flex items-center gap-2">
                             <button
@@ -341,17 +341,17 @@ const PermissionsManagement = () => {
                                 disabled={currentPage === 1 || fetching}
                                 className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Trước
+                                {t('pages.permissions.previous')}
                             </button>
                             <span className="px-3 py-1 text-sm text-gray-700">
-                                Trang {currentPage} / {Math.ceil(totalItems / pageSize)}
+                                {t('pages.permissions.page')} {currentPage} / {Math.ceil(totalItems / pageSize)}
                             </span>
                             <button
                                 onClick={() => fetchPermissions(currentPage + 1)}
                                 disabled={currentPage >= Math.ceil(totalItems / pageSize) || fetching}
                                 className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Sau
+                                {t('pages.permissions.next')}
                             </button>
                         </div>
                     </div>
