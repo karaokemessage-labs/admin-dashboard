@@ -94,7 +94,9 @@ const PermissionsManagement = () => {
             if (isEditMode && editingPermissionId) {
                 await rbacService.updatePermission(editingPermissionId, {
                     title: formData.title,
+                    slug: formData.slug,
                     description: formData.description || undefined,
+                    content: formData.content || undefined,
                 });
                 toast.success('Cập nhật permission thành công');
             } else {
