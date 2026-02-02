@@ -50,28 +50,21 @@ const UserSettings = () => {
     }
   }, []);
 
-  // Check 2FA status on mount
+  // Check 2FA status from user context (no API call needed)
   useEffect(() => {
-    const check2FAStatus = async () => {
-      try {
-        const userData = await authService.getMe();
-        const twoFaConfigs = userData.data?.twoFactorConfigs || userData.twoFactorConfigs || [];
-        const hasActive2FA = twoFaConfigs.some((config: any) => config.isActive === true);
-        setTwoFaEnabled(hasActive2FA);
-        
-        // Find active 2FA method
-        const activeConfig = twoFaConfigs.find((config: any) => config.isActive === true);
-        if (activeConfig && activeConfig.type) {
-          setActive2FAMethod(activeConfig.type as 'TOTP' | 'EMAIL');
-        } else {
-          setActive2FAMethod(null);
-        }
-      } catch (error) {
-        console.error('Failed to check 2FA status:', error);
-      }
-    };
-    check2FAStatus();
-  }, []);
+    // Get 2FA configs from user context if available
+    const twoFaConfigs = (user as any)?.twoFactorConfigs || [];
+    const hasActive2FA = twoFaConfigs.some((config: any) => config.isActive === true);
+    setTwoFaEnabled(hasActive2FA);
+
+    // Find active 2FA method
+    const activeConfig = twoFaConfigs.find((config: any) => config.isActive === true);
+    if (activeConfig && activeConfig.type) {
+      setActive2FAMethod(activeConfig.type as 'TOTP' | 'EMAIL');
+    } else {
+      setActive2FAMethod(null);
+    }
+  }, [user]);
 
   const handleDisable2FA = async () => {
     if (!user?.id) {
@@ -85,7 +78,7 @@ const UserSettings = () => {
       const userData = await authService.getMe();
       const twoFaConfigs = userData.data?.twoFactorConfigs || userData.twoFactorConfigs || [];
       const activeConfig = twoFaConfigs.find((config: any) => config.isActive === true);
-      
+
       if (activeConfig && activeConfig.type) {
         disableType = activeConfig.type as 'TOTP' | 'EMAIL';
       } else if (!active2FAMethod) {
@@ -115,7 +108,7 @@ const UserSettings = () => {
       setActive2FAMethod(null);
       setShowDisable2FAModal(false);
       toast.success('Đã tắt 2FA thành công.');
-      
+
       // Refresh 2FA status
       const userData = await authService.getMe();
       const twoFaConfigs = userData.data?.twoFactorConfigs || userData.twoFactorConfigs || [];
@@ -161,10 +154,10 @@ const UserSettings = () => {
       // TODO: Call API to save settings when endpoint is available
       // For now, save to localStorage as a temporary solution
       localStorage.setItem('userSettings', JSON.stringify(settings));
-      
+
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500));
-      
+
       toast.success(t('common.save') + ' ' + t('common.success'));
     } catch (error: any) {
       toast.error(error.message || t('common.error'));
@@ -266,33 +259,30 @@ const UserSettings = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('pages.userSettings.theme')}</label>
               <div className="grid grid-cols-3 gap-4">
                 <button
-                  className={`p-4 border-2 rounded-lg text-center ${
-                    settings.appearance.theme === 'light'
+                  className={`p-4 border-2 rounded-lg text-center ${settings.appearance.theme === 'light'
                       ? 'border-purple-600 bg-purple-50'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                   onClick={() => setSettings((prev) => ({ ...prev, appearance: { ...prev.appearance, theme: 'light' } }))}
                 >
                   <div className="w-full h-12 bg-white border border-gray-200 rounded mb-2"></div>
                   <p className="text-sm font-medium">{t('pages.userSettings.light')}</p>
                 </button>
                 <button
-                  className={`p-4 border-2 rounded-lg text-center ${
-                    settings.appearance.theme === 'dark'
+                  className={`p-4 border-2 rounded-lg text-center ${settings.appearance.theme === 'dark'
                       ? 'border-purple-600 bg-purple-50'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                   onClick={() => setSettings((prev) => ({ ...prev, appearance: { ...prev.appearance, theme: 'dark' } }))}
                 >
                   <div className="w-full h-12 bg-gray-800 border border-gray-700 rounded mb-2"></div>
                   <p className="text-sm font-medium">{t('pages.userSettings.dark')}</p>
                 </button>
                 <button
-                  className={`p-4 border-2 rounded-lg text-center ${
-                    settings.appearance.theme === 'auto'
+                  className={`p-4 border-2 rounded-lg text-center ${settings.appearance.theme === 'auto'
                       ? 'border-purple-600 bg-purple-50'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                   onClick={() => setSettings((prev) => ({ ...prev, appearance: { ...prev.appearance, theme: 'auto' } }))}
                 >
                   <div className="w-full h-12 bg-gradient-to-r from-white to-gray-800 border border-gray-200 rounded mb-2"></div>
@@ -367,17 +357,16 @@ const UserSettings = () => {
               <div className="flex-1">
                 <p className="font-medium text-gray-900">2FA Status</p>
                 <p className="text-sm text-gray-500">
-                  {twoFaEnabled 
-                    ? 'Two-factor authentication is currently enabled for your account.' 
+                  {twoFaEnabled
+                    ? 'Two-factor authentication is currently enabled for your account.'
                     : 'Two-factor authentication is currently disabled.'}
                 </p>
               </div>
               <span
-                className={`px-3 py-1 text-sm font-semibold rounded-full ${
-                  twoFaEnabled
+                className={`px-3 py-1 text-sm font-semibold rounded-full ${twoFaEnabled
                     ? 'bg-green-100 text-green-800'
                     : 'bg-gray-100 text-gray-800'
-                }`}
+                  }`}
               >
                 {twoFaEnabled ? 'Enabled' : 'Disabled'}
               </span>
@@ -431,7 +420,7 @@ const UserSettings = () => {
 
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                   <p className="text-sm text-yellow-800">
-                    <strong>Warning:</strong> Disabling 2FA will reduce the security of your account. 
+                    <strong>Warning:</strong> Disabling 2FA will reduce the security of your account.
                     You will no longer be required to provide a second authentication factor when logging in.
                   </p>
                 </div>

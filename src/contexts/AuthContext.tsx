@@ -32,36 +32,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Check if user is stored in localStorage
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      return JSON.parse(storedUser);
+      try {
+        return JSON.parse(storedUser);
+      } catch {
+        return null;
+      }
     }
-
-    // Không cần login: tạo sẵn user demo mặc định (admin)
-    const defaultUser: User = {
-      id: 'demo-admin',
-      email: 'demo@kara.club',
-      name: 'Kaka Admin',
-      displayName: 'Kaka Admin',
-      role: 'admin',
-      username: 'demo',
-    };
-
-    localStorage.setItem('user', JSON.stringify(defaultUser));
-    localStorage.setItem('isAuthenticated', 'true');
-
-    return defaultUser;
+    return null;
   });
 
   const [token, setToken] = useState<string | null>(() => {
-    const existingToken = localStorage.getItem('accessToken') || localStorage.getItem('token');
-    if (existingToken) {
-      return existingToken;
-    }
-
-    // Use the real JWT token that works with the API
-    const realToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZDM2NDJjYS1jYTVkLTQ5NjMtOTA0MC0zZjY3MzcxYTJiMzkiLCJlbWFpbCI6ImFkbWluQGtha2EuY2x1YiIsInVzZXJuYW1lIjoiam9obmRvZSIsInRva2VuVmVyc2lvbiI6Mjk2NDk3LCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzY4MTE4MjgwLCJleHAiOjE3NjgxMjkwODAsImF1ZCI6Im9wZXJhdG9yLWdhdGV3YXkiLCJpc3MiOiJvcGVyYXRvci1nYXRld2F5LWFwaSJ9.gnggD6OIA3ZIPM5CSTK4PWr1N8eBnQbM9B06Ffce2Jo';
-    localStorage.setItem('accessToken', realToken);
-    localStorage.setItem('token', realToken);
-    return realToken;
+    return localStorage.getItem('accessToken') || localStorage.getItem('token') || null;
   });
 
   const [mustSetup2fa, setMustSetup2fa] = useState<boolean>(false);

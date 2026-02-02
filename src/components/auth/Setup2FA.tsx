@@ -43,13 +43,13 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
         const storedUser = localStorage.getItem('user');
         const user = storedUser ? JSON.parse(storedUser) : null;
         const userId = user?.id;
-        
+
         if (!userId) {
           toast.error('Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
           setLoading(false);
           return;
         }
-        
+
         // Call setup API to get QR code immediately
         try {
           await authService.setup2FATOTP(userId);
@@ -64,13 +64,13 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
         const storedUser = localStorage.getItem('user');
         const user = storedUser ? JSON.parse(storedUser) : null;
         const userId = user?.id;
-        
+
         if (!userId) {
           toast.error('Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
           setLoading(false);
           return;
         }
-        
+
         console.log('Setting up Email OTP with userId:', userId);
         try {
           await authService.setup2FAEmail(userId);
@@ -152,7 +152,7 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
         code: verificationCode,
         type: selectedMethod,
       });
-      
+
       if (response.success !== false) {
         // Show success message modal instead of recovery codes modal
         setSetupComplete(true);
@@ -166,6 +166,16 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
     }
   };
 
+  // Auto redirect to dashboard after setup complete
+  useEffect(() => {
+    if (setupComplete) {
+      const timer = setTimeout(() => {
+        onComplete();
+      }, 1500); // Wait 1.5 seconds before redirecting
+      return () => clearTimeout(timer);
+    }
+  }, [setupComplete, onComplete]);
+
   if (setupComplete) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -176,6 +186,7 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Thiết lập thành công!</h2>
             <p className="text-gray-600">2FA đã được kích hoạt cho tài khoản của bạn.</p>
+            <p className="text-sm text-gray-500 mt-2">Đang chuyển đến Dashboard...</p>
           </div>
         </div>
       </div>
@@ -421,7 +432,7 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
               {selectedMethod === 'TOTP' ? 'SET UP WITH AUTHENTICATOR APP' : 'SET UP WITH EMAIL OTP'}
             </button>
           </div>
-          
+
           {/* Cancel Button - Step 3 */}
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">

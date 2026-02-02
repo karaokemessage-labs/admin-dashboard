@@ -27,31 +27,22 @@ const MyProfile = () => {
     username: user?.username || '',
   });
 
-  // Fetch profile data from API
+  // Initialize form data from user context first (no API call needed initially)
   useEffect(() => {
-    const fetchProfile = async () => {
-      setFetching(true);
-      try {
-        const userData = await authService.getMe();
-        setProfileData(userData);
-
-        // Update form data with API response
-        const data = userData.data || userData;
-        setFormData({
-          name: data.displayName || data.name || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          username: data.username || '',
-        });
-      } catch (error: any) {
-        toast.error(error.message || 'Không thể tải thông tin profile. Vui lòng thử lại.');
-      } finally {
-        setFetching(false);
-      }
-    };
-
-    fetchProfile();
-  }, []);
+    if (user) {
+      setFormData({
+        name: user.displayName || user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        username: user.username || '',
+      });
+      // Set profile data from user context
+      setProfileData(user as any);
+      setFetching(false);
+    } else {
+      setFetching(false);
+    }
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -227,8 +218,8 @@ const MyProfile = () => {
                 </span>
                 <span
                   className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${getStatus() === 'ACTIVE'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-800'
                     }`}
                 >
                   {getStatus()}
@@ -355,8 +346,8 @@ const MyProfile = () => {
                 <div className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
                   <span
                     className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${getStatus() === 'ACTIVE'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-800'
                       }`}
                   >
                     {getStatus()}
@@ -456,8 +447,8 @@ const MyProfile = () => {
                 </div>
                 <span
                   className={`px-3 py-1 text-sm font-semibold rounded-full ${get2FAStatus()
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-800'
                     }`}
                 >
                   {get2FAStatus() ? 'Enabled' : 'Disabled'}
@@ -480,8 +471,8 @@ const MyProfile = () => {
                       </div>
                       <span
                         className={`px-2 py-1 text-xs font-semibold rounded-full ${config.isActive
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
                           }`}
                       >
                         {config.isActive ? 'Active' : 'Inactive'}
