@@ -3,8 +3,8 @@ import { Search, Filter, X, Loader2, Edit, Trash2, MessageSquare } from 'lucide-
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { commentService } from '../../../services/commentService';
-import { 
-  UpdateCommentRequestDto, 
+import {
+  UpdateCommentRequestDto,
   CommentResponseDto
 } from '../../../types/api';
 
@@ -36,9 +36,12 @@ const CommentsManagement = () => {
     setFetching(true);
     try {
       const response = await commentService.getAllComments(page, pageSize);
-      setComments(response.data || []);
-      setCurrentPage(response.page || page);
-      setTotalItems(response.total || 0);
+      // apiClient already extracts data.data from { success, data: {...}, message }
+      // So response is already: { items, total, page, limit, totalPages }
+      const data = response as any;
+      setComments(data?.items || []);
+      setCurrentPage(data?.page || page);
+      setTotalItems(data?.total || 0);
     } catch (error: any) {
       toast.error(error.message || t('common.error'));
     } finally {
@@ -57,7 +60,7 @@ const CommentsManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate required fields
     if (!formData.content.trim()) {
       toast.error(t('common.pleaseFillAllFields'));
@@ -71,7 +74,7 @@ const CommentsManagement = () => {
         await commentService.updateComment(editingCommentId, formData);
         toast.success(t('common.update') + ' ' + t('common.success'));
       }
-      
+
       handleCloseModal();
       await fetchComments(currentPage);
     } catch (error: any) {

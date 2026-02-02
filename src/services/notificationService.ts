@@ -39,10 +39,11 @@ class NotificationServiceImpl implements NotificationService {
       const params = new URLSearchParams();
       params.append('page', page.toString());
       params.append('limit', limit.toString());
-      
+
       const response = await apiClient.get<GetNotificationsResponseDto>(
         `${API_ENDPOINTS.NOTIFICATIONS.BASE}?${params.toString()}`
       );
+      // API returns { success, data: { items, total, page, limit, totalPages }, message }
       return response.data;
     } catch (error) {
       const apiError = error as ApiError;

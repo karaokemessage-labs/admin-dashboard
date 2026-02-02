@@ -3,8 +3,8 @@ import { Search, Filter, X, Loader2, Edit, Trash2, Star } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { ratingService } from '../../../services/ratingService';
-import { 
-  UpdateRatingRequestDto, 
+import {
+  UpdateRatingRequestDto,
   RatingResponseDto
 } from '../../../types/api';
 
@@ -37,9 +37,12 @@ const RatingManagement = () => {
     setFetching(true);
     try {
       const response = await ratingService.getAllRatings(page, pageSize);
-      setRatings(response.data || []);
-      setCurrentPage(response.page || page);
-      setTotalItems(response.total || 0);
+      // apiClient already extracts data.data from { success, data: {...}, message }
+      // So response is already: { items, total, page, limit, totalPages }
+      const data = response as any;
+      setRatings(data?.items || []);
+      setCurrentPage(data?.page || page);
+      setTotalItems(data?.total || 0);
     } catch (error: any) {
       toast.error(error.message || t('common.error'));
     } finally {
@@ -59,7 +62,7 @@ const RatingManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate rating if provided
     if (formData.rating !== undefined && (formData.rating < 1 || formData.rating > 5)) {
       toast.error('Đánh giá phải từ 1 đến 5 sao');
@@ -80,7 +83,7 @@ const RatingManagement = () => {
         await ratingService.updateRating(editingRatingId, updateData);
         toast.success(t('common.update') + ' ' + t('common.success'));
       }
-      
+
       handleCloseModal();
       await fetchRatings(currentPage);
     } catch (error: any) {
@@ -144,11 +147,10 @@ const RatingManagement = () => {
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`w-4 h-4 ${
-              star <= rating
+            className={`w-4 h-4 ${star <= rating
                 ? 'text-yellow-400 fill-yellow-400'
                 : 'text-gray-300'
-            }`}
+              }`}
           />
         ))}
         <span className="ml-1 text-sm text-gray-600">({rating})</span>

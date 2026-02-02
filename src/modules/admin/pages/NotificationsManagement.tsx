@@ -3,9 +3,9 @@ import { Search, X, Loader2, Edit, Trash2, Bell, CheckCircle2, Archive, Mail } f
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { notificationService } from '../../../services/notificationService';
-import { 
-  CreateNotificationRequestDto, 
-  UpdateNotificationRequestDto, 
+import {
+  CreateNotificationRequestDto,
+  UpdateNotificationRequestDto,
   NotificationResponseDto
 } from '../../../types/api';
 
@@ -41,9 +41,12 @@ const NotificationsManagement = () => {
     setFetching(true);
     try {
       const response = await notificationService.getNotifications(page, pageSize);
-      setNotifications(response.data || []);
-      setCurrentPage(response.page || page);
-      setTotalItems(response.total || 0);
+      // apiClient already extracts data.data from { success, data: {...}, message }
+      // So response is already: { items, total, page, limit, totalPages }
+      const data = response as any;
+      setNotifications(data?.items || []);
+      setCurrentPage(data?.page || page);
+      setTotalItems(data?.total || 0);
     } catch (error: any) {
       toast.error(error.message || t('common.error'));
     } finally {
@@ -77,7 +80,7 @@ const NotificationsManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate required fields
     if (!formData.title.trim() || !formData.message.trim()) {
       toast.error(t('common.pleaseFillAllFields'));
@@ -105,7 +108,7 @@ const NotificationsManagement = () => {
         });
         toast.success('Tạo thông báo thành công');
       }
-      
+
       handleCloseModal();
       await fetchNotifications(currentPage);
     } catch (error: any) {
@@ -182,13 +185,13 @@ const NotificationsManagement = () => {
 
   // Filter notifications based on search query and status
   const filteredNotifications = notifications.filter(notification => {
-    const matchesSearch = !searchQuery.trim() || 
+    const matchesSearch = !searchQuery.trim() ||
       notification.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       notification.message.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'ALL' || 
+
+    const matchesStatus = statusFilter === 'ALL' ||
       notification.status.toLowerCase() === statusFilter.toLowerCase();
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -222,6 +225,33 @@ const NotificationsManagement = () => {
           </span>
         );
     }
+  };
+
+  const getTypeBadge = (type: string | null) => {
+    const typeMap: Record<string, { bg: string; text: string; label: string }> = {
+      system: { bg: 'bg-blue-100', text: 'text-blue-800', label: '🔔 Hệ thống' },
+      social: { bg: 'bg-green-100', text: 'text-green-800', label: '👥 Xã hội' },
+      promotion: { bg: 'bg-orange-100', text: 'text-orange-800', label: '🎁 Khuyến mãi' },
+      chat: { bg: 'bg-purple-100', text: 'text-purple-800', label: '💬 Tin nhắn' },
+      security: { bg: 'bg-red-100', text: 'text-red-800', label: '🛡️ Bảo mật' },
+      booking: { bg: 'bg-cyan-100', text: 'text-cyan-800', label: '📅 Đặt phòng' },
+    };
+
+    const config = type ? typeMap[type.toLowerCase()] : null;
+
+    if (!config) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+          {type || 'Khác'}
+        </span>
+      );
+    }
+
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    );
   };
 
   return (
@@ -312,8 +342,8 @@ const NotificationsManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       #{notification.userId.slice(0, 8)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {notification.type || '-'}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getTypeBadge(notification.type)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(notification.status)}

@@ -3,9 +3,9 @@ import { Search, Filter, Plus, X, Loader2, Edit, Trash2, Rss } from 'lucide-reac
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { feedService } from '../../../services/feedService';
-import { 
-  CreateFeedRequestDto, 
-  UpdateFeedRequestDto, 
+import {
+  CreateFeedRequestDto,
+  UpdateFeedRequestDto,
   FeedResponseDto
 } from '../../../types/api';
 
@@ -42,9 +42,12 @@ const FeedsManagement = () => {
     setFetching(true);
     try {
       const response = await feedService.getFeeds(page, pageSize);
-      setFeeds(response.data || []);
-      setCurrentPage(response.page || page);
-      setTotalItems(response.total || 0);
+      // apiClient already extracts data.data from { success, data: {...}, message }
+      // So response is already: { items, total, page, limit, totalPages }
+      const data = response as any;
+      setFeeds(data?.items || []);
+      setCurrentPage(data?.page || page);
+      setTotalItems(data?.total || 0);
     } catch (error: any) {
       toast.error(error.message || t('common.error'));
     } finally {
@@ -82,7 +85,7 @@ const FeedsManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate required fields
     if (!formData.title.trim() || !formData.content.trim()) {
       toast.error(t('common.pleaseFillAllFields'));
@@ -113,7 +116,7 @@ const FeedsManagement = () => {
         });
         toast.success('Tạo feed thành công');
       }
-      
+
       handleCloseModal();
       await fetchFeeds(currentPage);
     } catch (error: any) {
@@ -295,11 +298,10 @@ const FeedsManagement = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        feed.published 
-                          ? 'bg-green-100 text-green-800' 
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${feed.published
+                          ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
-                      }`}>
+                        }`}>
                         {feed.published ? 'Đã xuất bản' : 'Bản nháp'}
                       </span>
                     </td>

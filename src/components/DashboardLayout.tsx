@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getRoutesByRole } from '../routes/getRoutesByRole';
 
 const DashboardLayout = () => {
-  const {} = useAuth();
+  const { } = useAuth();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
     return saved ? JSON.parse(saved) : false;
@@ -33,10 +33,12 @@ const DashboardLayout = () => {
       <Header onToggleSidebar={toggleSidebar} />
       <div className="flex flex-1 overflow-hidden">
         <SidebarMenu isCollapsed={isSidebarCollapsed} onMenuClick={handleMenuClick} />
-        <Routes>
-          {routes}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
+        <main className="flex-1 overflow-auto">
+          <Routes>
+            {routes}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </main>
       </div>
     </div>
   );

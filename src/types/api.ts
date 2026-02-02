@@ -529,18 +529,22 @@ export interface NotificationResponseDto {
   userId: string;
   type: string | null;
   status: NotificationStatus;
-  metadata: Record<string, any> | null;
+  data: Record<string, any> | null;
   readAt: string | null;
-  archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface GetNotificationsResponseDto {
-  data: NotificationResponseDto[];
-  total: number;
-  page: number;
-  limit: number;
+  success: boolean;
+  data: {
+    items: NotificationResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+  message: string;
 }
 
 // Feed Types

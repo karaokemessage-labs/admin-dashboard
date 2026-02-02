@@ -75,11 +75,11 @@ export const API_ENDPOINTS = {
     BY_SLUG: (slug: string) => `/articles/slug/${slug}`,
     PUBLISH: (id: string) => `/articles/${id}/publish`,
   },
-  // Comment endpoints
+  // Comment endpoints (admin)
   COMMENTS: {
-    BASE: '/comments',
-    BY_ID: (id: string) => `/comments/${id}`,
-    BY_ARTICLE: (articleId: string) => `/comments/article/${articleId}`,
+    BASE: '/admin/comments',
+    BY_ID: (id: string) => `/admin/comments/${id}`,
+    BY_ARTICLE: (articleId: string) => `/admin/comments/article/${articleId}`,
   },
   // Karaoke endpoints
   KARAOKE: {
@@ -96,12 +96,12 @@ export const API_ENDPOINTS = {
     BASE: '/clubs',
     BY_ID: (id: string) => `/clubs/${id}`,
   },
-  // Rating endpoints
+  // Rating endpoints (admin)
   RATINGS: {
-    BASE: '/ratings',
-    BY_ID: (id: string) => `/ratings/${id}`,
-    BY_ARTICLE: (articleId: string) => `/ratings/article/${articleId}`,
-    BY_USER: (userId: string) => `/ratings/user/${userId}`,
+    BASE: '/admin/ratings',
+    BY_ID: (id: string) => `/admin/ratings/${id}`,
+    BY_ARTICLE: (articleId: string) => `/admin/ratings/article/${articleId}`,
+    BY_USER: (userId: string) => `/admin/ratings/user/${userId}`,
   },
   // Document/KYC endpoints
   DOCUMENTS: {
@@ -109,18 +109,18 @@ export const API_ENDPOINTS = {
     BY_ID: (id: string) => `/documents/${id}`,
     VERIFY: (id: string) => `/documents/${id}/verify`,
   },
-  // Notification endpoints
+  // Notification endpoints (admin)
   NOTIFICATIONS: {
-    BASE: '/notifications',
-    BY_ID: (id: string) => `/notifications/${id}`,
-    MARK_READ: (id: string) => `/notifications/${id}/read`,
-    MARK_UNREAD: (id: string) => `/notifications/${id}/unread`,
-    ARCHIVE: (id: string) => `/notifications/${id}/archive`,
+    BASE: '/admin/notifications',
+    BY_ID: (id: string) => `/admin/notifications/${id}`,
+    MARK_READ: (id: string) => `/admin/notifications/${id}/read`,
+    MARK_UNREAD: (id: string) => `/admin/notifications/${id}/unread`,
+    ARCHIVE: (id: string) => `/admin/notifications/${id}/archive`,
   },
-  // Feed endpoints
+  // Feed endpoints (admin)
   FEEDS: {
-    BASE: '/feeds',
-    BY_ID: (id: string) => `/feeds/${id}`,
+    BASE: '/admin/feeds',
+    BY_ID: (id: string) => `/admin/feeds/${id}`,
   },
   // Friend endpoints
   FRIENDS: {
