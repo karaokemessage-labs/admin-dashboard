@@ -18,6 +18,7 @@ export interface UpdateRoleRequestDto {
 
 export interface UpdatePermissionRequestDto {
   title?: string;
+  slug?: string;
   description?: string;
   content?: string;
   active?: boolean;
@@ -174,7 +175,7 @@ class RbacServiceImpl implements RbacService {
 
   async updatePermission(id: string, data: UpdatePermissionRequestDto): Promise<PermissionResponseDto> {
     try {
-      const response = await apiClient.patch<PermissionResponseDto>(
+      const response = await apiClient.put<PermissionResponseDto>(
         `${API_ENDPOINTS.RBAC.PERMISSIONS}/${id}`,
         data
       );
