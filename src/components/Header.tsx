@@ -28,13 +28,13 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
     try {
       // Call logout function from AuthContext to clear localStorage
       await logout();
-      
+
       // Show success message
       toast.success(t('common.logoutSuccess') || 'Đăng xuất thành công!');
-      
+
       // Small delay to show success message before redirect
       await new Promise(resolve => setTimeout(resolve, 300));
-      
+
       // Redirect to login page
       navigate('/login', { replace: true });
     } catch (error: any) {
@@ -105,7 +105,7 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
 
         {/* Search + Sidebar toggle */}
         <div className="flex items-center gap-2 ml-4 flex-1">
-          <button 
+          <button
             onClick={onToggleSidebar}
             className="p-2 hover:bg-gray-100 rounded-lg"
             title="Toggle sidebar"
@@ -122,10 +122,10 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
           </div>
         </div>
       </div>
-      
+
       <div className="flex items-center gap-4">
         <div className="relative">
-          <div 
+          <div
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded-lg px-3 py-2"
           >
@@ -134,11 +134,6 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-medium text-gray-700">{getDisplayName()}</span>
-              {user?.role && (
-                <span className="text-xs font-semibold text-purple-600">
-                  {t('header.adminPortal') || 'Admin Portal'}
-                </span>
-              )}
             </div>
             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -148,8 +143,8 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
           {/* Profile Dropdown Menu */}
           {isProfileMenuOpen && (
             <>
-              <div 
-                className="fixed inset-0 z-40" 
+              <div
+                className="fixed inset-0 z-40"
                 onClick={() => setIsProfileMenuOpen(false)}
               ></div>
               <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
@@ -162,18 +157,13 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">{getDisplayName()}</p>
                       <p className="text-xs text-gray-500 truncate">{user?.email || ''}</p>
-                      {user?.role && (
-                        <span className="inline-block mt-1 text-xs font-semibold text-purple-600">
-                          {t('header.adminPortal') || 'Admin Portal'}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
 
                 {/* Menu Items */}
                 <div className="py-2">
-                  <button 
+                  <button
                     onClick={() => {
                       setIsProfileMenuOpen(false);
                       navigate('/dashboard/profile');
@@ -183,7 +173,7 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                     <User className="w-5 h-5 text-gray-500" />
                     <span className="font-medium">{t('header.myProfile')}</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => {
                       setIsProfileMenuOpen(false);
                       navigate('/dashboard/user-settings');
@@ -193,7 +183,7 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                     <Settings className="w-5 h-5 text-gray-500" />
                     <span className="font-medium">{t('common.settings')}</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => {
                       setIsProfileMenuOpen(false);
                       navigate('/dashboard/help-support');
@@ -207,7 +197,7 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
 
                 {/* Logout Button */}
                 <div className="border-t border-gray-200 py-2">
-                  <button 
+                  <button
                     onClick={handleLogout}
                     disabled={isLoggingOut}
                     className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -229,8 +219,8 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
             </>
           )}
         </div>
-        
-        <button 
+
+        <button
           onClick={() => {
             if (!document.fullscreenElement) {
               document.documentElement.requestFullscreen();
@@ -243,9 +233,9 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
         >
           <Maximize2 className="w-5 h-5 text-gray-600" />
         </button>
-        
+
         <div className="relative">
-          <button 
+          <button
             onClick={() => setIsMessagesOpen(!isMessagesOpen)}
             className="p-2 hover:bg-gray-100 rounded-lg relative"
             title={t('common.messages')}
@@ -253,12 +243,12 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
             <Mail className="w-5 h-5 text-gray-600" />
             <span className="absolute top-1 right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
           </button>
-          
+
           {/* Messages Dropdown */}
           {isMessagesOpen && (
             <>
-              <div 
-                className="fixed inset-0 z-40" 
+              <div
+                className="fixed inset-0 z-40"
                 onClick={() => setIsMessagesOpen(false)}
               ></div>
               <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
@@ -325,9 +315,9 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
             </>
           )}
         </div>
-        
+
         <div className="relative">
-          <button 
+          <button
             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
             className="p-2 hover:bg-gray-100 rounded-lg relative"
             title={t('common.notifications')}
@@ -335,12 +325,12 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
             <Bell className="w-5 h-5 text-gray-600" />
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
-          
+
           {/* Notifications Dropdown */}
           {isNotificationsOpen && (
             <>
-              <div 
-                className="fixed inset-0 z-40" 
+              <div
+                className="fixed inset-0 z-40"
                 onClick={() => setIsNotificationsOpen(false)}
               ></div>
               <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
@@ -421,22 +411,22 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
             </>
           )}
         </div>
-        
+
         {/* Language Selector */}
         <div className="relative">
-          <button 
+          <button
             onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
             className="p-2 hover:bg-gray-100 rounded-lg relative"
             title={t('common.language')}
           >
             <Globe className="w-5 h-5 text-gray-600" />
           </button>
-          
+
           {/* Language Dropdown */}
           {isLanguageMenuOpen && (
             <>
-              <div 
-                className="fixed inset-0 z-40" 
+              <div
+                className="fixed inset-0 z-40"
                 onClick={() => setIsLanguageMenuOpen(false)}
               ></div>
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-80 overflow-y-auto">
@@ -447,11 +437,10 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                       <button
                         key={lang.code}
                         onClick={() => handleLanguageChange(lang.code)}
-                        className={`w-full px-4 py-2 text-left text-sm rounded-lg flex items-center justify-between ${
-                          language === lang.code
-                            ? 'bg-purple-50 text-purple-600 font-medium'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}
+                        className={`w-full px-4 py-2 text-left text-sm rounded-lg flex items-center justify-between ${language === lang.code
+                          ? 'bg-purple-50 text-purple-600 font-medium'
+                          : 'text-gray-700 hover:bg-gray-50'
+                          }`}
                       >
                         <span>{langName}</span>
                         {language === lang.code && (

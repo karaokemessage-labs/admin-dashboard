@@ -73,14 +73,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Extract data from response (could be in data field or top level)
     const userData = apiUser.data || apiUser;
 
+    // Role can be in different locations depending on API response structure:
+    // 1. userData.user.role (most common for /auth/me)
+    // 2. userData.role
+    // 3. apiUser.user.role
+    // 4. apiUser.role
+    const userObj = (userData as any).user || userData;
+    const role = userObj.role || userData.role || (apiUser as any).user?.role || apiUser.role || 'admin';
+
     return {
-      id: userData.id || apiUser.id || apiUser.uid || apiUser.userId || '',
-      email: userData.email || apiUser.email || fallbackEmail || '',
-      name: userData.displayName || userData.name || apiUser.displayName || apiUser.name || userData.username || apiUser.username || '',
-      displayName: userData.displayName || userData.name || apiUser.displayName || apiUser.name || userData.username || apiUser.username || '',
-      username: userData.username || apiUser.username || '',
-      phone: userData.phone || apiUser.phone,
-      role: 'admin', // Always admin role
+      id: userData.id || apiUser.id || apiUser.uid || apiUser.userId || userObj.id || '',
+      email: userData.email || apiUser.email || userObj.email || fallbackEmail || '',
+      name: userData.displayName || userData.name || apiUser.displayName || apiUser.name || userData.username || apiUser.username || userObj.name || '',
+      displayName: userData.displayName || userData.name || apiUser.displayName || apiUser.name || userData.username || apiUser.username || userObj.displayName || '',
+      username: userData.username || apiUser.username || userObj.username || '',
+      phone: userData.phone || apiUser.phone || userObj.phone,
+      role: role as UserRole, // Get role from API, fallback to 'admin'
     };
   };
 
@@ -127,20 +135,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Extract token from response - check data.accessToken first (new API format)
       // then fallback to top-level accessToken/token (old format)
       const authToken = response.data?.accessToken || response.accessToken || response.token || '';
-      
+
       // Extract user data from API response - prioritize data object (new format)
       const responseData = response.data;
       const responseUser = response.user;
-      
+
       // Check if mustSetup2fa is required
       const mustSetup2faValue = responseData?.mustSetup2fa || response.mustSetup2fa || false;
-      
+
       // If no token is returned OR mustSetup2fa is true, redirect to 2FA verification
       // This handles cases where API requires 2FA verification before issuing token
       const requires2FA = mustSetup2faValue || !authToken;
-      
+
       setMustSetup2fa(requires2FA);
-      
+
       // If 2FA is required (either explicitly or because no token was returned), 
       // don't proceed with normal login flow
       // The Verify2FA component will handle the rest
@@ -162,7 +170,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
         }
-        
+
         // Save userId and credentials temporarily for Verify2FA
         const userId = responseData?.userId || responseUser?.id;
         if (userId) {
@@ -173,22 +181,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             name: responseData?.displayName || responseUser?.name || responseData?.username || '',
             displayName: responseData?.displayName || responseUser?.name || responseData?.username || '',
             username: responseData?.username || responseUser?.username || '',
-            role: 'admin', // Temporary, will be updated after verify
+            role: (responseData?.role || responseUser?.role || 'admin') as UserRole, // Get role from API, fallback to 'admin'
           };
           setUser(tempUser);
           localStorage.setItem('user', JSON.stringify(tempUser));
         }
-        
+
         // Save username/email for verify API (in case API needs it)
         if (credentials.email) {
           localStorage.setItem('pendingLoginEmail', credentials.email);
         }
-        
+
         // Don't set isAuthenticated yet - wait for 2FA verify to complete
         // Token will be received after successful 2FA verification
         return { requires2FA: true };
       }
-      
+
       // Build user data from API response
       // Note: API response has userId, username, displayName, role
       const userData: User = {
@@ -197,9 +205,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         name: responseData?.displayName || responseUser?.name || responseUser?.username || responseData?.username || '',
         displayName: responseData?.displayName || responseUser?.name || responseUser?.username || responseData?.username || '',
         username: responseData?.username || responseUser?.username || '',
-        role: 'admin', // Always admin role
+        role: (responseData?.role || responseUser?.role || 'admin') as UserRole, // Get role from API, fallback to 'admin'
       };
-      
+
       // Extract refresh token
       const refreshToken = responseData?.refreshToken || response.refreshToken;
 
@@ -226,7 +234,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.warn('Failed to fetch user info after login, using login response data:', error);
         hasFetchedUserRef.current = true; // Mark as fetched even if failed
       }
-      
+
       return { requires2FA: false };
     } catch (error) {
       // Re-throw error to be handled in component
@@ -253,7 +261,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(null);
     setMustSetup2fa(false);
     hasFetchedUserRef.current = false; // Reset ref so user can be fetched again on next login
-    
+
     // Clear all authentication-related items from localStorage
     localStorage.removeItem('user');
     localStorage.removeItem('token');
