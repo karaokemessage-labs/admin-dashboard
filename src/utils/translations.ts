@@ -84,6 +84,7 @@ export interface Translations {
     addNew: string;
     confirmDelete: string;
     deleteConfirmMessage: string;
+    deleteWarning: string;
     // Placeholders
     enterName: string;
     enterEmail: string;
@@ -729,6 +730,7 @@ const translations: Record<AllLanguages, Translations> = {
       addNew: 'Add New',
       confirmDelete: 'Confirm Delete',
       deleteConfirmMessage: 'Are you sure you want to delete this item? This action cannot be undone.',
+      deleteWarning: 'This action cannot be undone.',
       // Placeholders
       enterName: 'Enter name...',
       enterEmail: 'Enter email...',
@@ -1365,6 +1367,7 @@ const translations: Record<AllLanguages, Translations> = {
       addNew: 'Thêm mới',
       confirmDelete: 'Xác nhận xóa',
       deleteConfirmMessage: 'Bạn có chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.',
+      deleteWarning: 'Hành động này không thể hoàn tác.',
       // Placeholders
       enterName: 'Nhập tên...',
       enterEmail: 'Nhập email...',
@@ -1999,6 +2002,7 @@ const translations: Record<AllLanguages, Translations> = {
       addNew: '添加新',
       confirmDelete: '确认删除',
       deleteConfirmMessage: '您确定要删除此项吗？此操作无法撤销。',
+      deleteWarning: '此操作无法撤销。',
       // Placeholders
       enterName: '输入名称...',
       enterEmail: '输入邮箱...',
@@ -2635,6 +2639,7 @@ const translations: Record<AllLanguages, Translations> = {
       addNew: 'เพิ่มใหม่',
       confirmDelete: 'ยืนยันการลบ',
       deleteConfirmMessage: 'คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้? การกระทำนี้ไม่สามารถยกเลิกได้',
+      deleteWarning: 'การกระทำนี้ไม่สามารถยกเลิกได้',
       // Placeholders
       enterName: 'ใส่ชื่อ...',
       enterEmail: 'ใส่อีเมล...',
@@ -3271,6 +3276,7 @@ const translations: Record<AllLanguages, Translations> = {
       addNew: '新規追加',
       confirmDelete: '削除の確認',
       deleteConfirmMessage: 'この項目を削除してもよろしいですか？この操作は元に戻せません。',
+      deleteWarning: 'この操作は元に戻せません。',
       // Placeholders
       enterName: '名前を入力...',
       enterEmail: 'メールを入力...',
@@ -3907,6 +3913,7 @@ const translations: Record<AllLanguages, Translations> = {
       addNew: '새로 추가',
       confirmDelete: '삭제 확인',
       deleteConfirmMessage: '이 항목을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.',
+      deleteWarning: '이 작업은 취소할 수 없습니다.',
       // Placeholders
       enterName: '이름 입력...',
       enterEmail: '이메일 입력...',

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, X, Loader2, Edit, Trash2, User, Shield, Eye } from 'lucide-react';
+import { Search, Filter, X, Loader2, Edit, Trash2, Shield, Eye, ChevronDown } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { userService } from '../../../services/userService';
@@ -26,6 +26,16 @@ const UsersManagement = () => {
   const [pageSize] = useState<number>(10);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Filter states
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [twoFaFilter, setTwoFaFilter] = useState<string>('');
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  // Calculate active filter count
+  const activeFilterCount = [statusFilter, twoFaFilter].filter(f => f !== '').length;
+
   const [formData, setFormData] = useState<CreateUserRequestDto & {
     isActive?: boolean;
     isEnable2FA?: boolean;
@@ -43,15 +53,41 @@ const UsersManagement = () => {
     mustChangePassword: false,
   });
 
-  // Fetch users on component mount
+  // Click outside to close filter
   useEffect(() => {
-    fetchUsers(1);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchUsers = async (page: number) => {
+  // Debounced search state
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch users when search changes (reset to page 1)
+  useEffect(() => {
+    fetchUsers(1, debouncedSearch);
+  }, [debouncedSearch]);
+
+  const fetchUsers = async (page: number, search?: string) => {
     setFetching(true);
     try {
-      const response = await userService.getUsers({ page, limit: pageSize });
+      const response = await userService.getUsers({
+        page,
+        limit: pageSize,
+        search: search || undefined,
+      });
       setUsers(response.users || []);
       setCurrentPage(response.page || page);
       setTotalItems(response.total || 0);
@@ -139,7 +175,7 @@ const UsersManagement = () => {
       }
 
       handleCloseModal();
-      await fetchUsers(currentPage);
+      await fetchUsers(currentPage, debouncedSearch);
     } catch (error: any) {
       toast.error(error.message || (isEditMode ? 'Cập nhật người dùng thất bại' : 'Tạo người dùng thất bại'));
     } finally {
@@ -169,7 +205,7 @@ const UsersManagement = () => {
       toast.success('Xóa người dùng thành công');
       setIsDeleteModalOpen(false);
       setUserToDelete(null);
-      await fetchUsers(currentPage);
+      await fetchUsers(currentPage, debouncedSearch);
     } catch (error: any) {
       toast.error(error.message || 'Xóa người dùng thất bại');
     } finally {
@@ -186,15 +222,28 @@ const UsersManagement = () => {
     navigate(`/dashboard/users/${user.id}`);
   };
 
-  // Filter users based on search query
+  // Handle clear filters
+  const handleClearFilters = () => {
+    setStatusFilter('');
+    setTwoFaFilter('');
+    setCurrentPage(1);
+  };
+
+  // Filter users based on status and 2FA filters (search is handled by API)
   const filteredUsers = users.filter(user => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      user.name.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query) ||
-      user.username.toLowerCase().includes(query)
-    );
+    // Status filter
+    if (statusFilter) {
+      const isActive = statusFilter === 'active';
+      if (user.isActive !== isActive) return false;
+    }
+
+    // 2FA filter
+    if (twoFaFilter) {
+      const is2FAEnabled = twoFaFilter === 'enabled';
+      if (user.isEnable2FA !== is2FAEnabled) return false;
+    }
+
+    return true;
   });
 
   return (
@@ -214,14 +263,129 @@ const UsersManagement = () => {
               placeholder="Tìm kiếm theo tên, email hoặc username..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-            <Filter className="w-4 h-4" />
-            {t('common.filter')}
-          </button>
+
+          {/* Filter Dropdown */}
+          <div className="relative" ref={filterRef}>
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-all duration-200 ${activeFilterCount > 0
+                ? 'bg-primary-100 border-primary-400 text-primary-800 hover:bg-primary-200'
+                : 'border-gray-300 hover:bg-gray-50 text-gray-700'
+                }`}
+            >
+              <Filter className="w-4 h-4" />
+              <span>{t('common.filter')}</span>
+              {activeFilterCount > 0 && (
+                <span className="flex items-center justify-center w-5 h-5 bg-primary text-primary-900 text-xs font-medium rounded-full">
+                  {activeFilterCount}
+                </span>
+              )}
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Filter Dropdown Panel */}
+            {isFilterOpen && (
+              <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 z-50 animate-scale-in overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
+                  <span className="font-semibold text-gray-800">Bộ lọc</span>
+                  {activeFilterCount > 0 && (
+                    <button
+                      onClick={handleClearFilters}
+                      className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
+                    >
+                      <X className="w-3 h-3" />
+                      Xóa bộ lọc
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter Options */}
+                <div className="p-4 space-y-4">
+                  {/* Status Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Trạng thái
+                    </label>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    >
+                      <option value="">Tất cả trạng thái</option>
+                      <option value="active">Hoạt động</option>
+                      <option value="inactive">Không hoạt động</option>
+                    </select>
+                  </div>
+
+                  {/* 2FA Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Xác thực 2 lớp (2FA)
+                    </label>
+                    <select
+                      value={twoFaFilter}
+                      onChange={(e) => {
+                        setTwoFaFilter(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    >
+                      <option value="">Tất cả</option>
+                      <option value="enabled">Đã bật</option>
+                      <option value="disabled">Đã tắt</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
+                  <button
+                    onClick={() => setIsFilterOpen(false)}
+                    className="w-full px-4 py-2 bg-primary text-primary-900 rounded-lg hover:bg-primary-400 transition-colors text-sm font-medium"
+                  >
+                    Áp dụng
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Active Filters Display */}
+        {activeFilterCount > 0 && (
+          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+            <span className="text-sm text-gray-500">Đang lọc:</span>
+            {statusFilter && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                {statusFilter === 'active' ? 'Hoạt động' : 'Không hoạt động'}
+                <button
+                  onClick={() => setStatusFilter('')}
+                  className="hover:bg-primary-200 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {twoFaFilter && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                2FA: {twoFaFilter === 'enabled' ? 'Đã bật' : 'Đã tắt'}
+                <button
+                  onClick={() => setTwoFaFilter('')}
+                  className="hover:bg-purple-200 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Users Table */}
@@ -230,72 +394,111 @@ const UsersManagement = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tên</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Username</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Trạng thái</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">2FA</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ngày tạo</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Thao tác</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tên</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Username</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Trạng thái</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">2FA</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Yêu cầu 2FA</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Đổi MK</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ngày kích hoạt</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ngày tạo</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Cập nhật</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Thao tác</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {fetching ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto" />
+                  <td colSpan={12} className="px-6 py-12 text-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
                     <p className="mt-2 text-gray-600">{t('common.loadingData')}</p>
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={12} className="px-6 py-12 text-center text-gray-500">
                     {searchQuery ? 'Không tìm thấy người dùng nào' : 'Chưa có người dùng nào'}
                   </td>
                 </tr>
               ) : (
                 filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{user.id.slice(0, 8)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <tr key={user.id} className="hover:bg-primary-50/50 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded text-gray-600">
+                        #{user.id.slice(0, 8)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                          <User className="w-4 h-4 text-purple-600" />
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary flex items-center justify-center text-primary-900 text-xs font-medium">
+                          {user.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="text-sm font-medium text-gray-900">{user.name}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.username}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="text-sm font-mono text-gray-700">{user.username}</span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
                         }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-gray-400'}`}></span>
                         {user.isActive ? 'Hoạt động' : 'Không hoạt động'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       {user.isEnable2FA ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                           <Shield className="w-3 h-3" />
                           Bật
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
                           Tắt
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {user.requires2FAChallenge ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
+                          Có
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">
+                          Không
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {user.mustChangePassword ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">
+                          Có
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">
+                          Không
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                      {user.activeAt ? new Date(user.activeAt).toLocaleDateString('vi-VN') : '—'}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                       {new Date(user.createdAt).toLocaleDateString('vi-VN')}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex items-center gap-2">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(user.updatedAt).toLocaleDateString('vi-VN')}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm">
+                      <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleViewClick(user)}
-                          className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded"
+                          className="text-primary-700 hover:text-primary-900 p-1.5 hover:bg-primary-50 rounded transition-colors"
                           title={t('common.view') || 'Xem chi tiết'}
                         >
                           <Eye className="w-4 h-4" />
@@ -316,7 +519,7 @@ const UsersManagement = () => {
                               mustChangePassword: user.mustChangePassword ?? false,
                             });
                           }}
-                          className="text-purple-600 hover:text-purple-900 p-2 hover:bg-purple-50 rounded"
+                          className="text-primary-700 hover:text-primary-900 p-1.5 hover:bg-primary-50 rounded transition-colors"
                           title={t('common.edit')}
                         >
                           <Edit className="w-4 h-4" />
@@ -324,7 +527,7 @@ const UsersManagement = () => {
                         <button
                           onClick={() => handleDeleteClick(user.id, user.name)}
                           disabled={deletingId === user.id}
-                          className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-red-600 hover:text-red-900 p-1.5 hover:bg-red-50 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           title={t('common.delete')}
                         >
                           {deletingId === user.id ? (
@@ -350,7 +553,7 @@ const UsersManagement = () => {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => fetchUsers(currentPage - 1)}
+                onClick={() => fetchUsers(currentPage - 1, debouncedSearch)}
                 disabled={currentPage === 1 || fetching}
                 className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -360,7 +563,7 @@ const UsersManagement = () => {
                 Trang {currentPage} / {Math.ceil(totalItems / pageSize)}
               </span>
               <button
-                onClick={() => fetchUsers(currentPage + 1)}
+                onClick={() => fetchUsers(currentPage + 1, debouncedSearch)}
                 disabled={currentPage >= Math.ceil(totalItems / pageSize) || fetching}
                 className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
