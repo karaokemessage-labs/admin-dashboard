@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, X, Loader2, Edit, Trash2, Shield, Eye, ChevronDown } from 'lucide-react';
+import { Search, Filter, X, Loader2, Edit, Trash2, Shield, Eye, ChevronDown, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { userService } from '../../../services/userService';
@@ -22,6 +22,11 @@ const UsersManagement = () => {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Bulk delete states
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(10);
   const [totalItems, setTotalItems] = useState<number>(0);
@@ -229,6 +234,64 @@ const UsersManagement = () => {
     setCurrentPage(1);
   };
 
+  // ── Bulk Selection Handlers ──
+  const handleToggleSelect = (userId: string) => {
+    setSelectedUserIds(prev => {
+      const next = new Set(prev);
+      if (next.has(userId)) {
+        next.delete(userId);
+      } else {
+        next.add(userId);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedUserIds.size === filteredUsers.length) {
+      // Deselect all
+      setSelectedUserIds(new Set());
+    } else {
+      // Select all visible
+      setSelectedUserIds(new Set(filteredUsers.map(u => u.id)));
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedUserIds(new Set());
+  };
+
+  const handleBulkDeleteClick = () => {
+    if (selectedUserIds.size === 0) return;
+    setIsBulkDeleteModalOpen(true);
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedUserIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      const result = await userService.deleteUsers(Array.from(selectedUserIds));
+      if (result.failedCount === 0) {
+        toast.success(`Đã xóa thành công ${result.successCount} người dùng`);
+      } else {
+        toast.warning(
+          `Xóa thành công ${result.successCount}/${result.successCount + result.failedCount} người dùng. ${result.failedCount} người dùng xóa thất bại.`
+        );
+      }
+      setSelectedUserIds(new Set());
+      setIsBulkDeleteModalOpen(false);
+      await fetchUsers(currentPage, debouncedSearch);
+    } catch (error: any) {
+      toast.error(error.message || 'Xóa người dùng thất bại');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const handleBulkDeleteCancel = () => {
+    setIsBulkDeleteModalOpen(false);
+  };
+
   // Filter users based on status and 2FA filters (search is handled by API)
   const filteredUsers = users.filter(user => {
     // Status filter
@@ -245,6 +308,9 @@ const UsersManagement = () => {
 
     return true;
   });
+
+  const isAllSelected = filteredUsers.length > 0 && selectedUserIds.size === filteredUsers.length;
+  const isSomeSelected = selectedUserIds.size > 0 && selectedUserIds.size < filteredUsers.length;
 
   return (
     <div className="flex-1 bg-gray-50 p-6">
@@ -394,6 +460,16 @@ const UsersManagement = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th className="px-4 py-3 text-center w-10">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    ref={el => { if (el) el.indeterminate = isSomeSelected; }}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                    title={isAllSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+                  />
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tên</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
@@ -411,20 +487,28 @@ const UsersManagement = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {fetching ? (
                 <tr>
-                  <td colSpan={12} className="px-6 py-12 text-center">
+                  <td colSpan={13} className="px-6 py-12 text-center">
                     <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
                     <p className="mt-2 text-gray-600">{t('common.loadingData')}</p>
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={12} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={13} className="px-6 py-12 text-center text-gray-500">
                     {searchQuery ? 'Không tìm thấy người dùng nào' : 'Chưa có người dùng nào'}
                   </td>
                 </tr>
               ) : (
                 filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-primary-50/50 transition-colors">
+                  <tr key={user.id} className={`transition-colors ${selectedUserIds.has(user.id) ? 'bg-purple-50' : 'hover:bg-primary-50/50'}`}>
+                    <td className="px-4 py-3 text-center w-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedUserIds.has(user.id)}
+                        onChange={() => handleToggleSelect(user.id)}
+                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                      />
+                    </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded text-gray-600">
                         #{user.id.slice(0, 8)}
@@ -816,6 +900,99 @@ const UsersManagement = () => {
                 <span>{deletingId === userToDelete.id ? t('common.deleting') : t('common.delete')}</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Confirmation Modal */}
+      {isBulkDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-200 bg-red-50">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Xóa nhiều người dùng</h2>
+                  <p className="text-sm text-red-600">Hành động này không thể hoàn tác</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              <p className="text-gray-700 mb-4">
+                Bạn có chắc chắn muốn xóa <span className="font-bold text-red-600">{selectedUserIds.size}</span> người dùng đã chọn?
+              </p>
+              <div className="bg-gray-50 rounded-lg p-3 max-h-40 overflow-y-auto">
+                <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">Danh sách sẽ bị xóa:</p>
+                <ul className="space-y-1">
+                  {filteredUsers
+                    .filter(u => selectedUserIds.has(u.id))
+                    .map(u => (
+                      <li key={u.id} className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-red-300 to-red-500 flex items-center justify-center text-white text-[10px] font-medium flex-shrink-0">
+                          {u.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="truncate">{u.name}</span>
+                        <span className="text-gray-400 text-xs">({u.email})</span>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={handleBulkDeleteCancel}
+                disabled={bulkDeleting}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleBulkDeleteConfirm}
+                disabled={bulkDeleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {bulkDeleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                <span>{bulkDeleting ? `Đang xóa ${selectedUserIds.size} người dùng...` : `Xóa ${selectedUserIds.size} người dùng`}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Bulk Action Bar */}
+      {selectedUserIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-slide-up">
+          <div className="flex items-center gap-4 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-2xl border border-gray-700">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-7 h-7 bg-purple-500 rounded-full text-xs font-bold">
+                {selectedUserIds.size}
+              </div>
+              <span className="text-sm font-medium">người dùng đã chọn</span>
+            </div>
+            <div className="w-px h-6 bg-gray-600" />
+            <button
+              onClick={handleBulkDeleteClick}
+              className="flex items-center gap-2 px-4 py-1.5 bg-red-600 hover:bg-red-700 rounded-lg transition-colors text-sm font-medium"
+            >
+              <Trash2 className="w-4 h-4" />
+              Xóa đã chọn
+            </button>
+            <button
+              onClick={handleClearSelection}
+              className="flex items-center gap-1 px-3 py-1.5 hover:bg-gray-700 rounded-lg transition-colors text-sm text-gray-300 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+              Bỏ chọn
+            </button>
           </div>
         </div>
       )}

@@ -33,6 +33,20 @@ export default {
           900: '#4c1d95',
         },
       },
+      keyframes: {
+        'slide-up': {
+          '0%': { opacity: '0', transform: 'translateX(-50%) translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateX(-50%) translateY(0)' },
+        },
+        'scale-in': {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+      },
+      animation: {
+        'slide-up': 'slide-up 0.3s ease-out',
+        'scale-in': 'scale-in 0.15s ease-out',
+      },
     },
   },
   plugins: [],

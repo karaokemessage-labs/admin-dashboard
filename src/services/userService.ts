@@ -21,6 +21,7 @@ export interface UserService {
   getUser: (id: string) => Promise<UserResponseDto>;
   updateUser: (id: string, data: UpdateUserRequestDto) => Promise<UserResponseDto>;
   deleteUser: (id: string) => Promise<void>;
+  deleteUsers: (ids: string[]) => Promise<{ successCount: number; failedCount: number; failedIds: string[] }>;
   activateUser: (id: string) => Promise<UserResponseDto>;
   deactivateUser: (id: string) => Promise<UserResponseDto>;
 }
@@ -113,6 +114,29 @@ class UserServiceImpl implements UserService {
         apiError.message || 'Xóa người dùng thất bại. Vui lòng thử lại.'
       );
     }
+  }
+
+  async deleteUsers(ids: string[]): Promise<{ successCount: number; failedCount: number; failedIds: string[] }> {
+    const results = await Promise.allSettled(
+      ids.map(id => apiClient.delete(API_ENDPOINTS.USERS.BY_ID(id)))
+    );
+
+    const failedIds: string[] = [];
+    let successCount = 0;
+
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        successCount++;
+      } else {
+        failedIds.push(ids[index]);
+      }
+    });
+
+    return {
+      successCount,
+      failedCount: failedIds.length,
+      failedIds,
+    };
   }
 
   async activateUser(id: string): Promise<UserResponseDto> {

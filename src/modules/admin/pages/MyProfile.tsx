@@ -27,22 +27,42 @@ const MyProfile = () => {
     username: user?.username || '',
   });
 
-  // Initialize form data from user context first (no API call needed initially)
+  // Fetch profile from /auth/me API on mount
   useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.displayName || user.name || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        username: user.username || '',
-      });
-      // Set profile data from user context
-      setProfileData(user as any);
-      setFetching(false);
-    } else {
-      setFetching(false);
-    }
-  }, [user]);
+    const fetchProfile = async () => {
+      setFetching(true);
+      try {
+        const response = await authService.getMe();
+        const data = response.data || response;
+        setProfileData(response);
+        setFormData({
+          name: data.displayName || data.name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          username: data.username || '',
+        });
+        // Also refresh AuthContext to keep sidebar/header in sync
+        await fetchUserInfo();
+      } catch (error: any) {
+        console.error('Failed to fetch profile from /auth/me:', error);
+        // Fallback to AuthContext user data
+        if (user) {
+          setFormData({
+            name: user.displayName || user.name || '',
+            email: user.email || '',
+            phone: user.phone || '',
+            username: user.username || '',
+          });
+          setProfileData(user as any);
+        }
+        toast.error(error.message || 'Không thể tải thông tin profile');
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchProfile();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
