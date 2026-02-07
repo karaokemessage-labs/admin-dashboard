@@ -10,8 +10,8 @@ const Login = () => {
   const { isAuthenticated, mustSetup2fa, setMustSetup2fa, fetchUserInfo, login } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [usernameOrEmail, setUsernameOrEmail] = useState('admin@kaka.club');
-  const [password, setPassword] = useState('be12345678@Ab');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('admin@vipka.club');
+  const [password, setPassword] = useState('12345678');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +49,7 @@ const Login = () => {
 
       // Login successful, fetch user info to get complete profile
       await fetchUserInfo();
-      
+
       toast.success('Đăng nhập thành công!');
       navigate('/dashboard', { replace: true });
     } catch (err: any) {
@@ -70,11 +70,11 @@ const Login = () => {
         toast.error('Không tìm thấy access token. Vui lòng đăng nhập lại.');
         return;
       }
-      
+
       // Fetch user info using the token
       await fetchUserInfo();
       setMustSetup2fa(false);
-      
+
       // Navigate to dashboard - success message is already shown in RecoveryCodesModal
       navigate('/dashboard', { replace: true });
     } catch (error: any) {
@@ -98,82 +98,82 @@ const Login = () => {
         <Setup2FA onComplete={handle2FAComplete} onCancel={handle2FACancel} />
       )}
       <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-purple-700 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="px-8 py-8 bg-gradient-to-r from-purple-600 to-blue-600">
-          <h1 className="text-2xl font-bold text-white text-center">Admin Karaoke</h1>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              {t('common.emailOrUsername')}
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                id="email"
-                type="text"
-                value={usernameOrEmail}
-                onChange={(e) => setUsernameOrEmail(e.target.value)}
-                disabled={loading}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
-                placeholder={t('common.emailOrUsername')}
-              />
-            </div>
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
+          <div className="px-8 py-8 bg-gradient-to-r from-purple-600 to-blue-600">
+            <h1 className="text-2xl font-bold text-white text-center">Admin Karaoke</h1>
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              {t('common.password')}
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                disabled={loading}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+          <form onSubmit={handleSubmit} className="p-8 space-y-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                {t('common.emailOrUsername')}
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  id="email"
+                  type="text"
+                  value={usernameOrEmail}
+                  onChange={(e) => setUsernameOrEmail(e.target.value)}
+                  disabled={loading}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  placeholder={t('common.emailOrUsername')}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                {t('common.password')}
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={loading}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="flex items-center justify-end">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
+                {t('common.forgotPassword')}
+              </Link>
             </div>
-          </div>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          <div className="flex items-center justify-end">
-            <Link
-              to="/forgot-password"
-              className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {t('common.forgotPassword')}
-            </Link>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {loading && <Loader2 className="w-5 h-5 animate-spin" />}
-            {loading ? t('common.loggingIn') : t('common.login')}
-          </button>
-        </form>
+              {loading && <Loader2 className="w-5 h-5 animate-spin" />}
+              {loading ? t('common.loggingIn') : t('common.login')}
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
     </>
   );
 };
