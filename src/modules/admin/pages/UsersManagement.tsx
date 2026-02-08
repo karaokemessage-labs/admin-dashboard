@@ -88,7 +88,7 @@ const UsersManagement = () => {
     selectedUsers: 'người dùng đã chọn',
     deleteSelected: 'Xóa đã chọn',
     deselect: 'Bỏ chọn',
-    userTypes: { ADMIN: 'Quản trị', PARTNER: 'Đối tác', PROVIDER: 'Nhà cung cấp', USER: 'Người dùng', REGULAR_USER: 'Người dùng', TEST_USER: 'Test User' } as Record<string, string>,
+    userTypes: { ADMIN: 'Quản trị', AGENCY: 'Đại lý', USER: 'Người dùng' } as Record<string, string>,
     // Toast messages
     createSuccess: 'Tạo người dùng thành công',
     createFailed: 'Tạo người dùng thất bại',
@@ -172,7 +172,7 @@ const UsersManagement = () => {
     selectedUsers: 'users selected',
     deleteSelected: 'Delete selected',
     deselect: 'Deselect',
-    userTypes: { ADMIN: 'Admin', PARTNER: 'Partner', PROVIDER: 'Provider', USER: 'User', REGULAR_USER: 'Regular User', TEST_USER: 'Test User' } as Record<string, string>,
+    userTypes: { ADMIN: 'Admin', AGENCY: 'Agency', USER: 'User' } as Record<string, string>,
     // Toast messages
     createSuccess: 'User created successfully',
     createFailed: 'Failed to create user',
@@ -222,6 +222,7 @@ const UsersManagement = () => {
     twoFaEnabled?: boolean;
     requires2FAChallenge?: boolean;
     mustChangePassword?: boolean;
+    userType?: string;
   }>({
     name: '',
     email: '',
@@ -231,6 +232,7 @@ const UsersManagement = () => {
     twoFaEnabled: false,
     requires2FAChallenge: false,
     mustChangePassword: false,
+    userType: 'user',
   });
 
   // Click outside to close filter
@@ -303,6 +305,7 @@ const UsersManagement = () => {
       twoFaEnabled: false,
       requires2FAChallenge: false,
       mustChangePassword: false,
+      userType: 'user',
     });
   };
 
@@ -337,6 +340,7 @@ const UsersManagement = () => {
           name: formData.name,
           email: formData.email,
           username: formData.username,
+          userType: formData.userType,
           isActive: formData.isActive,
           isEnable2FA: formData.isEnable2FA,
           twoFaEnabled: formData.twoFaEnabled,
@@ -603,7 +607,7 @@ const UsersManagement = () => {
                       {labels.userTypeLabel}
                     </label>
                     <div className="space-y-1.5">
-                      {Object.entries(labels.userTypes).filter(([key]) => ['ADMIN', 'PARTNER', 'PROVIDER', 'USER'].includes(key)).map(([key, label]) => (
+                      {Object.entries(labels.userTypes).map(([key, label]) => (
                         <label
                           key={key}
                           className={`flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-colors text-sm ${userTypeFilter.includes(key.toLowerCase())
@@ -831,6 +835,7 @@ const UsersManagement = () => {
                               name: user.name,
                               email: user.email,
                               username: user.username,
+                              userType: user.userType?.toLowerCase() || 'user',
                               isActive: user.isActive ?? true,
                               isEnable2FA: user.isEnable2FA ?? false,
                               twoFaEnabled: user.twoFaEnabled ?? user.isEnable2FA ?? false,
@@ -982,6 +987,26 @@ const UsersManagement = () => {
                 />
                 <p className="mt-1 text-xs text-gray-500">{labels.usernameHint}</p>
               </div>
+
+              {/* User Type - Only show in edit mode */}
+              {isEditMode && (
+                <div className="mb-4">
+                  <label htmlFor="userType" className="block text-sm font-medium text-gray-700 mb-2">
+                    {labels.userTypeLabel}
+                  </label>
+                  <select
+                    id="userType"
+                    value={formData.userType || 'user'}
+                    onChange={(e) => setFormData(prev => ({ ...prev, userType: e.target.value }))}
+                    disabled={loading}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="admin">{labels.userTypes['ADMIN']}</option>
+                    <option value="agency">{labels.userTypes['AGENCY']}</option>
+                    <option value="user">{labels.userTypes['USER']}</option>
+                  </select>
+                </div>
+              )}
 
               {/* Status Options - Only show in edit mode */}
               {isEditMode && (

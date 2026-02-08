@@ -265,6 +265,7 @@ export interface UpdateUserRequestDto {
   name?: string;
   email?: string;
   username?: string;
+  userType?: string;
   isActive?: boolean;
   isEnable2FA?: boolean;
   twoFaEnabled?: boolean;
