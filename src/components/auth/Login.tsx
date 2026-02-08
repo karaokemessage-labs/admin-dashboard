@@ -11,7 +11,7 @@ const Login = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [usernameOrEmail, setUsernameOrEmail] = useState('admin@vipka.club');
-  const [password, setPassword] = useState('12345678');
+  const [password, setPassword] = useState('be12345678@Ab');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

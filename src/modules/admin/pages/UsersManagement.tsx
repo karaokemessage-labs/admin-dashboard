@@ -28,7 +28,7 @@ const UsersManagement = () => {
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize] = useState<number>(10);
+  const [pageSize, setPageSize] = useState<number>(10);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -80,10 +80,10 @@ const UsersManagement = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch users when search changes (reset to page 1)
+  // Fetch users when search or pageSize changes (reset to page 1)
   useEffect(() => {
     fetchUsers(1, debouncedSearch);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, pageSize]);
 
   const fetchUsers = async (page: number, search?: string) => {
     setFetching(true);
@@ -630,11 +630,29 @@ const UsersManagement = () => {
         </div>
 
         {/* Pagination */}
-        {totalItems > pageSize && (
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div className="flex items-center gap-4">
             <div className="text-sm text-gray-600">
-              Hiển thị {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, totalItems)} của {totalItems} người dùng
+              Hiển thị {totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0} - {Math.min(currentPage * pageSize, totalItems)} của {totalItems} người dùng
             </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600">Số dòng:</label>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="px-2 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+          </div>
+          {totalItems > pageSize && (
             <div className="flex items-center gap-2">
               <button
                 onClick={() => fetchUsers(currentPage - 1, debouncedSearch)}
@@ -654,8 +672,8 @@ const UsersManagement = () => {
                 Sau
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Add/Edit User Modal */}
