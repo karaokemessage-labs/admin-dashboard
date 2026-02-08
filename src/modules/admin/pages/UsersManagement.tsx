@@ -27,6 +27,7 @@ const UsersManagement = () => {
     active: 'Hoạt động',
     inactive: 'Không hoạt động',
     twoFaLabel: 'Xác thực 2 lớp (2FA)',
+    userTypeLabel: 'Loại người dùng',
     all: 'Tất cả',
     enabled: 'Đã bật',
     disabled: 'Đã tắt',
@@ -110,6 +111,7 @@ const UsersManagement = () => {
     active: 'Active',
     inactive: 'Inactive',
     twoFaLabel: 'Two-Factor Authentication (2FA)',
+    userTypeLabel: 'User Type',
     all: 'All',
     enabled: 'Enabled',
     disabled: 'Disabled',
@@ -208,10 +210,11 @@ const UsersManagement = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [twoFaFilter, setTwoFaFilter] = useState<string>('');
+  const [userTypeFilter, setUserTypeFilter] = useState<string[]>([]);
   const filterRef = useRef<HTMLDivElement>(null);
 
   // Calculate active filter count
-  const activeFilterCount = [statusFilter, twoFaFilter].filter(f => f !== '').length;
+  const activeFilterCount = [statusFilter, twoFaFilter].filter(f => f !== '').length + (userTypeFilter.length > 0 ? 1 : 0);
 
   const [formData, setFormData] = useState<CreateUserRequestDto & {
     isActive?: boolean;
@@ -255,7 +258,7 @@ const UsersManagement = () => {
   // Fetch users when search or pageSize changes (reset to page 1)
   useEffect(() => {
     fetchUsers(1, debouncedSearch);
-  }, [debouncedSearch, pageSize]);
+  }, [debouncedSearch, pageSize, userTypeFilter]);
 
   const fetchUsers = async (page: number, search?: string) => {
     setFetching(true);
@@ -264,6 +267,7 @@ const UsersManagement = () => {
         page,
         page_size: pageSize,
         search: search || undefined,
+        user_type: userTypeFilter.length > 0 ? userTypeFilter.join(',') : undefined,
       });
       setUsers(response.data || []);
       setCurrentPage(response.pagination?.page || page);
@@ -403,6 +407,18 @@ const UsersManagement = () => {
   const handleClearFilters = () => {
     setStatusFilter('');
     setTwoFaFilter('');
+    setUserTypeFilter([]);
+    setCurrentPage(1);
+  };
+
+  // User type filter toggle
+  const handleToggleUserType = (type: string) => {
+    setUserTypeFilter(prev => {
+      if (prev.includes(type)) {
+        return prev.filter(t => t !== type);
+      }
+      return [...prev, type];
+    });
     setCurrentPage(1);
   };
 
@@ -580,6 +596,32 @@ const UsersManagement = () => {
                       <option value="disabled">{labels.disabled}</option>
                     </select>
                   </div>
+
+                  {/* User Type Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {labels.userTypeLabel}
+                    </label>
+                    <div className="space-y-1.5">
+                      {Object.entries(labels.userTypes).filter(([key]) => ['ADMIN', 'PARTNER', 'PROVIDER', 'USER'].includes(key)).map(([key, label]) => (
+                        <label
+                          key={key}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-colors text-sm ${userTypeFilter.includes(key.toLowerCase())
+                              ? 'bg-primary-100 text-primary-800'
+                              : 'hover:bg-gray-50 text-gray-700'
+                            }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={userTypeFilter.includes(key.toLowerCase())}
+                            onChange={() => handleToggleUserType(key.toLowerCase())}
+                            className="w-3.5 h-3.5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                          />
+                          <span>{label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Footer */}
@@ -617,6 +659,17 @@ const UsersManagement = () => {
                 <button
                   onClick={() => setTwoFaFilter('')}
                   className="hover:bg-purple-200 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {userTypeFilter.length > 0 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {labels.userTypeLabel}: {userTypeFilter.map(t => labels.userTypes[t.toUpperCase()] || t).join(', ')}
+                <button
+                  onClick={() => setUserTypeFilter([])}
+                  className="hover:bg-blue-200 rounded-full p-0.5"
                 >
                   <X className="w-3 h-3" />
                 </button>

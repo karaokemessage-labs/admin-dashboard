@@ -13,6 +13,7 @@ export interface UserService {
     page?: number;
     page_size?: number;
     search?: string;
+    user_type?: string;
     status?: string;
     role?: string;
     sortBy?: string;
@@ -46,6 +47,7 @@ class UserServiceImpl implements UserService {
     page?: number;
     page_size?: number;
     search?: string;
+    user_type?: string;
     status?: string;
     role?: string;
     sortBy?: string;
@@ -56,6 +58,7 @@ class UserServiceImpl implements UserService {
       if (params?.page) searchParams.append('page', params.page.toString());
       if (params?.page_size) searchParams.append('page_size', params.page_size.toString());
       if (params?.search) searchParams.append('search', params.search);
+      if (params?.user_type) searchParams.append('user_type', params.user_type);
       if (params?.status) searchParams.append('status', params.status);
       if (params?.role) searchParams.append('role', params.role);
       if (params?.sortBy) searchParams.append('sortBy', params.sortBy);
