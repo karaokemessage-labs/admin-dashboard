@@ -90,12 +90,12 @@ const UsersManagement = () => {
     try {
       const response = await userService.getUsers({
         page,
-        limit: pageSize,
+        page_size: pageSize,
         search: search || undefined,
       });
-      setUsers(response.users || []);
-      setCurrentPage(response.page || page);
-      setTotalItems(response.total || 0);
+      setUsers(response.data || []);
+      setCurrentPage(response.pagination?.page || page);
+      setTotalItems(response.pagination?.total || 0);
     } catch (error: any) {
       toast.error(error.message || t('common.error'));
     } finally {

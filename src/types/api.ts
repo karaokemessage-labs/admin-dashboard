@@ -287,11 +287,18 @@ export interface UserResponseDto {
   updatedAt: string;
 }
 
-export interface GetUsersResponseDto {
-  users: UserResponseDto[];
-  total: number;
+export interface PaginationDto {
   page: number;
-  limit: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
+export interface GetUsersResponseDto {
+  data: UserResponseDto[];
+  pagination: PaginationDto;
 }
 
 // Article Types

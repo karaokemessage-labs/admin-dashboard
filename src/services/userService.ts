@@ -11,7 +11,7 @@ export interface UserService {
   createUser: (data: CreateUserRequestDto) => Promise<UserResponseDto>;
   getUsers: (params?: {
     page?: number;
-    limit?: number;
+    page_size?: number;
     search?: string;
     status?: string;
     role?: string;
@@ -44,7 +44,7 @@ class UserServiceImpl implements UserService {
 
   async getUsers(params?: {
     page?: number;
-    limit?: number;
+    page_size?: number;
     search?: string;
     status?: string;
     role?: string;
@@ -54,7 +54,7 @@ class UserServiceImpl implements UserService {
     try {
       const searchParams = new URLSearchParams();
       if (params?.page) searchParams.append('page', params.page.toString());
-      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.page_size) searchParams.append('page_size', params.page_size.toString());
       if (params?.search) searchParams.append('search', params.search);
       if (params?.status) searchParams.append('status', params.status);
       if (params?.role) searchParams.append('role', params.role);
