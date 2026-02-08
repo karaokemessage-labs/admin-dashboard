@@ -282,6 +282,7 @@ export interface UserResponseDto {
   twoFaEnabled?: boolean;
   requires2FAChallenge?: boolean;
   mustChangePassword?: boolean;
+  userType?: string;
   activeAt: string | null;
   createdAt: string;
   updatedAt: string;

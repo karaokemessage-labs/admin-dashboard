@@ -11,9 +11,159 @@ import {
 } from '../../../types/api';
 
 const UsersManagement = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserResponseDto[]>([]);
+
+  // Localized labels for this page
+  const labels = language === 'vi' ? {
+    pageTitle: 'Quản lý Người dùng',
+    pageDescription: 'Quản lý tài khoản người dùng trong hệ thống',
+    searchPlaceholder: 'Tìm kiếm theo tên, email hoặc username...',
+    filterTitle: 'Bộ lọc',
+    clearFilter: 'Xóa bộ lọc',
+    statusLabel: 'Trạng thái',
+    allStatuses: 'Tất cả trạng thái',
+    active: 'Hoạt động',
+    inactive: 'Không hoạt động',
+    twoFaLabel: 'Xác thực 2 lớp (2FA)',
+    all: 'Tất cả',
+    enabled: 'Đã bật',
+    disabled: 'Đã tắt',
+    apply: 'Áp dụng',
+    filtering: 'Đang lọc:',
+    deselectAll: 'Bỏ chọn tất cả',
+    selectAll: 'Chọn tất cả',
+    colId: 'ID',
+    colName: 'Tên',
+    colEmail: 'Email',
+    colUsername: 'Username',
+    colType: 'Loại',
+    colStatus: 'Trạng thái',
+    col2fa: '2FA',
+    colRequire2fa: 'Yêu cầu 2FA',
+    colChangePassword: 'Đổi MK',
+    colActiveAt: 'Ngày kích hoạt',
+    colCreatedAt: 'Ngày tạo',
+    colUpdatedAt: 'Cập nhật',
+    colActions: 'Thao tác',
+    noUsersFound: 'Không tìm thấy người dùng nào',
+    noUsersYet: 'Chưa có người dùng nào',
+    on: 'Bật',
+    off: 'Tắt',
+    yes: 'Có',
+    no: 'Không',
+    showing: 'Hiển thị',
+    of: 'của',
+    users: 'người dùng',
+    rowsPerPage: 'Số dòng:',
+    previous: 'Trước',
+    page: 'Trang',
+    next: 'Sau',
+    editUser: 'Chỉnh sửa người dùng',
+    createUser: 'Tạo người dùng mới',
+    nameLabel: 'Tên',
+    nameRequiredPlaceholder: 'Nhập tên người dùng...',
+    usernameHint: 'Chỉ được chứa chữ cái, số và dấu gạch dưới',
+    accountSettings: 'Cài đặt tài khoản',
+    activateAccount: 'Kích hoạt tài khoản',
+    activateAccountDesc: 'Cho phép người dùng đăng nhập',
+    enable2fa: 'Bật 2FA',
+    enable2faDesc: 'Kích hoạt xác thực 2 lớp',
+    twoFaActivated: '2FA đã kích hoạt',
+    twoFaCurrentStatus: 'Trạng thái 2FA hiện tại',
+    require2faChallenge: 'Yêu cầu xác thực 2FA',
+    require2faChallengeDesc: 'Bắt buộc xác thực 2FA khi đăng nhập',
+    forceChangePassword: 'Bắt buộc đổi mật khẩu',
+    forceChangePasswordDesc: 'Yêu cầu đổi mật khẩu khi đăng nhập lần tới',
+    createUserBtn: 'Tạo người dùng',
+    deleteUser: 'Xóa Người dùng',
+    bulkDeleteTitle: 'Xóa nhiều người dùng',
+    bulkDeleteWarning: 'Hành động này không thể hoàn tác',
+    bulkDeleteConfirm: (count: number) => `Bạn có chắc chắn muốn xóa ${count} người dùng đã chọn?`,
+    bulkDeleteList: 'Danh sách sẽ bị xóa:',
+    bulkDeleting: (count: number) => `Đang xóa ${count} người dùng...`,
+    bulkDeleteBtn: (count: number) => `Xóa ${count} người dùng`,
+    selectedUsers: 'người dùng đã chọn',
+    deleteSelected: 'Xóa đã chọn',
+    deselect: 'Bỏ chọn',
+    userTypes: { ADMIN: 'Quản trị', PARTNER: 'Đối tác', PROVIDER: 'Nhà cung cấp', USER: 'Người dùng', REGULAR_USER: 'Người dùng', TEST_USER: 'Test User' } as Record<string, string>,
+  } : {
+    pageTitle: 'Users Management',
+    pageDescription: 'Manage user accounts in the system',
+    searchPlaceholder: 'Search by name, email or username...',
+    filterTitle: 'Filters',
+    clearFilter: 'Clear filters',
+    statusLabel: 'Status',
+    allStatuses: 'All statuses',
+    active: 'Active',
+    inactive: 'Inactive',
+    twoFaLabel: 'Two-Factor Authentication (2FA)',
+    all: 'All',
+    enabled: 'Enabled',
+    disabled: 'Disabled',
+    apply: 'Apply',
+    filtering: 'Filtering:',
+    deselectAll: 'Deselect all',
+    selectAll: 'Select all',
+    colId: 'ID',
+    colName: 'Name',
+    colEmail: 'Email',
+    colUsername: 'Username',
+    colType: 'Type',
+    colStatus: 'Status',
+    col2fa: '2FA',
+    colRequire2fa: 'Require 2FA',
+    colChangePassword: 'Change PW',
+    colActiveAt: 'Activated',
+    colCreatedAt: 'Created',
+    colUpdatedAt: 'Updated',
+    colActions: 'Actions',
+    noUsersFound: 'No users found',
+    noUsersYet: 'No users yet',
+    on: 'On',
+    off: 'Off',
+    yes: 'Yes',
+    no: 'No',
+    showing: 'Showing',
+    of: 'of',
+    users: 'users',
+    rowsPerPage: 'Rows:',
+    previous: 'Previous',
+    page: 'Page',
+    next: 'Next',
+    editUser: 'Edit User',
+    createUser: 'Create New User',
+    nameLabel: 'Name',
+    nameRequiredPlaceholder: 'Enter user name...',
+    usernameHint: 'Only letters, numbers and underscores allowed',
+    accountSettings: 'Account Settings',
+    activateAccount: 'Activate Account',
+    activateAccountDesc: 'Allow user to log in',
+    enable2fa: 'Enable 2FA',
+    enable2faDesc: 'Enable two-factor authentication',
+    twoFaActivated: '2FA Activated',
+    twoFaCurrentStatus: 'Current 2FA status',
+    require2faChallenge: 'Require 2FA Challenge',
+    require2faChallengeDesc: 'Require 2FA verification on login',
+    forceChangePassword: 'Force Password Change',
+    forceChangePasswordDesc: 'Require password change on next login',
+    createUserBtn: 'Create User',
+    deleteUser: 'Delete User',
+    bulkDeleteTitle: 'Delete Multiple Users',
+    bulkDeleteWarning: 'This action cannot be undone',
+    bulkDeleteConfirm: (count: number) => `Are you sure you want to delete ${count} selected users?`,
+    bulkDeleteList: 'Users to be deleted:',
+    bulkDeleting: (count: number) => `Deleting ${count} users...`,
+    bulkDeleteBtn: (count: number) => `Delete ${count} users`,
+    selectedUsers: 'users selected',
+    deleteSelected: 'Delete selected',
+    deselect: 'Deselect',
+    userTypes: { ADMIN: 'Admin', PARTNER: 'Partner', PROVIDER: 'Provider', USER: 'User', REGULAR_USER: 'Regular User', TEST_USER: 'Test User' } as Record<string, string>,
+  };
+
+  const getUserTypeLabel = (type?: string) => labels.userTypes[type || 'USER'] || type || labels.userTypes['USER'];
+  const dateLocale = language === 'vi' ? 'vi-VN' : 'en-US';
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
@@ -315,8 +465,8 @@ const UsersManagement = () => {
   return (
     <div className="flex-1 bg-gray-50 p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-1">Quản lý Người dùng</h1>
-        <p className="text-gray-500 text-sm">Quản lý tài khoản người dùng trong hệ thống</p>
+        <h1 className="text-2xl font-bold text-gray-800 mb-1">{labels.pageTitle}</h1>
+        <p className="text-gray-500 text-sm">{labels.pageDescription}</p>
       </div>
 
       {/* Filters */}
@@ -326,7 +476,7 @@ const UsersManagement = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm kiếm theo tên, email hoặc username..."
+              placeholder={labels.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
@@ -357,14 +507,14 @@ const UsersManagement = () => {
               <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 z-50 animate-scale-in overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
-                  <span className="font-semibold text-gray-800">Bộ lọc</span>
+                  <span className="font-semibold text-gray-800">{labels.filterTitle}</span>
                   {activeFilterCount > 0 && (
                     <button
                       onClick={handleClearFilters}
                       className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
                     >
                       <X className="w-3 h-3" />
-                      Xóa bộ lọc
+                      {labels.clearFilter}
                     </button>
                   )}
                 </div>
@@ -374,7 +524,7 @@ const UsersManagement = () => {
                   {/* Status Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Trạng thái
+                      {labels.statusLabel}
                     </label>
                     <select
                       value={statusFilter}
@@ -384,16 +534,16 @@ const UsersManagement = () => {
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
                     >
-                      <option value="">Tất cả trạng thái</option>
-                      <option value="active">Hoạt động</option>
-                      <option value="inactive">Không hoạt động</option>
+                      <option value="">{labels.allStatuses}</option>
+                      <option value="active">{labels.active}</option>
+                      <option value="inactive">{labels.inactive}</option>
                     </select>
                   </div>
 
                   {/* 2FA Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Xác thực 2 lớp (2FA)
+                      {labels.twoFaLabel}
                     </label>
                     <select
                       value={twoFaFilter}
@@ -403,9 +553,9 @@ const UsersManagement = () => {
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
                     >
-                      <option value="">Tất cả</option>
-                      <option value="enabled">Đã bật</option>
-                      <option value="disabled">Đã tắt</option>
+                      <option value="">{labels.all}</option>
+                      <option value="enabled">{labels.enabled}</option>
+                      <option value="disabled">{labels.disabled}</option>
                     </select>
                   </div>
                 </div>
@@ -416,7 +566,7 @@ const UsersManagement = () => {
                     onClick={() => setIsFilterOpen(false)}
                     className="w-full px-4 py-2 bg-primary text-primary-900 rounded-lg hover:bg-primary-400 transition-colors text-sm font-medium"
                   >
-                    Áp dụng
+                    {labels.apply}
                   </button>
                 </div>
               </div>
@@ -427,10 +577,10 @@ const UsersManagement = () => {
         {/* Active Filters Display */}
         {activeFilterCount > 0 && (
           <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
-            <span className="text-sm text-gray-500">Đang lọc:</span>
+            <span className="text-sm text-gray-500">{labels.filtering}</span>
             {statusFilter && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                {statusFilter === 'active' ? 'Hoạt động' : 'Không hoạt động'}
+                {statusFilter === 'active' ? labels.active : labels.inactive}
                 <button
                   onClick={() => setStatusFilter('')}
                   className="hover:bg-primary-200 rounded-full p-0.5"
@@ -441,7 +591,7 @@ const UsersManagement = () => {
             )}
             {twoFaFilter && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                2FA: {twoFaFilter === 'enabled' ? 'Đã bật' : 'Đã tắt'}
+                2FA: {twoFaFilter === 'enabled' ? labels.enabled : labels.disabled}
                 <button
                   onClick={() => setTwoFaFilter('')}
                   className="hover:bg-purple-200 rounded-full p-0.5"
@@ -467,35 +617,36 @@ const UsersManagement = () => {
                     ref={el => { if (el) el.indeterminate = isSomeSelected; }}
                     onChange={handleSelectAll}
                     className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
-                    title={isAllSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+                    title={isAllSelected ? labels.deselectAll : labels.selectAll}
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tên</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Username</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Trạng thái</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">2FA</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Yêu cầu 2FA</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Đổi MK</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ngày kích hoạt</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ngày tạo</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Cập nhật</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Thao tác</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{labels.colId}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{labels.colName}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{labels.colEmail}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{labels.colUsername}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{labels.colType}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{labels.colStatus}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{labels.col2fa}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{labels.colRequire2fa}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{labels.colChangePassword}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{labels.colActiveAt}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{labels.colCreatedAt}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{labels.colUpdatedAt}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{labels.colActions}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {fetching ? (
                 <tr>
-                  <td colSpan={13} className="px-6 py-12 text-center">
+                  <td colSpan={14} className="px-6 py-12 text-center">
                     <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
                     <p className="mt-2 text-gray-600">{t('common.loadingData')}</p>
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={13} className="px-6 py-12 text-center text-gray-500">
-                    {searchQuery ? 'Không tìm thấy người dùng nào' : 'Chưa có người dùng nào'}
+                  <td colSpan={14} className="px-6 py-12 text-center text-gray-500">
+                    {searchQuery ? labels.noUsersFound : labels.noUsersYet}
                   </td>
                 </tr>
               ) : (
@@ -527,56 +678,65 @@ const UsersManagement = () => {
                       <span className="text-sm font-mono text-gray-700">{user.username}</span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.userType === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                        user.userType === 'PARTNER' ? 'bg-blue-100 text-blue-800' :
+                          user.userType === 'PROVIDER' ? 'bg-indigo-100 text-indigo-800' :
+                            'bg-gray-100 text-gray-700'
+                        }`}>
+                        {getUserTypeLabel(user.userType)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
                         }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-                        {user.isActive ? 'Hoạt động' : 'Không hoạt động'}
+                        {user.isActive ? labels.active : labels.inactive}
                       </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       {user.isEnable2FA ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                           <Shield className="w-3 h-3" />
-                          Bật
+                          {labels.on}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                          Tắt
+                          {labels.off}
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       {user.requires2FAChallenge ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
-                          Có
+                          {labels.yes}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">
-                          Không
+                          {labels.no}
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       {user.mustChangePassword ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">
-                          Có
+                          {labels.yes}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">
-                          Không
+                          {labels.no}
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                      {user.activeAt ? new Date(user.activeAt).toLocaleDateString('vi-VN') : '—'}
+                      {user.activeAt ? new Date(user.activeAt).toLocaleDateString(dateLocale) : '—'}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                      {new Date(user.createdAt).toLocaleDateString('vi-VN')}
+                      {new Date(user.createdAt).toLocaleDateString(dateLocale)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(user.updatedAt).toLocaleDateString('vi-VN')}
+                      {new Date(user.updatedAt).toLocaleDateString(dateLocale)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm">
                       <div className="flex items-center gap-1">
@@ -633,10 +793,10 @@ const UsersManagement = () => {
         <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-600">
-              Hiển thị {totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0} - {Math.min(currentPage * pageSize, totalItems)} của {totalItems} người dùng
+              {labels.showing} {totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0} - {Math.min(currentPage * pageSize, totalItems)} {labels.of} {totalItems} {labels.users}
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">Số dòng:</label>
+              <label className="text-sm text-gray-600">{labels.rowsPerPage}</label>
               <select
                 value={pageSize}
                 onChange={(e) => {
@@ -659,17 +819,17 @@ const UsersManagement = () => {
                 disabled={currentPage === 1 || fetching}
                 className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Trước
+                {labels.previous}
               </button>
               <span className="px-3 py-1 text-sm text-gray-700">
-                Trang {currentPage} / {Math.ceil(totalItems / pageSize)}
+                {labels.page} {currentPage} / {Math.ceil(totalItems / pageSize)}
               </span>
               <button
                 onClick={() => fetchUsers(currentPage + 1, debouncedSearch)}
                 disabled={currentPage >= Math.ceil(totalItems / pageSize) || fetching}
                 className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Sau
+                {labels.next}
               </button>
             </div>
           )}
@@ -683,7 +843,7 @@ const UsersManagement = () => {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-xl font-bold text-gray-900">
-                {isEditMode ? 'Chỉnh sửa người dùng' : 'Tạo người dùng mới'}
+                {isEditMode ? labels.editUser : labels.createUser}
               </h2>
               <button
                 onClick={handleCloseModal}
@@ -698,7 +858,7 @@ const UsersManagement = () => {
             <form onSubmit={handleSubmit} className="p-6">
               <div className="mb-4">
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                  Tên <span className="text-red-500">*</span>
+                  {labels.nameLabel} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -709,7 +869,7 @@ const UsersManagement = () => {
                   required
                   disabled={loading}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  placeholder="Nhập tên người dùng..."
+                  placeholder={labels.nameRequiredPlaceholder}
                 />
               </div>
 
@@ -745,21 +905,21 @@ const UsersManagement = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   placeholder="username"
                 />
-                <p className="mt-1 text-xs text-gray-500">Chỉ được chứa chữ cái, số và dấu gạch dưới</p>
+                <p className="mt-1 text-xs text-gray-500">{labels.usernameHint}</p>
               </div>
 
               {/* Status Options - Only show in edit mode */}
               {isEditMode && (
                 <div className="mb-6 space-y-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cài đặt tài khoản
+                    {labels.accountSettings}
                   </label>
 
                   {/* isActive Toggle */}
                   <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                     <div>
-                      <p className="font-medium text-gray-900">Kích hoạt tài khoản</p>
-                      <p className="text-xs text-gray-500">Cho phép người dùng đăng nhập</p>
+                      <p className="font-medium text-gray-900">{labels.activateAccount}</p>
+                      <p className="text-xs text-gray-500">{labels.activateAccountDesc}</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -776,8 +936,8 @@ const UsersManagement = () => {
                   {/* isEnable2FA Toggle */}
                   <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                     <div>
-                      <p className="font-medium text-gray-900">Bật 2FA</p>
-                      <p className="text-xs text-gray-500">Kích hoạt xác thực 2 lớp</p>
+                      <p className="font-medium text-gray-900">{labels.enable2fa}</p>
+                      <p className="text-xs text-gray-500">{labels.enable2faDesc}</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -794,8 +954,8 @@ const UsersManagement = () => {
                   {/* twoFaEnabled Toggle */}
                   <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                     <div>
-                      <p className="font-medium text-gray-900">2FA đã kích hoạt</p>
-                      <p className="text-xs text-gray-500">Trạng thái 2FA hiện tại</p>
+                      <p className="font-medium text-gray-900">{labels.twoFaActivated}</p>
+                      <p className="text-xs text-gray-500">{labels.twoFaCurrentStatus}</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -812,8 +972,8 @@ const UsersManagement = () => {
                   {/* requires2FAChallenge Toggle */}
                   <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                     <div>
-                      <p className="font-medium text-gray-900">Yêu cầu xác thực 2FA</p>
-                      <p className="text-xs text-gray-500">Bắt buộc xác thực 2FA khi đăng nhập</p>
+                      <p className="font-medium text-gray-900">{labels.require2faChallenge}</p>
+                      <p className="text-xs text-gray-500">{labels.require2faChallengeDesc}</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -830,8 +990,8 @@ const UsersManagement = () => {
                   {/* mustChangePassword Toggle */}
                   <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                     <div>
-                      <p className="font-medium text-gray-900">Bắt buộc đổi mật khẩu</p>
-                      <p className="text-xs text-gray-500">Yêu cầu đổi mật khẩu khi đăng nhập lần tới</p>
+                      <p className="font-medium text-gray-900">{labels.forceChangePassword}</p>
+                      <p className="text-xs text-gray-500">{labels.forceChangePasswordDesc}</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -870,7 +1030,7 @@ const UsersManagement = () => {
                         : t('common.creating')
                       : isEditMode
                         ? t('common.update')
-                        : 'Tạo người dùng'}
+                        : labels.createUserBtn}
                   </span>
                 </button>
               </div>
@@ -885,7 +1045,7 @@ const UsersManagement = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             {/* Modal Header */}
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">{t('common.delete')} Người dùng</h2>
+              <h2 className="text-xl font-bold text-gray-900">{labels.deleteUser}</h2>
             </div>
 
             {/* Modal Body */}
@@ -933,8 +1093,8 @@ const UsersManagement = () => {
                   <AlertTriangle className="w-5 h-5 text-red-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Xóa nhiều người dùng</h2>
-                  <p className="text-sm text-red-600">Hành động này không thể hoàn tác</p>
+                  <h2 className="text-lg font-bold text-gray-900">{labels.bulkDeleteTitle}</h2>
+                  <p className="text-sm text-red-600">{labels.bulkDeleteWarning}</p>
                 </div>
               </div>
             </div>
@@ -942,10 +1102,10 @@ const UsersManagement = () => {
             {/* Modal Body */}
             <div className="p-6">
               <p className="text-gray-700 mb-4">
-                Bạn có chắc chắn muốn xóa <span className="font-bold text-red-600">{selectedUserIds.size}</span> người dùng đã chọn?
+                {labels.bulkDeleteConfirm(selectedUserIds.size)}
               </p>
               <div className="bg-gray-50 rounded-lg p-3 max-h-40 overflow-y-auto">
-                <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">Danh sách sẽ bị xóa:</p>
+                <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">{labels.bulkDeleteList}</p>
                 <ul className="space-y-1">
                   {filteredUsers
                     .filter(u => selectedUserIds.has(u.id))
@@ -979,7 +1139,7 @@ const UsersManagement = () => {
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {bulkDeleting && <Loader2 className="w-4 h-4 animate-spin" />}
-                <span>{bulkDeleting ? `Đang xóa ${selectedUserIds.size} người dùng...` : `Xóa ${selectedUserIds.size} người dùng`}</span>
+                <span>{bulkDeleting ? labels.bulkDeleting(selectedUserIds.size) : labels.bulkDeleteBtn(selectedUserIds.size)}</span>
               </button>
             </div>
           </div>
@@ -994,7 +1154,7 @@ const UsersManagement = () => {
               <div className="flex items-center justify-center w-7 h-7 bg-purple-500 rounded-full text-xs font-bold">
                 {selectedUserIds.size}
               </div>
-              <span className="text-sm font-medium">người dùng đã chọn</span>
+              <span className="text-sm font-medium">{labels.selectedUsers}</span>
             </div>
             <div className="w-px h-6 bg-gray-600" />
             <button
@@ -1002,14 +1162,14 @@ const UsersManagement = () => {
               className="flex items-center gap-2 px-4 py-1.5 bg-red-600 hover:bg-red-700 rounded-lg transition-colors text-sm font-medium"
             >
               <Trash2 className="w-4 h-4" />
-              Xóa đã chọn
+              {labels.deleteSelected}
             </button>
             <button
               onClick={handleClearSelection}
               className="flex items-center gap-1 px-3 py-1.5 hover:bg-gray-700 rounded-lg transition-colors text-sm text-gray-300 hover:text-white"
             >
               <X className="w-4 h-4" />
-              Bỏ chọn
+              {labels.deselect}
             </button>
           </div>
         </div>
