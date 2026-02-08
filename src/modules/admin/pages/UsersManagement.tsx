@@ -88,6 +88,17 @@ const UsersManagement = () => {
     deleteSelected: 'Xóa đã chọn',
     deselect: 'Bỏ chọn',
     userTypes: { ADMIN: 'Quản trị', PARTNER: 'Đối tác', PROVIDER: 'Nhà cung cấp', USER: 'Người dùng', REGULAR_USER: 'Người dùng', TEST_USER: 'Test User' } as Record<string, string>,
+    // Toast messages
+    createSuccess: 'Tạo người dùng thành công',
+    createFailed: 'Tạo người dùng thất bại',
+    updateFailed: 'Cập nhật người dùng thất bại',
+    deleteSuccess: 'Xóa người dùng thành công',
+    deleteFailed: 'Xóa người dùng thất bại',
+    bulkDeleteSuccess: (count: number) => `Đã xóa thành công ${count} người dùng`,
+    bulkDeletePartial: (success: number, total: number, failed: number) => `Xóa thành công ${success}/${total} người dùng. ${failed} người dùng xóa thất bại.`,
+    // Delete confirmation
+    deleteConfirmMsg: (name: string) => `Bạn có chắc chắn muốn xóa người dùng "${name}"?`,
+    deleteWarningMsg: 'Hành động này không thể hoàn tác.',
   } : {
     pageTitle: 'Users Management',
     pageDescription: 'Manage user accounts in the system',
@@ -160,6 +171,17 @@ const UsersManagement = () => {
     deleteSelected: 'Delete selected',
     deselect: 'Deselect',
     userTypes: { ADMIN: 'Admin', PARTNER: 'Partner', PROVIDER: 'Provider', USER: 'User', REGULAR_USER: 'Regular User', TEST_USER: 'Test User' } as Record<string, string>,
+    // Toast messages
+    createSuccess: 'User created successfully',
+    createFailed: 'Failed to create user',
+    updateFailed: 'Failed to update user',
+    deleteSuccess: 'User deleted successfully',
+    deleteFailed: 'Failed to delete user',
+    bulkDeleteSuccess: (count: number) => `Successfully deleted ${count} users`,
+    bulkDeletePartial: (success: number, total: number, failed: number) => `Deleted ${success}/${total} users. ${failed} users failed to delete.`,
+    // Delete confirmation
+    deleteConfirmMsg: (name: string) => `Are you sure you want to delete user "${name}"?`,
+    deleteWarningMsg: 'This action cannot be undone.',
   };
 
   const getUserTypeLabel = (type?: string) => labels.userTypes[type || 'USER'] || type || labels.userTypes['USER'];
@@ -326,13 +348,13 @@ const UsersManagement = () => {
           email: formData.email,
           username: formData.username,
         });
-        toast.success('Tạo người dùng thành công');
+        toast.success(labels.createSuccess);
       }
 
       handleCloseModal();
       await fetchUsers(currentPage, debouncedSearch);
     } catch (error: any) {
-      toast.error(error.message || (isEditMode ? 'Cập nhật người dùng thất bại' : 'Tạo người dùng thất bại'));
+      toast.error(error.message || (isEditMode ? labels.updateFailed : labels.createFailed));
     } finally {
       setLoading(false);
     }
@@ -357,12 +379,12 @@ const UsersManagement = () => {
     setDeletingId(userToDelete.id);
     try {
       await userService.deleteUser(userToDelete.id);
-      toast.success('Xóa người dùng thành công');
+      toast.success(labels.deleteSuccess);
       setIsDeleteModalOpen(false);
       setUserToDelete(null);
       await fetchUsers(currentPage, debouncedSearch);
     } catch (error: any) {
-      toast.error(error.message || 'Xóa người dùng thất bại');
+      toast.error(error.message || labels.deleteFailed);
     } finally {
       setDeletingId(null);
     }
@@ -422,17 +444,17 @@ const UsersManagement = () => {
     try {
       const result = await userService.deleteUsers(Array.from(selectedUserIds));
       if (result.failedCount === 0) {
-        toast.success(`Đã xóa thành công ${result.successCount} người dùng`);
+        toast.success(labels.bulkDeleteSuccess(result.successCount));
       } else {
         toast.warning(
-          `Xóa thành công ${result.successCount}/${result.successCount + result.failedCount} người dùng. ${result.failedCount} người dùng xóa thất bại.`
+          labels.bulkDeletePartial(result.successCount, result.successCount + result.failedCount, result.failedCount)
         );
       }
       setSelectedUserIds(new Set());
       setIsBulkDeleteModalOpen(false);
       await fetchUsers(currentPage, debouncedSearch);
     } catch (error: any) {
-      toast.error(error.message || 'Xóa người dùng thất bại');
+      toast.error(error.message || labels.deleteFailed);
     } finally {
       setBulkDeleting(false);
     }
@@ -1051,10 +1073,10 @@ const UsersManagement = () => {
             {/* Modal Body */}
             <div className="p-6">
               <p className="text-gray-700 mb-4">
-                {t('common.deleteConfirmMessage')?.replace('this item', `người dùng "${userToDelete.name}"`) || `Bạn có chắc chắn muốn xóa người dùng "${userToDelete.name}"?`}
+                {labels.deleteConfirmMsg(userToDelete.name)}
               </p>
               <p className="text-sm text-red-600">
-                {t('common.deleteWarning') || 'Hành động này không thể hoàn tác.'}
+                {labels.deleteWarningMsg}
               </p>
             </div>
 
