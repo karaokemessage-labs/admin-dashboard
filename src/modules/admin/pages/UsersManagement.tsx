@@ -267,7 +267,7 @@ const UsersManagement = () => {
         page,
         page_size: pageSize,
         search: search || undefined,
-        user_type: userTypeFilter.length > 0 ? userTypeFilter.join(',') : undefined,
+        user_type: userTypeFilter.length > 0 ? userTypeFilter : undefined,
       });
       setUsers(response.data || []);
       setCurrentPage(response.pagination?.page || page);
@@ -607,8 +607,8 @@ const UsersManagement = () => {
                         <label
                           key={key}
                           className={`flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-colors text-sm ${userTypeFilter.includes(key.toLowerCase())
-                              ? 'bg-primary-100 text-primary-800'
-                              : 'hover:bg-gray-50 text-gray-700'
+                            ? 'bg-primary-100 text-primary-800'
+                            : 'hover:bg-gray-50 text-gray-700'
                             }`}
                         >
                           <input
