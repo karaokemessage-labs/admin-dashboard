@@ -2,33 +2,15 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2, Filter, X, Loader2, Shield, Check } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { rbacService } from '../../../services/rbacService';
+import { userService } from '../../../services/userService';
+import {
+  RoleResponseDto,
+  PermissionResponseDto,
+  UserResponseDto
+} from '../../../types/api';
 
-interface Permission {
-  id: string;
-  name: string;
-  code: string;
-  description?: string;
-}
 
-interface Role {
-  id: string;
-  name: string;
-  code: string;
-  description?: string;
-  permissions: Permission[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface OperatorAccount {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-  status: string;
-  createdAt?: string;
-  lastLogin?: string;
-}
 
 const RolePermissionManagement = () => {
   const { t } = useLanguage();
@@ -41,183 +23,75 @@ const RolePermissionManagement = () => {
   const [fetching, setFetching] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; name: string; type: 'role' | 'permission' } | null>(null);
-  
+
+  const [roles, setRoles] = useState<RoleResponseDto[]>([]);
+  const [permissions, setPermissions] = useState<PermissionResponseDto[]>([]);
+  const [operatorAccounts, setOperatorAccounts] = useState<UserResponseDto[]>([]);
+
   const [roleFormData, setRoleFormData] = useState({
-    name: '',
-    code: '',
+    title: '',
+    slug: '',
     description: '',
-    permissions: [] as string[],
+    permissionIds: [] as string[],
   });
 
   const [permissionFormData, setPermissionFormData] = useState({
-    name: '',
-    code: '',
+    title: '',
+    slug: '',
+    resource: '',
+    action: 'READ' as any,
     description: '',
   });
 
-  // Mock permissions - chuẩn hoá theo module KaKa Club
-  const [permissions] = useState<Permission[]>([
-    {
-      id: '1',
-      name: 'Xem Dashboard',
-      code: 'dashboard.view',
-      description: 'Xem tổng quan hoạt động hệ thống (doanh thu, lượt đặt phòng, khách hàng)',
-    },
-    {
-      id: '2',
-      name: 'Quản lý Cơ sở',
-      code: 'venues.manage',
-      description: 'Thêm/sửa/xoá cơ sở Karaoke, Massage, Club',
-    },
-    {
-      id: '3',
-      name: 'Quản lý Karaoke',
-      code: 'karaoke.manage',
-      description: 'Quản lý phòng Karaoke, giá, khung giờ, trạng thái phòng',
-    },
-    {
-      id: '4',
-      name: 'Quản lý Massage',
-      code: 'massage.manage',
-      description: 'Quản lý phòng Massage, liệu trình, nhân viên, trạng thái phòng',
-    },
-    {
-      id: '5',
-      name: 'Xem Giao dịch',
-      code: 'transactions.view',
-      description: 'Xem lịch sử giao dịch đặt phòng và thanh toán dịch vụ',
-    },
-    {
-      id: '6',
-      name: 'Xử lý Hoàn tiền',
-      code: 'transactions.refund',
-      description: 'Duyệt và xử lý yêu cầu hoàn tiền của khách',
-    },
-    {
-      id: '7',
-      name: 'Xem Báo cáo',
-      code: 'reports.view',
-      description: 'Xem báo cáo doanh thu, công suất phòng, hiệu quả từng dịch vụ',
-    },
-    {
-      id: '8',
-      name: 'Quản lý Tài khoản & Phân quyền',
-      code: 'roles.manage',
-      description: 'Tạo role, gán quyền và quản lý tài khoản nhân viên',
-    },
-    {
-      id: '9',
-      name: 'Cài đặt Hệ thống',
-      code: 'settings.manage',
-      description: 'Cấu hình chung cho hệ thống KaKa Club',
-    },
-  ]);
-
-  // Mock operator accounts
-  const [operatorAccounts] = useState<OperatorAccount[]>([
-    {
-      id: '1',
-      username: 'operator001',
-      email: 'operator001@example.com',
-      role: 'operator',
-      status: 'active',
-      createdAt: '2024-01-15',
-      lastLogin: '2024-01-20',
-    },
-    {
-      id: '2',
-      username: 'operator002',
-      email: 'operator002@example.com',
-      role: 'operator',
-      status: 'active',
-      createdAt: '2024-01-16',
-      lastLogin: '2024-01-19',
-    },
-    {
-      id: '3',
-      username: 'operator003',
-      email: 'operator003@example.com',
-      role: 'operator',
-      status: 'inactive',
-      createdAt: '2024-01-17',
-      lastLogin: '2024-01-18',
-    },
-  ]);
-
-  // Mock roles với bộ quyền chuẩn cho mô hình KaKa Club
-  const [roles, setRoles] = useState<Role[]>([
-    {
-      id: '1',
-      name: 'Owner',
-      code: 'owner',
-      description: 'Chủ hệ thống KaKa Club, toàn quyền cấu hình và xem báo cáo',
-      permissions,
-      createdAt: '2024-01-15',
-    },
-    {
-      id: '2',
-      name: 'Karaoke Manager',
-      code: 'karaoke_manager',
-      description: 'Quản lý hoạt động khu vực Karaoke',
-      permissions: permissions.filter((p) =>
-        ['dashboard.view', 'venues.manage', 'karaoke.manage', 'transactions.view', 'reports.view'].includes(p.code)
-      ),
-      createdAt: '2024-01-16',
-    },
-    {
-      id: '3',
-      name: 'Massage Manager',
-      code: 'massage_manager',
-      description: 'Quản lý hoạt động khu vực Massage',
-      permissions: permissions.filter((p) =>
-        ['dashboard.view', 'venues.manage', 'massage.manage', 'transactions.view', 'reports.view'].includes(p.code)
-      ),
-      createdAt: '2024-01-17',
-    },
-    {
-      id: '4',
-      name: 'Thu ngân',
-      code: 'cashier',
-      description: 'Xử lý thanh toán, hoàn tiền và hỗ trợ khách tại quầy',
-      permissions: permissions.filter((p) =>
-        ['dashboard.view', 'transactions.view', 'transactions.refund'].includes(p.code)
-      ),
-      createdAt: '2024-01-18',
-    },
-  ]);
+  const fetchData = async () => {
+    setFetching(true);
+    try {
+      const [rolesRes, permissionsRes, operatorsRes] = await Promise.all([
+        rbacService.getRoles(1, 100),
+        rbacService.getPermissions(1, 100),
+        userService.getUsers({ role: 'operator', page_size: 100 })
+      ]);
+      setRoles(rolesRes.data || []);
+      setPermissions(permissionsRes.data || []);
+      setOperatorAccounts(operatorsRes.data || []);
+    } catch (error: any) {
+      toast.error(error.message || t('common.error'));
+    } finally {
+      setFetching(false);
+    }
+  };
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setFetching(false);
-    }, 500);
+    fetchData();
   }, []);
 
   const handleOpenRoleModal = () => {
     setIsRoleModalOpen(true);
     setRoleFormData({
-      name: '',
-      code: '',
+      title: '',
+      slug: '',
       description: '',
-      permissions: [],
+      permissionIds: [],
     });
   };
 
   const handleCloseRoleModal = () => {
     setIsRoleModalOpen(false);
     setRoleFormData({
-      name: '',
-      code: '',
+      title: '',
+      slug: '',
       description: '',
-      permissions: [],
+      permissionIds: [],
     });
   };
 
   const handleOpenPermissionModal = () => {
     setIsPermissionModalOpen(true);
     setPermissionFormData({
-      name: '',
-      code: '',
+      title: '',
+      slug: '',
+      resource: '',
+      action: 'READ',
       description: '',
     });
   };
@@ -225,8 +99,10 @@ const RolePermissionManagement = () => {
   const handleClosePermissionModal = () => {
     setIsPermissionModalOpen(false);
     setPermissionFormData({
-      name: '',
-      code: '',
+      title: '',
+      slug: '',
+      resource: '',
+      action: 'READ',
       description: '',
     });
   };
@@ -239,7 +115,7 @@ const RolePermissionManagement = () => {
     }));
   };
 
-  const handlePermissionInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handlePermissionInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setPermissionFormData(prev => ({
       ...prev,
@@ -250,35 +126,37 @@ const RolePermissionManagement = () => {
   const handlePermissionToggle = (permissionId: string) => {
     setRoleFormData(prev => ({
       ...prev,
-      permissions: prev.permissions.includes(permissionId)
-        ? prev.permissions.filter(id => id !== permissionId)
-        : [...prev.permissions, permissionId],
+      permissionIds: prev.permissionIds.includes(permissionId)
+        ? prev.permissionIds.filter(id => id !== permissionId)
+        : [...prev.permissionIds, permissionId],
     }));
   };
 
   const handleRoleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!roleFormData.name.trim() || !roleFormData.code.trim()) {
+
+    if (!roleFormData.title.trim() || !roleFormData.slug.trim()) {
       toast.error(t('common.pleaseFillAllFields'));
       return;
     }
 
     setLoading(true);
     try {
-      const selectedPermissions = permissions.filter(p => roleFormData.permissions.includes(p.id));
-      const newRole: Role = {
-        id: String(roles.length + 1),
-        name: roleFormData.name,
-        code: roleFormData.code,
+      const newRole = await rbacService.createRole({
+        title: roleFormData.title,
+        slug: roleFormData.slug,
         description: roleFormData.description,
-        permissions: selectedPermissions,
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      
-      setRoles([...roles, newRole]);
+      });
+
+      if (roleFormData.permissionIds.length > 0) {
+        await rbacService.assignPermissionsToRole(newRole.id, {
+          permissionIds: roleFormData.permissionIds
+        });
+      }
+
       toast.success(t('pages.roles.createSuccess'));
       handleCloseRoleModal();
+      fetchData();
     } catch (error: any) {
       toast.error(error.message || t('pages.roles.createFailed'));
     } finally {
@@ -288,22 +166,40 @@ const RolePermissionManagement = () => {
 
   const handlePermissionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!permissionFormData.name.trim() || !permissionFormData.code.trim()) {
+
+    if (!permissionFormData.title.trim() || !permissionFormData.slug.trim() || !permissionFormData.resource.trim()) {
       toast.error(t('common.pleaseFillAllFields'));
       return;
     }
 
     setLoading(true);
     try {
-      // TODO: Call API to create permission
+      await rbacService.createPermission({
+        title: permissionFormData.title,
+        slug: permissionFormData.slug,
+        resource: permissionFormData.resource,
+        action: permissionFormData.action,
+        description: permissionFormData.description,
+      });
       toast.success(t('pages.permissions.createSuccess'));
       handleClosePermissionModal();
+      fetchData();
     } catch (error: any) {
       toast.error(error.message || t('pages.permissions.createFailed'));
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOpenEditPermissionModal = (permission: PermissionResponseDto) => {
+    setPermissionFormData({
+      title: permission.title,
+      slug: permission.slug,
+      resource: permission.resource,
+      action: permission.action,
+      description: permission.description || '',
+    });
+    setIsPermissionModalOpen(true);
   };
 
   const handleDeleteClick = (id: string, name: string, type: 'role' | 'permission') => {
@@ -317,14 +213,15 @@ const RolePermissionManagement = () => {
     setDeletingId(itemToDelete.id);
     try {
       if (itemToDelete.type === 'role') {
-        setRoles(roles.filter(role => role.id !== itemToDelete.id));
+        await rbacService.deleteRole(itemToDelete.id);
         toast.success(t('pages.roles.deleteSuccess'));
       } else {
-        // TODO: Handle permission deletion
+        await rbacService.deletePermission(itemToDelete.id);
         toast.success(t('pages.permissions.deleteSuccess'));
       }
       setIsDeleteModalOpen(false);
       setItemToDelete(null);
+      fetchData();
     } catch (error: any) {
       toast.error(error.message || t('common.error'));
     } finally {
@@ -338,13 +235,13 @@ const RolePermissionManagement = () => {
   };
 
   const filteredRoles = roles.filter(role =>
-    role.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    role.code.toLowerCase().includes(searchQuery.toLowerCase())
+    (role.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (role.slug || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const filteredPermissions = permissions.filter(permission =>
-    permission.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    permission.code.toLowerCase().includes(searchQuery.toLowerCase())
+    (permission.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (permission.slug || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -360,23 +257,30 @@ const RolePermissionManagement = () => {
         <div className="bg-white rounded-lg shadow-sm p-1 mb-6 inline-flex">
           <button
             onClick={() => setSelectedTab('roles')}
-            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-              selectedTab === 'roles'
-                ? 'bg-purple-600 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${selectedTab === 'roles'
+              ? 'bg-purple-600 text-white'
+              : 'text-gray-600 hover:bg-gray-100'
+              }`}
           >
             {t('pages.roles.role')}s
           </button>
           <button
             onClick={() => setSelectedTab('permissions')}
-            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-              selectedTab === 'permissions'
-                ? 'bg-purple-600 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${selectedTab === 'permissions'
+              ? 'bg-purple-600 text-white'
+              : 'text-gray-600 hover:bg-gray-100'
+              }`}
           >
             {t('pages.permissions.title')}
+          </button>
+          <button
+            onClick={() => setSelectedTab('operator-accounts')}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${selectedTab === 'operator-accounts'
+              ? 'bg-purple-600 text-white'
+              : 'text-gray-600 hover:bg-gray-100'
+              }`}
+          >
+            {t('pages.roles.operatorAccounts')}
           </button>
         </div>
 
@@ -463,30 +367,20 @@ const RolePermissionManagement = () => {
                             <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
                               <Shield className="w-5 h-5 text-purple-600" />
                             </div>
-                            <div className="text-sm font-medium text-gray-900">{role.name}</div>
+                            <div className="text-sm font-medium text-gray-900">{role.title}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 font-mono">{role.code}</div>
+                          <div className="text-sm text-gray-900 font-mono">{role.slug}</div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-600 max-w-xs truncate">{role.description || '-'}</div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-1">
-                            {role.permissions.slice(0, 3).map((perm) => (
-                              <span
-                                key={perm.id}
-                                className="inline-flex px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded"
-                              >
-                                {perm.code}
-                              </span>
-                            ))}
-                            {role.permissions.length > 3 && (
-                              <span className="inline-flex px-2 py-1 text-xs font-medium text-gray-600">
-                                +{role.permissions.length - 3}
-                              </span>
-                            )}
+                            {/* Note: the API RoleResponseDto might not include permissions by default, 
+                                but we can display codes if they were fetched via assignPermissionsToRole or similar */}
+                            <span className="text-xs text-gray-500 italic">No permissions loaded</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -498,7 +392,7 @@ const RolePermissionManagement = () => {
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => handleDeleteClick(role.id, role.name, 'role')}
+                              onClick={() => handleDeleteClick(role.id, role.title, 'role')}
                               disabled={deletingId === role.id}
                               className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -547,6 +441,12 @@ const RolePermissionManagement = () => {
                         {t('common.code')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t('pages.permissions.resource')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t('pages.permissions.action')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         {t('common.description')}
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -562,22 +462,28 @@ const RolePermissionManagement = () => {
                             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
                               <Check className="w-5 h-5 text-blue-600" />
                             </div>
-                            <div className="text-sm font-medium text-gray-900">{permission.name}</div>
+                            <div className="text-sm font-medium text-gray-900">{permission.title}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 font-mono">{permission.code}</div>
+                          <div className="text-sm text-gray-900 font-mono">{permission.slug}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900 font-mono">{permission.resource}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900 font-mono">{permission.action}</div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-600">{permission.description || '-'}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex items-center justify-end gap-2">
-                            <button className="text-purple-600 hover:text-purple-900 p-2 hover:bg-purple-50 rounded">
+                            <button onClick={() => handleOpenEditPermissionModal(permission)} className="text-purple-600 hover:text-purple-900 p-2 hover:bg-purple-50 rounded">
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => handleDeleteClick(permission.id, permission.name, 'permission')}
+                              onClick={() => handleDeleteClick(permission.id, permission.title, 'permission')}
                               disabled={deletingId === permission.id}
                               className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -665,25 +571,24 @@ const RolePermissionManagement = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="inline-flex px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded">
-                              {account.role}
+                              {account.userType || 'N/A'}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                account.status === 'active'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}
+                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${account.isActive
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                                }`}
                             >
-                              {account.status === 'active' ? t('common.active') : t('common.inactive')}
+                              {account.isActive ? t('common.active') : t('common.inactive')}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {account.createdAt ? new Date(account.createdAt).toLocaleDateString('vi-VN') : '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {account.lastLogin ? new Date(account.lastLogin).toLocaleDateString('vi-VN') : '-'}
+                            {account.activeAt ? new Date(account.activeAt).toLocaleDateString('vi-VN') : '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex items-center justify-end gap-2">
@@ -706,12 +611,12 @@ const RolePermissionManagement = () => {
               account.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
               account.email.toLowerCase().includes(searchQuery.toLowerCase())
             ).length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500">
-                  {searchQuery ? t('common.noData') : t('common.noData')}
-                </p>
-              </div>
-            )}
+                <div className="text-center py-12">
+                  <p className="text-gray-500">
+                    {searchQuery ? t('common.noData') : t('common.noData')}
+                  </p>
+                </div>
+              )}
           </div>
         )}
       </div>
@@ -739,8 +644,8 @@ const RolePermissionManagement = () => {
                 <input
                   type="text"
                   id="role-name"
-                  name="name"
-                  value={roleFormData.name}
+                  name="title"
+                  value={roleFormData.title}
                   onChange={handleRoleInputChange}
                   required
                   disabled={loading}
@@ -756,8 +661,8 @@ const RolePermissionManagement = () => {
                 <input
                   type="text"
                   id="role-code"
-                  name="code"
-                  value={roleFormData.code}
+                  name="slug"
+                  value={roleFormData.slug}
                   onChange={handleRoleInputChange}
                   required
                   disabled={loading}
@@ -794,14 +699,14 @@ const RolePermissionManagement = () => {
                     >
                       <input
                         type="checkbox"
-                        checked={roleFormData.permissions.includes(permission.id)}
+                        checked={roleFormData.permissionIds.includes(permission.id)}
                         onChange={() => handlePermissionToggle(permission.id)}
                         disabled={loading}
                         className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                       />
                       <div className="ml-3 flex-1">
-                        <div className="text-sm font-medium text-gray-900">{permission.name}</div>
-                        <div className="text-xs text-gray-500 font-mono">{permission.code}</div>
+                        <div className="text-sm font-medium text-gray-900">{permission.title}</div>
+                        <div className="text-xs text-gray-500 font-mono">{permission.slug}</div>
                       </div>
                     </label>
                   ))}
@@ -848,14 +753,14 @@ const RolePermissionManagement = () => {
 
             <form onSubmit={handlePermissionSubmit} className="p-6">
               <div className="mb-4">
-                <label htmlFor="permission-name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="permission-title" className="block text-sm font-medium text-gray-700 mb-2">
                   {t('common.name')} {t('pages.permissions.title')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  id="permission-name"
-                  name="name"
-                  value={permissionFormData.name}
+                  id="permission-title"
+                  name="title"
+                  value={permissionFormData.title}
                   onChange={handlePermissionInputChange}
                   required
                   disabled={loading}
@@ -865,20 +770,58 @@ const RolePermissionManagement = () => {
               </div>
 
               <div className="mb-4">
-                <label htmlFor="permission-code" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="permission-slug" className="block text-sm font-medium text-gray-700 mb-2">
                   {t('common.code')} {t('pages.permissions.title')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  id="permission-code"
-                  name="code"
-                  value={permissionFormData.code}
+                  id="permission-slug"
+                  name="slug"
+                  value={permissionFormData.slug}
                   onChange={handlePermissionInputChange}
                   required
                   disabled={loading}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed font-mono"
                   placeholder={t('common.enterName')}
                 />
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="permission-resource" className="block text-sm font-medium text-gray-700 mb-2">
+                  Resource <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="permission-resource"
+                  name="resource"
+                  value={permissionFormData.resource}
+                  onChange={handlePermissionInputChange}
+                  required
+                  disabled={loading}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  placeholder="e.g. users, bookings"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="permission-action" className="block text-sm font-medium text-gray-700 mb-2">
+                  Action <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="permission-action"
+                  name="action"
+                  value={permissionFormData.action}
+                  onChange={handlePermissionInputChange}
+                  required
+                  disabled={loading}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="CREATE">CREATE</option>
+                  <option value="READ">READ</option>
+                  <option value="UPDATE">UPDATE</option>
+                  <option value="DELETE">DELETE</option>
+                  <option value="MANAGE">MANAGE</option>
+                </select>
               </div>
 
               <div className="mb-6">
