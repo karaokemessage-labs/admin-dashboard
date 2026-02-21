@@ -23,6 +23,9 @@ const NotificationsManagement = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(10);
   const [totalItems, setTotalItems] = useState<number>(0);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBatchDeleteModalOpen, setIsBatchDeleteModalOpen] = useState(false);
+  const [batchDeleting, setBatchDeleting] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [formData, setFormData] = useState<CreateNotificationRequestDto>({
@@ -47,6 +50,7 @@ const NotificationsManagement = () => {
       setNotifications(data?.items || []);
       setCurrentPage(data?.page || page);
       setTotalItems(data?.total || 0);
+      setSelectedIds(new Set());
     } catch (error: any) {
       toast.error(error.message || t('common.error'));
     } finally {
@@ -183,6 +187,45 @@ const NotificationsManagement = () => {
     }
   };
 
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      const newSelectedIds = new Set(filteredNotifications.map(n => n.id));
+      setSelectedIds(newSelectedIds);
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectItem = (id: string) => {
+    const newSelectedIds = new Set(selectedIds);
+    if (newSelectedIds.has(id)) {
+      newSelectedIds.delete(id);
+    } else {
+      newSelectedIds.add(id);
+    }
+    setSelectedIds(newSelectedIds);
+  };
+
+  const handleBatchDeleteClick = () => {
+    if (selectedIds.size === 0) return;
+    setIsBatchDeleteModalOpen(true);
+  };
+
+  const handleBatchDeleteConfirm = async () => {
+    setBatchDeleting(true);
+    try {
+      await notificationService.deleteNotifications(Array.from(selectedIds));
+      toast.success(`Đã xóa ${selectedIds.size} thông báo thành công`);
+      setIsBatchDeleteModalOpen(false);
+      setSelectedIds(new Set());
+      await fetchNotifications(currentPage);
+    } catch (error: any) {
+      toast.error(error.message || 'Xóa thông báo thất bại');
+    } finally {
+      setBatchDeleting(false);
+    }
+  };
+
   // Filter notifications based on search query and status
   const filteredNotifications = notifications.filter(notification => {
     const matchesSearch = !searchQuery.trim() ||
@@ -284,6 +327,15 @@ const NotificationsManagement = () => {
             <option value="UNREAD">Chưa đọc</option>
             <option value="ARCHIVED">Đã lưu trữ</option>
           </select>
+          {selectedIds.size > 0 && (
+            <button
+              onClick={handleBatchDeleteClick}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Xóa {selectedIds.size} đã chọn
+            </button>
+          )}
           <button
             onClick={handleOpenModal}
             className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
@@ -300,6 +352,14 @@ const NotificationsManagement = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th className="px-6 py-3 text-left w-12">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                    checked={filteredNotifications.length > 0 && selectedIds.size === filteredNotifications.length}
+                    onChange={handleSelectAll}
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tiêu đề</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nội dung</th>
@@ -313,20 +373,28 @@ const NotificationsManagement = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {fetching ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
+                  <td colSpan={9} className="px-6 py-12 text-center">
                     <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto" />
                     <p className="mt-2 text-gray-600">{t('common.loadingData')}</p>
                   </td>
                 </tr>
               ) : filteredNotifications.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
                     {searchQuery || statusFilter !== 'ALL' ? 'Không tìm thấy thông báo nào' : 'Chưa có thông báo nào'}
                   </td>
                 </tr>
               ) : (
                 filteredNotifications.map((notification) => (
                   <tr key={notification.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                        checked={selectedIds.has(notification.id)}
+                        onChange={() => handleSelectItem(notification.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{notification.id.slice(0, 8)}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -603,6 +671,43 @@ const NotificationsManagement = () => {
               >
                 {deletingId === notificationToDelete.id && <Loader2 className="w-4 h-4 animate-spin" />}
                 <span>{deletingId === notificationToDelete.id ? t('common.deleting') : t('common.delete')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Batch Delete Confirmation Modal */}
+      {isBatchDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">Xóa nhiều thông báo</h2>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-700 mb-4">
+                Bạn có chắc chắn muốn xóa {selectedIds.size} thông báo đã chọn không?
+              </p>
+              <p className="text-sm text-red-600">
+                Hành động này không thể hoàn tác và sẽ xóa vĩnh viễn các thông báo này.
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => setIsBatchDeleteModalOpen(false)}
+                disabled={batchDeleting}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleBatchDeleteConfirm}
+                disabled={batchDeleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {batchDeleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                <span>{batchDeleting ? 'Đang xóa...' : 'Xóa'}</span>
               </button>
             </div>
           </div>

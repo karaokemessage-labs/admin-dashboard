@@ -16,6 +16,7 @@ export interface NotificationService {
   markAsRead: (id: string) => Promise<NotificationResponseDto>;
   markAsUnread: (id: string) => Promise<NotificationResponseDto>;
   archiveNotification: (id: string) => Promise<NotificationResponseDto>;
+  deleteNotifications: (ids: string[]) => Promise<void>;
 }
 
 class NotificationServiceImpl implements NotificationService {
@@ -85,6 +86,19 @@ class NotificationServiceImpl implements NotificationService {
   async deleteNotification(id: string): Promise<void> {
     try {
       await apiClient.delete(API_ENDPOINTS.NOTIFICATIONS.BY_ID(id));
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Xóa thông báo thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async deleteNotifications(ids: string[]): Promise<void> {
+    try {
+      await apiClient.delete(API_ENDPOINTS.NOTIFICATIONS.BATCH, {
+        body: JSON.stringify({ ids }),
+      });
     } catch (error) {
       const apiError = error as ApiError;
       throw new Error(

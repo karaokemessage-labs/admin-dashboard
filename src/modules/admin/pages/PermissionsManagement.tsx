@@ -19,6 +19,8 @@ const PermissionsManagement = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [pageSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [isBatchDeleteModalOpen, setIsBatchDeleteModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [formData, setFormData] = useState({
         title: '',
@@ -46,6 +48,7 @@ const PermissionsManagement = () => {
             setPermissions(permissionsList);
             setCurrentPage(data?.page || page);
             setTotalItems(data?.total || 0);
+            setSelectedIds([]); // Reset selection on fetch
         } catch (error: any) {
             toast.error(error.message || t('common.error'));
         } finally {
@@ -160,6 +163,37 @@ const PermissionsManagement = () => {
         setPermissionToDelete(null);
     };
 
+    const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked) {
+            setSelectedIds(filteredPermissions.map(p => p.id));
+        } else {
+            setSelectedIds([]);
+        }
+    };
+
+    const toggleSelect = (id: string) => {
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+        );
+    };
+
+    const handleBatchDelete = async () => {
+        if (selectedIds.length === 0) return;
+
+        setLoading(true);
+        try {
+            await rbacService.deletePermissions(selectedIds);
+            toast.success(t('pages.permissions.deleteSuccess'));
+            setIsBatchDeleteModalOpen(false);
+            setSelectedIds([]);
+            await fetchPermissions(currentPage);
+        } catch (error: any) {
+            toast.error(error.message || t('pages.permissions.deleteFailed'));
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Filter permissions based on search query
     const filteredPermissions = permissions.filter(permission => {
         if (!searchQuery.trim()) return true;
@@ -209,17 +243,28 @@ const PermissionsManagement = () => {
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
                     </div>
-                    <button
-                        onClick={handleOpenModal}
-                        className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                    >
-                        <Plus className="w-4 h-4" />
-                        {t('pages.permissions.addPermission')}
-                    </button>
-                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                        <Filter className="w-4 h-4" />
-                        {t('common.filter')}
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {selectedIds.length > 0 && (
+                            <button
+                                onClick={() => setIsBatchDeleteModalOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                                <span>{t('common.delete')} ({selectedIds.length})</span>
+                            </button>
+                        )}
+                        <button
+                            onClick={handleOpenModal}
+                            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                        >
+                            <Plus className="w-4 h-4" />
+                            {t('pages.permissions.addPermission')}
+                        </button>
+                        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                            <Filter className="w-4 h-4" />
+                            {t('common.filter')}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -229,6 +274,14 @@ const PermissionsManagement = () => {
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
+                                <th className="px-6 py-3 text-left">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                        onChange={handleSelectAll}
+                                        checked={filteredPermissions.length > 0 && selectedIds.length === filteredPermissions.length}
+                                    />
+                                </th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.permissions.permission')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.permissions.slug')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.permissions.resource')}</th>
@@ -241,20 +294,28 @@ const PermissionsManagement = () => {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {fetching ? (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center">
+                                    <td colSpan={8} className="px-6 py-12 text-center">
                                         <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto" />
                                         <p className="mt-2 text-gray-600">{t('common.loadingData')}</p>
                                     </td>
                                 </tr>
                             ) : filteredPermissions.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                                         {searchQuery ? t('pages.permissions.noPermissionsFound') : t('pages.permissions.noPermissionsYet')}
                                     </td>
                                 </tr>
                             ) : (
                                 filteredPermissions.map((permission) => (
-                                    <tr key={permission.id} className="hover:bg-gray-50">
+                                    <tr key={permission.id} className={`hover:bg-gray-50 ${selectedIds.includes(permission.id) ? 'bg-purple-50' : ''}`}>
+                                        <td className="px-6 py-4">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                                checked={selectedIds.includes(permission.id)}
+                                                onChange={() => toggleSelect(permission.id)}
+                                            />
+                                        </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
@@ -332,8 +393,8 @@ const PermissionsManagement = () => {
                 {/* Pagination */}
                 {totalItems > pageSize && (
                     <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                        <div className="text-sm text-gray-600">
-                            {t('pages.permissions.showing')} {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, totalItems)} {t('pages.permissions.of')} {totalItems} permissions
+                        <div className="flex-1 text-sm text-gray-500">
+                            {t('common.showing')} {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, totalItems)} {t('common.of')} {totalItems} {t('pages.permissions.permission').toLowerCase()}s
                         </div>
                         <div className="flex items-center gap-2">
                             <button
@@ -551,6 +612,56 @@ const PermissionsManagement = () => {
                             >
                                 {deletingId === permissionToDelete.id && <Loader2 className="w-4 h-4 animate-spin" />}
                                 <span>{deletingId === permissionToDelete.id ? t('common.deleting') : t('common.delete')}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Batch Delete Confirmation Modal */}
+            {isBatchDeleteModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+                        <div className="p-6 border-b border-gray-200">
+                            <h2 className="text-xl font-bold text-gray-900">{t('pages.permissions.deletePermission')}</h2>
+                        </div>
+
+                        <div className="p-6">
+                            <p className="text-gray-700 mb-4">
+                                {t('pages.permissions.deleteConfirmMessage')} <strong>{selectedIds.length}</strong> {t('pages.permissions.permission').toLowerCase()}s?
+                            </p>
+                            <div className="max-h-32 overflow-y-auto mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                    {permissions
+                                        .filter(p => selectedIds.includes(p.id))
+                                        .map(p => (
+                                            <li key={p.id} className="truncate">{p.title}</li>
+                                        ))
+                                    }
+                                </ul>
+                            </div>
+                            <p className="text-sm text-red-600">
+                                {t('common.deleteWarning') || 'Hành động này không thể hoàn tác.'}
+                            </p>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+                            <button
+                                type="button"
+                                onClick={() => setIsBatchDeleteModalOpen(false)}
+                                disabled={loading}
+                                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {t('common.cancel')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleBatchDelete}
+                                disabled={loading}
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                <span>{loading ? t('common.deleting') : t('common.delete')}</span>
                             </button>
                         </div>
                     </div>

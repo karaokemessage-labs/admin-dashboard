@@ -3,7 +3,7 @@ import { Search, Filter, X, Loader2, Eye, Trash2, FileText, CheckCircle2, XCircl
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { documentService } from '../../../services/documentService';
-import { 
+import {
   DocumentResponseDto,
   DocumentStatus,
   DocumentType,
@@ -25,6 +25,8 @@ const KYCManagement = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(10);
   const [totalItems, setTotalItems] = useState<number>(0);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBatchDeleteModalOpen, setIsBatchDeleteModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<DocumentStatus | ''>('');
   const [verifyFormData, setVerifyFormData] = useState<VerifyDocumentRequestDto>({
@@ -49,6 +51,7 @@ const KYCManagement = () => {
       setDocuments(response.data || []);
       setCurrentPage(response.page || page);
       setTotalItems(response.total || 0);
+      setSelectedIds([]); // Reset selection on fetch
     } catch (error: any) {
       toast.error(error.message || t('common.error'));
     } finally {
@@ -135,6 +138,37 @@ const KYCManagement = () => {
     setDocumentToDelete(null);
   };
 
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(filteredDocuments.map(doc => doc.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedIds.length === 0) return;
+
+    setLoading(true);
+    try {
+      await documentService.deleteDocuments(selectedIds);
+      toast.success('Xóa nhiều tài liệu thành công');
+      setIsBatchDeleteModalOpen(false);
+      setSelectedIds([]);
+      await fetchDocuments(currentPage);
+    } catch (error: any) {
+      toast.error(error.message || 'Xóa nhiều tài liệu thất bại');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Filter documents based on search query
   const filteredDocuments = documents.filter(doc => {
     if (!searchQuery.trim()) return true;
@@ -211,6 +245,15 @@ const KYCManagement = () => {
             <Filter className="w-4 h-4" />
             {t('common.filter')}
           </button>
+          {selectedIds.length > 0 && (
+            <button
+              onClick={() => setIsBatchDeleteModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors shadow-sm"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>{t('common.deleteSelected') || 'Xóa đã chọn'} ({selectedIds.length})</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -220,6 +263,17 @@ const KYCManagement = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th className="px-6 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                    onChange={handleSelectAll}
+                    checked={filteredDocuments.length > 0 && selectedIds.length === filteredDocuments.length}
+                    ref={el => {
+                      if (el) el.indeterminate = selectedIds.length > 0 && selectedIds.length < filteredDocuments.length;
+                    }}
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Loại tài liệu</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Trạng thái</th>
@@ -232,20 +286,28 @@ const KYCManagement = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {fetching ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                  <td colSpan={8} className="px-6 py-12 text-center">
                     <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto" />
                     <p className="mt-2 text-gray-600">{t('common.loadingData')}</p>
                   </td>
                 </tr>
               ) : filteredDocuments.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                     {searchQuery || statusFilter ? 'Không tìm thấy tài liệu nào' : 'Chưa có tài liệu nào'}
                   </td>
                 </tr>
               ) : (
                 filteredDocuments.map((document) => (
-                  <tr key={document.id} className="hover:bg-gray-50">
+                  <tr key={document.id} className={`hover:bg-gray-50 ${selectedIds.includes(document.id) ? 'bg-purple-50' : ''}`}>
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                        checked={selectedIds.includes(document.id)}
+                        onChange={() => toggleSelect(document.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{document.id.slice(0, 8)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
@@ -517,11 +579,10 @@ const KYCManagement = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
-                    verifyFormData.status === 'VERIFIED'
-                      ? 'bg-green-600 hover:bg-green-700'
-                      : 'bg-red-600 hover:bg-red-700'
-                  }`}
+                  className={`px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${verifyFormData.status === 'VERIFIED'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-red-600 hover:bg-red-700'
+                    }`}
                 >
                   {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>
@@ -571,6 +632,56 @@ const KYCManagement = () => {
               >
                 {deletingId === documentToDelete.id && <Loader2 className="w-4 h-4 animate-spin" />}
                 <span>{deletingId === documentToDelete.id ? t('common.deleting') : t('common.delete')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Batch Delete Confirmation Modal */}
+      {isBatchDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">{t('common.deleteMultiple') || 'Xóa nhiều tài liệu'}</h2>
+            </div>
+
+            <div className="p-6">
+              <p className="text-gray-700 mb-4">
+                Bạn có chắc chắn muốn xóa <strong>{selectedIds.length}</strong> tài liệu KYC đã chọn?
+              </p>
+              <div className="max-h-32 overflow-y-auto mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                  {documents
+                    .filter(doc => selectedIds.includes(doc.id))
+                    .map(doc => (
+                      <li key={doc.id} className="truncate">{getDocumentTypeLabel(doc.type)} (#{doc.id.slice(0, 8)})</li>
+                    ))
+                  }
+                </ul>
+              </div>
+              <p className="text-sm text-red-600">
+                {t('common.deleteWarning') || 'Hành động này không thể hoàn tác.'}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => setIsBatchDeleteModalOpen(false)}
+                disabled={loading}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleBatchDelete}
+                disabled={loading}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                <span>{loading ? t('common.deleting') : t('common.delete')}</span>
               </button>
             </div>
           </div>

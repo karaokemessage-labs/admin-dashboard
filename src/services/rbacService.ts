@@ -42,6 +42,7 @@ export interface RbacService {
   getRole: (id: string) => Promise<RoleResponseDto>;
   updateRole: (id: string, data: UpdateRoleRequestDto) => Promise<RoleResponseDto>;
   deleteRole: (id: string) => Promise<void>;
+  deleteRoles: (ids: string[]) => Promise<void>;
 
   // Permissions
   createPermission: (data: CreatePermissionRequestDto) => Promise<PermissionResponseDto>;
@@ -49,6 +50,7 @@ export interface RbacService {
   getPermission: (id: string) => Promise<PermissionResponseDto>;
   updatePermission: (id: string, data: UpdatePermissionRequestDto) => Promise<PermissionResponseDto>;
   deletePermission: (id: string) => Promise<void>;
+  deletePermissions: (ids: string[]) => Promise<void>;
 
   // Role permissions
   getRolePermissions: (roleId: string) => Promise<PermissionResponseDto[]>;
@@ -134,6 +136,19 @@ class RbacServiceImpl implements RbacService {
     }
   }
 
+  async deleteRoles(ids: string[]): Promise<void> {
+    try {
+      await apiClient.delete(API_ENDPOINTS.RBAC.ROLES_BATCH, {
+        body: JSON.stringify({ ids }),
+      });
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Xóa nhiều vai trò thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
   async createPermission(data: CreatePermissionRequestDto): Promise<PermissionResponseDto> {
     try {
       const response = await apiClient.post<PermissionResponseDto>(
@@ -170,13 +185,13 @@ class RbacServiceImpl implements RbacService {
   async getPermission(id: string): Promise<PermissionResponseDto> {
     try {
       const response = await apiClient.get<PermissionResponseDto>(
-        `${API_ENDPOINTS.RBAC.PERMISSIONS}/${id}`
+        API_ENDPOINTS.RBAC.PERMISSION_BY_ID(id)
       );
       return response.data;
     } catch (error) {
       const apiError = error as ApiError;
       throw new Error(
-        apiError.message || 'Không thể lấy thông tin quyền. Vui lòng thử lại.'
+        apiError.message || `Không thể lấy thông tin quyền (ID: ${id}). Vui lòng thử lại.`
       );
     }
   }
@@ -184,7 +199,7 @@ class RbacServiceImpl implements RbacService {
   async updatePermission(id: string, data: UpdatePermissionRequestDto): Promise<PermissionResponseDto> {
     try {
       const response = await apiClient.put<PermissionResponseDto>(
-        `${API_ENDPOINTS.RBAC.PERMISSIONS}/${id}`,
+        API_ENDPOINTS.RBAC.PERMISSION_BY_ID(id),
         data
       );
       return response.data;
@@ -198,11 +213,24 @@ class RbacServiceImpl implements RbacService {
 
   async deletePermission(id: string): Promise<void> {
     try {
-      await apiClient.delete(`${API_ENDPOINTS.RBAC.PERMISSIONS}/${id}`);
+      await apiClient.delete(API_ENDPOINTS.RBAC.PERMISSION_BY_ID(id));
     } catch (error) {
       const apiError = error as ApiError;
       throw new Error(
         apiError.message || 'Xóa quyền thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async deletePermissions(ids: string[]): Promise<void> {
+    try {
+      await apiClient.delete(API_ENDPOINTS.RBAC.PERMISSIONS_BATCH, {
+        body: JSON.stringify({ ids }),
+      });
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Xóa nhiều quyền thất bại. Vui lòng thử lại.'
       );
     }
   }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, X, Loader2, Edit, Trash2, Star } from 'lucide-react';
+import { Search, Filter, X, Loader2, Edit, Trash2, Star, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { ratingService } from '../../../services/ratingService';
@@ -9,7 +9,31 @@ import {
 } from '../../../types/api';
 
 const RatingManagement = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  // Localized labels for this page
+  const labels = language === 'vi' ? {
+    bulkDeleteTitle: 'Xóa nhiều đánh giá',
+    bulkDeleteWarning: 'Hành động này không thể hoàn tác. Dữ liệu sẽ bị xóa vĩnh viễn khỏi hệ thống.',
+    bulkDeleteConfirm: (count: number) => `Bạn có chắc chắn muốn xóa ${count} đánh giá đã chọn?`,
+    bulkDeleteList: 'Danh sách đánh giá sẽ bị xóa:',
+    bulkDeleting: (count: number) => `Đang xóa ${count} đánh giá...`,
+    bulkDeleteBtn: (count: number) => `Xóa ${count} đánh giá`,
+    deleteSelected: 'Xóa đã chọn',
+    bulkDeleteSuccess: (count: number) => `Đã xóa thành công ${count} đánh giá`,
+    deleteFailed: 'Xóa thất bại. Vui lòng thử lại.',
+  } : {
+    bulkDeleteTitle: 'Delete Multiple Ratings',
+    bulkDeleteWarning: 'This action cannot be undone. Data will be permanently removed from the system.',
+    bulkDeleteConfirm: (count: number) => `Are you sure you want to delete ${count} selected ratings?`,
+    bulkDeleteList: 'Ratings to be deleted:',
+    bulkDeleting: (count: number) => `Deleting ${count} ratings...`,
+    bulkDeleteBtn: (count: number) => `Delete ${count} ratings`,
+    deleteSelected: 'Delete Selected',
+    bulkDeleteSuccess: (count: number) => `Successfully deleted ${count} ratings`,
+    deleteFailed: 'Deletion failed. Please try again.',
+  };
+
   const [ratings, setRatings] = useState<RatingResponseDto[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -28,6 +52,11 @@ const RatingManagement = () => {
     comment: '',
   });
 
+  // Bulk Selection States
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
   // Fetch ratings on component mount
   useEffect(() => {
     fetchRatings(1);
@@ -40,7 +69,9 @@ const RatingManagement = () => {
       // apiClient already extracts data.data from { success, data: {...}, message }
       // So response is already: { items, total, page, limit, totalPages }
       const data = response as any;
-      setRatings(data?.items || []);
+      // Robustly handle different response formats
+      const ratingList = data?.data || data?.items || (Array.isArray(data) ? data : []);
+      setRatings(ratingList);
       setCurrentPage(data?.page || page);
       setTotalItems(data?.total || 0);
     } catch (error: any) {
@@ -132,13 +163,63 @@ const RatingManagement = () => {
   const filteredRatings = ratings.filter(rating => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
+    const targetId = rating.facilityId || rating.articleId || ''; // Support both
     return (
-      rating.comment?.toLowerCase().includes(query) ||
-      rating.articleId.toLowerCase().includes(query) ||
-      rating.userId.toLowerCase().includes(query) ||
-      rating.rating.toString().includes(query)
+      (rating.comment || '').toLowerCase().includes(query) ||
+      targetId.toLowerCase().includes(query) ||
+      (rating.userId || '').toLowerCase().includes(query) ||
+      (rating.rating || '').toString().includes(query)
     );
   });
+
+  // ── Bulk Selection Handlers ──
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === filteredRatings.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredRatings.map(r => String(r.id))));
+    }
+  };
+
+  const handleBulkDeleteClick = () => {
+    if (selectedIds.size === 0) return;
+    setIsBulkDeleteModalOpen(true);
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      await ratingService.deleteRatings(Array.from(selectedIds));
+      toast.success(labels.bulkDeleteSuccess(selectedIds.size));
+      setSelectedIds(new Set());
+      setIsBulkDeleteModalOpen(false);
+      await fetchRatings(currentPage);
+    } catch (error: any) {
+      toast.error(error.message || labels.deleteFailed);
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const handleBulkDeleteCancel = () => {
+    setIsBulkDeleteModalOpen(false);
+  };
+
+  const isAllSelected = filteredRatings.length > 0 && selectedIds.size === filteredRatings.length;
+  const isSomeSelected = selectedIds.size > 0 && selectedIds.size < filteredRatings.length;
 
   // Render stars
   const renderStars = (rating: number) => {
@@ -148,8 +229,8 @@ const RatingManagement = () => {
           <Star
             key={star}
             className={`w-4 h-4 ${star <= rating
-                ? 'text-yellow-400 fill-yellow-400'
-                : 'text-gray-300'
+              ? 'text-yellow-400 fill-yellow-400'
+              : 'text-gray-300'
               }`}
           />
         ))}
@@ -174,21 +255,32 @@ const RatingManagement = () => {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="flex items-center gap-4">
-          <div className="flex-1 relative">
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="flex-1 relative w-full sm:w-auto">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm kiếm theo comment, article ID, user ID hoặc số sao..."
+              placeholder="Tìm kiếm theo comment, Facility/Article ID, User ID hoặc số sao..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-            <Filter className="w-4 h-4" />
-            {t('common.filter')}
-          </button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            {selectedIds.size > 0 && (
+              <button
+                onClick={handleBulkDeleteClick}
+                className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors animate-fade-in"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>{labels.deleteSelected} ({selectedIds.size})</span>
+              </button>
+            )}
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex-none">
+              <Filter className="w-4 h-4" />
+              {t('common.filter')}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -198,10 +290,19 @@ const RatingManagement = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th className="px-4 py-3 text-center w-10">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    ref={el => { if (el) el.indeterminate = isSomeSelected; }}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Đánh giá</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Comment</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Article ID</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Mục tiêu (Facility/Article)</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User ID</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ngày tạo</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ngày cập nhật</th>
@@ -211,21 +312,29 @@ const RatingManagement = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {fetching ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
+                  <td colSpan={9} className="px-6 py-12 text-center">
                     <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto" />
                     <p className="mt-2 text-gray-600">{t('common.loadingData')}</p>
                   </td>
                 </tr>
               ) : filteredRatings.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
                     {searchQuery ? 'Không tìm thấy đánh giá nào' : 'Chưa có đánh giá nào'}
                   </td>
                 </tr>
               ) : (
                 filteredRatings.map((rating) => (
-                  <tr key={rating.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{rating.id.slice(0, 8)}</td>
+                  <tr key={rating.id} className={`transition-colors ${selectedIds.has(String(rating.id)) ? 'bg-purple-50' : 'hover:bg-gray-50'}`}>
+                    <td className="px-4 py-3 text-center w-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(String(rating.id))}
+                        onChange={() => handleToggleSelect(String(rating.id))}
+                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{rating.id?.slice(0, 8)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {renderStars(rating.rating)}
                     </td>
@@ -234,8 +343,12 @@ const RatingManagement = () => {
                         {truncateComment(rating.comment)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{rating.articleId.slice(0, 8)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{rating.userId.slice(0, 8)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {(rating.facilityId || rating.articleId) ? `#${(rating.facilityId || rating.articleId)?.slice(0, 8)}` : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {rating.userId ? `#${rating.userId?.slice(0, 8)}` : '-'}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {new Date(rating.createdAt).toLocaleDateString('vi-VN', {
                         year: 'numeric',
@@ -447,6 +560,67 @@ const RatingManagement = () => {
                 {deletingId === ratingToDelete.id && <Loader2 className="w-4 h-4 animate-spin" />}
                 <span>{deletingId === ratingToDelete.id ? t('common.deleting') : t('common.delete')}</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Notification Modal */}
+      {isBulkDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden transform transition-all">
+            <div className="bg-red-50 p-6 flex flex-col items-center justify-center border-b border-red-100">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <AlertTriangle className="w-8 h-8 text-red-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 text-center">
+                {labels.bulkDeleteTitle}
+              </h2>
+            </div>
+
+            <div className="p-6">
+              <p className="text-gray-700 text-center mb-6">
+                {labels.bulkDeleteConfirm(selectedIds.size)}
+              </p>
+
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <AlertTriangle className="h-5 w-5 text-yellow-400" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">
+                      {labels.bulkDeleteWarning}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 w-full">
+                <button
+                  type="button"
+                  onClick={handleBulkDeleteCancel}
+                  disabled={bulkDeleting}
+                  className="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors disabled:opacity-50"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkDeleteConfirm}
+                  disabled={bulkDeleting}
+                  className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {bulkDeleting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>{labels.bulkDeleting(selectedIds.size)}</span>
+                    </>
+                  ) : (
+                    <span>{labels.bulkDeleteBtn(selectedIds.size)}</span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

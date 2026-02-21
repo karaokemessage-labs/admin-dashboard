@@ -383,7 +383,8 @@ export interface RatingResponseDto {
   id: string;
   rating: number;
   comment: string | null;
-  articleId: string;
+  articleId?: string;
+  facilityId?: string;
   userId: string;
   createdAt: string;
   updatedAt: string;

@@ -14,6 +14,7 @@ export interface CommentService {
   getComment: (id: string) => Promise<CommentResponseDto>;
   updateComment: (id: string, data: UpdateCommentRequestDto) => Promise<CommentResponseDto>;
   deleteComment: (id: string) => Promise<void>;
+  deleteComments: (ids: string[]) => Promise<{ successCount: number; failedCount: number; failedIds: string[] }>;
 }
 
 class CommentServiceImpl implements CommentService {
@@ -37,7 +38,7 @@ class CommentServiceImpl implements CommentService {
       const params = new URLSearchParams();
       params.append('page', page.toString());
       params.append('limit', limit.toString());
-      
+
       const response = await apiClient.get<GetCommentsResponseDto>(
         `${API_ENDPOINTS.COMMENTS.BASE}?${params.toString()}`
       );
@@ -55,7 +56,7 @@ class CommentServiceImpl implements CommentService {
       const params = new URLSearchParams();
       params.append('page', page.toString());
       params.append('limit', limit.toString());
-      
+
       const response = await apiClient.get<GetCommentsResponseDto>(
         `${API_ENDPOINTS.COMMENTS.BY_ARTICLE(articleId)}?${params.toString()}`
       );
@@ -104,6 +105,28 @@ class CommentServiceImpl implements CommentService {
       const apiError = error as ApiError;
       throw new Error(
         apiError.message || 'Xóa bình luận thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async deleteComments(ids: string[]): Promise<{ successCount: number; failedCount: number; failedIds: string[] }> {
+    try {
+      console.log('Calling bulk delete with ids:', ids);
+      await apiClient.delete(
+        API_ENDPOINTS.COMMENTS.BATCH,
+        { body: JSON.stringify({ ids }) }
+      );
+
+      return {
+        successCount: ids.length,
+        failedCount: 0,
+        failedIds: [],
+      };
+    } catch (error) {
+      const apiError = error as ApiError;
+      console.error('Bulk delete comments API error:', apiError);
+      throw new Error(
+        apiError.message || 'Xóa nhiều bình luận thất bại. Vui lòng thử lại.'
       );
     }
   }

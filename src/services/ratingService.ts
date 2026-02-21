@@ -15,6 +15,7 @@ export interface RatingService {
   getRating: (id: string) => Promise<RatingResponseDto>;
   updateRating: (id: string, data: UpdateRatingRequestDto) => Promise<RatingResponseDto>;
   deleteRating: (id: string) => Promise<void>;
+  deleteRatings: (ids: string[]) => Promise<void>;
 }
 
 class RatingServiceImpl implements RatingService {
@@ -38,7 +39,7 @@ class RatingServiceImpl implements RatingService {
       const params = new URLSearchParams();
       params.append('page', page.toString());
       params.append('limit', limit.toString());
-      
+
       const response = await apiClient.get<GetRatingsResponseDto>(
         `${API_ENDPOINTS.RATINGS.BASE}?${params.toString()}`
       );
@@ -56,7 +57,7 @@ class RatingServiceImpl implements RatingService {
       const params = new URLSearchParams();
       params.append('page', page.toString());
       params.append('limit', limit.toString());
-      
+
       const response = await apiClient.get<GetRatingsResponseDto>(
         `${API_ENDPOINTS.RATINGS.BY_ARTICLE(articleId)}?${params.toString()}`
       );
@@ -74,7 +75,7 @@ class RatingServiceImpl implements RatingService {
       const params = new URLSearchParams();
       params.append('page', page.toString());
       params.append('limit', limit.toString());
-      
+
       const response = await apiClient.get<GetRatingsResponseDto>(
         `${API_ENDPOINTS.RATINGS.BY_USER(userId)}?${params.toString()}`
       );
@@ -123,6 +124,17 @@ class RatingServiceImpl implements RatingService {
       const apiError = error as ApiError;
       throw new Error(
         apiError.message || 'Xóa đánh giá thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async deleteRatings(ids: string[]): Promise<void> {
+    try {
+      await apiClient.delete(API_ENDPOINTS.RATINGS.BATCH, { body: JSON.stringify({ ids }) });
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Xóa nhiều đánh giá thất bại. Vui lòng thử lại.'
       );
     }
   }

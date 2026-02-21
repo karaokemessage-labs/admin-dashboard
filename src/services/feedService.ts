@@ -13,6 +13,7 @@ export interface FeedService {
   getFeed: (id: string) => Promise<FeedResponseDto>;
   updateFeed: (id: string, data: UpdateFeedRequestDto) => Promise<FeedResponseDto>;
   deleteFeed: (id: string) => Promise<void>;
+  deleteFeeds: (ids: string[]) => Promise<void>;
 }
 
 class FeedServiceImpl implements FeedService {
@@ -36,7 +37,7 @@ class FeedServiceImpl implements FeedService {
       const params = new URLSearchParams();
       params.append('page', page.toString());
       params.append('limit', limit.toString());
-      
+
       const response = await apiClient.get<GetFeedsResponseDto>(
         `${API_ENDPOINTS.FEEDS.BASE}?${params.toString()}`
       );
@@ -85,6 +86,19 @@ class FeedServiceImpl implements FeedService {
       const apiError = error as ApiError;
       throw new Error(
         apiError.message || 'Xóa feed thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async deleteFeeds(ids: string[]): Promise<void> {
+    try {
+      await apiClient.delete(API_ENDPOINTS.FEEDS.BATCH, {
+        body: JSON.stringify({ ids }),
+      });
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Xóa nhiều feed thất bại. Vui lòng thử lại.'
       );
     }
   }

@@ -24,6 +24,9 @@ const FeedsManagement = () => {
   const [pageSize] = useState<number>(10);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBatchDeleteModalOpen, setIsBatchDeleteModalOpen] = useState(false);
+  const [batchDeleting, setBatchDeleting] = useState(false);
   const [formData, setFormData] = useState<CreateFeedRequestDto>({
     title: '',
     content: '',
@@ -48,6 +51,7 @@ const FeedsManagement = () => {
       setFeeds(data?.items || []);
       setCurrentPage(data?.page || page);
       setTotalItems(data?.total || 0);
+      setSelectedIds(new Set());
     } catch (error: any) {
       toast.error(error.message || t('common.error'));
     } finally {
@@ -186,6 +190,45 @@ const FeedsManagement = () => {
     setFeedToDelete(null);
   };
 
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      const newSelectedIds = new Set(filteredFeeds.map(f => f.id));
+      setSelectedIds(newSelectedIds);
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectItem = (id: string) => {
+    const newSelectedIds = new Set(selectedIds);
+    if (newSelectedIds.has(id)) {
+      newSelectedIds.delete(id);
+    } else {
+      newSelectedIds.add(id);
+    }
+    setSelectedIds(newSelectedIds);
+  };
+
+  const handleBatchDeleteClick = () => {
+    if (selectedIds.size === 0) return;
+    setIsBatchDeleteModalOpen(true);
+  };
+
+  const handleBatchDeleteConfirm = async () => {
+    setBatchDeleting(true);
+    try {
+      await feedService.deleteFeeds(Array.from(selectedIds));
+      toast.success(`Đã xóa ${selectedIds.size} feed thành công`);
+      setIsBatchDeleteModalOpen(false);
+      setSelectedIds(new Set());
+      await fetchFeeds(currentPage);
+    } catch (error: any) {
+      toast.error(error.message || 'Xóa nhiều feed thất bại');
+    } finally {
+      setBatchDeleting(false);
+    }
+  };
+
   // Filter feeds based on search query
   const filteredFeeds = feeds.filter(feed => {
     if (!searchQuery.trim()) return true;
@@ -224,6 +267,15 @@ const FeedsManagement = () => {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
+          {selectedIds.size > 0 && (
+            <button
+              onClick={handleBatchDeleteClick}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              Xóa {selectedIds.size} đã chọn
+            </button>
+          )}
           <button
             onClick={handleOpenModal}
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
@@ -244,6 +296,14 @@ const FeedsManagement = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th className="px-6 py-3 text-left w-12">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                    checked={filteredFeeds.length > 0 && selectedIds.size === filteredFeeds.length}
+                    onChange={handleSelectAll}
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tiêu đề</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nội dung</th>
@@ -257,20 +317,28 @@ const FeedsManagement = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {fetching ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
+                  <td colSpan={9} className="px-6 py-12 text-center">
                     <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto" />
                     <p className="mt-2 text-gray-600">{t('common.loadingData')}</p>
                   </td>
                 </tr>
               ) : filteredFeeds.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
                     {searchQuery ? 'Không tìm thấy feed nào' : 'Chưa có feed nào'}
                   </td>
                 </tr>
               ) : (
                 filteredFeeds.map((feed) => (
                   <tr key={feed.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                        checked={selectedIds.has(feed.id)}
+                        onChange={() => handleSelectItem(feed.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{feed.id.slice(0, 8)}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -299,8 +367,8 @@ const FeedsManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${feed.published
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
                         }`}>
                         {feed.published ? 'Đã xuất bản' : 'Bản nháp'}
                       </span>
@@ -592,6 +660,43 @@ const FeedsManagement = () => {
               >
                 {deletingId === feedToDelete.id && <Loader2 className="w-4 h-4 animate-spin" />}
                 <span>{deletingId === feedToDelete.id ? t('common.deleting') : t('common.delete')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Batch Delete Confirmation Modal */}
+      {isBatchDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">Xóa nhiều Feeds</h2>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-700 mb-4">
+                Bạn có chắc chắn muốn xóa {selectedIds.size} feed đã chọn không?
+              </p>
+              <p className="text-sm text-red-600">
+                Hành động này không thể hoàn tác và sẽ xóa vĩnh viễn các feed này.
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => setIsBatchDeleteModalOpen(false)}
+                disabled={batchDeleting}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleBatchDeleteConfirm}
+                disabled={batchDeleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {batchDeleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                <span>{batchDeleting ? 'Đang xóa...' : 'Xóa'}</span>
               </button>
             </div>
           </div>

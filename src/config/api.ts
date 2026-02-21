@@ -57,7 +57,10 @@ export const API_ENDPOINTS = {
     ROLE_BY_ID: (id: string) => `/rbac/roles/${id}`,
     ROLE_PERMISSIONS: (roleId: string) => `/rbac/roles/${roleId}/permissions`,
     PERMISSIONS: '/rbac/permissions',
+    PERMISSION_BY_ID: (id: string) => `/rbac/permissions/${id}`,
+    PERMISSIONS_BATCH: '/rbac/permissions/batch',
     ASSIGN_ROLES_TO_USER: (userId: string) => `/rbac/users/${userId}/roles`,
+    ROLES_BATCH: '/rbac/roles/batch',
   },
   // Booking endpoints
   BOOKINGS: {
@@ -81,6 +84,7 @@ export const API_ENDPOINTS = {
     BASE: '/admin/comments',
     BY_ID: (id: string) => `/admin/comments/${id}`,
     BY_ARTICLE: (articleId: string) => `/admin/comments/article/${articleId}`,
+    BATCH: '/admin/comments/batch',
   },
   // Karaoke endpoints
   KARAOKE: {
@@ -106,12 +110,14 @@ export const API_ENDPOINTS = {
     BY_ID: (id: string) => `/admin/ratings/${id}`,
     BY_ARTICLE: (articleId: string) => `/admin/ratings/article/${articleId}`,
     BY_USER: (userId: string) => `/admin/ratings/user/${userId}`,
+    BATCH: '/ratings/batch',
   },
   // Document/KYC endpoints
   DOCUMENTS: {
     BASE: '/documents',
     BY_ID: (id: string) => `/documents/${id}`,
     VERIFY: (id: string) => `/documents/${id}/verify`,
+    BATCH: '/documents/batch',
   },
   // Notification endpoints (admin)
   NOTIFICATIONS: {
@@ -120,11 +126,13 @@ export const API_ENDPOINTS = {
     MARK_READ: (id: string) => `/admin/notifications/${id}/read`,
     MARK_UNREAD: (id: string) => `/admin/notifications/${id}/unread`,
     ARCHIVE: (id: string) => `/admin/notifications/${id}/archive`,
+    BATCH: '/notifications/batch',
   },
   // Feed endpoints (admin)
   FEEDS: {
     BASE: '/admin/feeds',
     BY_ID: (id: string) => `/admin/feeds/${id}`,
+    BATCH: '/feeds/batch',
   },
   // Friend endpoints
   FRIENDS: {

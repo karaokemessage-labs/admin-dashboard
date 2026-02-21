@@ -15,6 +15,7 @@ export interface DocumentService {
   getDocument: (id: string) => Promise<DocumentResponseDto>;
   updateDocument: (id: string, data: UpdateDocumentRequestDto) => Promise<DocumentResponseDto>;
   deleteDocument: (id: string) => Promise<void>;
+  deleteDocuments: (ids: string[]) => Promise<void>;
   verifyDocument: (id: string, data: VerifyDocumentRequestDto) => Promise<VerifyDocumentResponseDto>;
 }
 
@@ -29,7 +30,7 @@ class DocumentServiceImpl implements DocumentService {
       if (data.description) {
         formData.append('description', data.description);
       }
-      
+
       // Handle file upload
       if (data.file instanceof File) {
         formData.append('file', data.file);
@@ -74,7 +75,7 @@ class DocumentServiceImpl implements DocumentService {
       if (status) {
         params.append('status', status);
       }
-      
+
       const response = await apiClient.get<GetDocumentsResponseDto>(
         `${API_ENDPOINTS.DOCUMENTS.BASE}?${params.toString()}`
       );
@@ -123,6 +124,19 @@ class DocumentServiceImpl implements DocumentService {
       const apiError = error as ApiError;
       throw new Error(
         apiError.message || 'Xóa tài liệu KYC thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async deleteDocuments(ids: string[]): Promise<void> {
+    try {
+      await apiClient.delete(API_ENDPOINTS.DOCUMENTS.BATCH, {
+        body: JSON.stringify({ ids }),
+      });
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(
+        apiError.message || 'Xóa nhiều tài liệu KYC thất bại. Vui lòng thử lại.'
       );
     }
   }

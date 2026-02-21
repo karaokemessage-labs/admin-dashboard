@@ -19,6 +19,9 @@ const CommentsManagement = () => {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [selectedComments, setSelectedComments] = useState<string[]>([]);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(10);
   const [totalItems, setTotalItems] = useState<number>(0);
@@ -39,7 +42,9 @@ const CommentsManagement = () => {
       // apiClient already extracts data.data from { success, data: {...}, message }
       // So response is already: { items, total, page, limit, totalPages }
       const data = response as any;
-      setComments(data?.items || []);
+      // Robustly handle different response formats
+      const commentList = data?.data || data?.items || (Array.isArray(data) ? data : []);
+      setComments(commentList);
       setCurrentPage(data?.page || page);
       setTotalItems(data?.total || 0);
     } catch (error: any) {
@@ -124,9 +129,9 @@ const CommentsManagement = () => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     return (
-      comment.content.toLowerCase().includes(query) ||
-      comment.articleId.toLowerCase().includes(query) ||
-      comment.userId.toLowerCase().includes(query)
+      (comment.content || '').toLowerCase().includes(query) ||
+      (comment.articleId || '').toLowerCase().includes(query) ||
+      (comment.userId || '').toLowerCase().includes(query)
     );
   });
 
@@ -136,11 +141,58 @@ const CommentsManagement = () => {
     return content.substring(0, maxLength) + '...';
   };
 
+  // Handle select all
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedComments(comments.map(c => c.id));
+    } else {
+      setSelectedComments([]);
+    }
+  };
+
+  // Handle select individual
+  const handleSelectComment = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
+    if (e.target.checked) {
+      setSelectedComments(prev => [...prev, id]);
+    } else {
+      setSelectedComments(prev => prev.filter(item => item !== id));
+    }
+  };
+
+  // Handle bulk delete confirm
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedComments.length === 0) return;
+
+    setIsDeletingBulk(true);
+    try {
+      await commentService.deleteComments(selectedComments);
+      toast.success(t('common.deleteSuccess') || `Đã xóa thành công ${selectedComments.length} bình luận`);
+      setSelectedComments([]);
+      setIsBulkDeleteModalOpen(false);
+      await fetchComments(currentPage);
+    } catch (error: any) {
+      toast.error(error.message || t('common.deleteFailed') || 'Xóa bình luận thất bại');
+    } finally {
+      setIsDeletingBulk(false);
+    }
+  };
+
   return (
     <div className="flex-1 bg-gray-50 p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-1">Quản lý Bình luận</h1>
-        <p className="text-gray-500 text-sm">Quản lý tất cả bình luận trong hệ thống</p>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-1">Quản lý Bình luận</h1>
+          <p className="text-gray-500 text-sm">Quản lý tất cả bình luận trong hệ thống</p>
+        </div>
+        {selectedComments.length > 0 && (
+          <button
+            onClick={() => setIsBulkDeleteModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>{t('common.deleteSelected') || 'Xóa đã chọn'} ({selectedComments.length})</span>
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -169,6 +221,14 @@ const CommentsManagement = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-10">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    checked={comments.length > 0 && selectedComments.length === comments.length}
+                    onChange={handleSelectAll}
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nội dung</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Article ID</th>
@@ -182,21 +242,29 @@ const CommentsManagement = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {fetching ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
+                  <td colSpan={9} className="px-6 py-12 text-center">
                     <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto" />
                     <p className="mt-2 text-gray-600">{t('common.loadingData')}</p>
                   </td>
                 </tr>
               ) : filteredComments.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
                     {searchQuery ? 'Không tìm thấy bình luận nào' : 'Chưa có bình luận nào'}
                   </td>
                 </tr>
               ) : (
                 filteredComments.map((comment) => (
                   <tr key={comment.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{comment.id.slice(0, 8)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                        checked={selectedComments.includes(comment.id)}
+                        onChange={(e) => handleSelectComment(e, comment.id)}
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{comment.id?.slice(0, 8)}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <MessageSquare className="w-4 h-4 text-purple-600 flex-shrink-0" />
@@ -205,11 +273,11 @@ const CommentsManagement = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{comment.articleId.slice(0, 8)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{comment.userId.slice(0, 8)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{comment.articleId?.slice(0, 8)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#{comment.userId?.slice(0, 8)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {comment.parentId ? (
-                        <span className="text-purple-600">#{comment.parentId.slice(0, 8)}</span>
+                        <span className="text-purple-600">#{comment.parentId?.slice(0, 8)}</span>
                       ) : (
                         <span className="text-gray-400">—</span>
                       )}
@@ -405,6 +473,50 @@ const CommentsManagement = () => {
               >
                 {deletingId === commentToDelete.id && <Loader2 className="w-4 h-4 animate-spin" />}
                 <span>{deletingId === commentToDelete.id ? t('common.deleting') : t('common.delete')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete UI Confirmation Modal */}
+      {isBulkDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">{t('common.deleteMultiple') || 'Xóa nhiều bình luận'}</h2>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              <p className="text-gray-700 mb-4">
+                {t('common.deleteMultipleConfirmMessage')?.replace('{count}', selectedComments.length.toString()) ||
+                  `Bạn có chắc chắn muốn xóa ${selectedComments.length} bình luận đã chọn không?`}
+              </p>
+              <p className="text-sm text-red-600">
+                {t('common.deleteWarning') || 'Hành động này không thể hoàn tác.'}
+              </p>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => setIsBulkDeleteModalOpen(false)}
+                disabled={isDeletingBulk}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t('common.cancel') || 'Hủy'}
+              </button>
+              <button
+                type="button"
+                onClick={handleBulkDeleteConfirm}
+                disabled={isDeletingBulk}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isDeletingBulk && <Loader2 className="w-4 h-4 animate-spin" />}
+                <span>{isDeletingBulk ? t('common.deleting') || 'Đang xóa...' : t('common.delete') || 'Xóa'}</span>
               </button>
             </div>
           </div>

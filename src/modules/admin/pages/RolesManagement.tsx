@@ -20,6 +20,9 @@ const RolesManagement = () => {
     const [pageSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isBatchDeleteModalOpen, setIsBatchDeleteModalOpen] = useState(false);
+    const [batchDeleting, setBatchDeleting] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         slug: '',
@@ -51,6 +54,7 @@ const RolesManagement = () => {
             setRoles(rolesList);
             setCurrentPage(data?.page || page);
             setTotalItems(data?.total || 0);
+            setSelectedIds(new Set());
         } catch (error: any) {
             toast.error(error.message || t('common.error'));
         } finally {
@@ -149,6 +153,45 @@ const RolesManagement = () => {
         setRoleToDelete(null);
     };
 
+    const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked) {
+            const newSelectedIds = new Set(filteredRoles.map(r => r.id));
+            setSelectedIds(newSelectedIds);
+        } else {
+            setSelectedIds(new Set());
+        }
+    };
+
+    const handleSelectItem = (id: string) => {
+        const newSelectedIds = new Set(selectedIds);
+        if (newSelectedIds.has(id)) {
+            newSelectedIds.delete(id);
+        } else {
+            newSelectedIds.add(id);
+        }
+        setSelectedIds(newSelectedIds);
+    };
+
+    const handleBatchDeleteClick = () => {
+        if (selectedIds.size === 0) return;
+        setIsBatchDeleteModalOpen(true);
+    };
+
+    const handleBatchDeleteConfirm = async () => {
+        setBatchDeleting(true);
+        try {
+            await rbacService.deleteRoles(Array.from(selectedIds));
+            toast.success(`Đã xóa ${selectedIds.size} vai trò thành công`);
+            setIsBatchDeleteModalOpen(false);
+            setSelectedIds(new Set());
+            await fetchRoles(currentPage);
+        } catch (error: any) {
+            toast.error(error.message || 'Xóa nhiều vai trò thất bại');
+        } finally {
+            setBatchDeleting(false);
+        }
+    };
+
     // Handle opening assign permissions modal
     const handleAssignClick = async (roleId: string, roleTitle: string) => {
         setAssigningRole({ id: roleId, title: roleTitle });
@@ -243,6 +286,15 @@ const RolesManagement = () => {
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
                     </div>
+                    {selectedIds.size > 0 && (
+                        <button
+                            onClick={handleBatchDeleteClick}
+                            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            Xóa {selectedIds.size} đã chọn
+                        </button>
+                    )}
                     <button
                         onClick={handleOpenModal}
                         className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
@@ -263,6 +315,14 @@ const RolesManagement = () => {
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
+                                <th className="px-6 py-3 text-left w-12">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                                        checked={filteredRoles.length > 0 && selectedIds.size === filteredRoles.length}
+                                        onChange={handleSelectAll}
+                                    />
+                                </th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.roles.role')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.roles.slug')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('pages.roles.description')}</th>
@@ -274,20 +334,28 @@ const RolesManagement = () => {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {fetching ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center">
+                                    <td colSpan={7} className="px-6 py-12 text-center">
                                         <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto" />
                                         <p className="mt-2 text-gray-600">{t('common.loadingData')}</p>
                                     </td>
                                 </tr>
                             ) : filteredRoles.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                                         {searchQuery ? t('pages.roles.noRolesFound') : t('pages.roles.noRolesYet')}
                                     </td>
                                 </tr>
                             ) : (
                                 filteredRoles.map((role) => (
                                     <tr key={role.id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                                                checked={selectedIds.has(role.id)}
+                                                onChange={() => handleSelectItem(role.id)}
+                                            />
+                                        </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
@@ -652,6 +720,43 @@ const RolesManagement = () => {
                             >
                                 {savingPermissions && <Loader2 className="w-4 h-4 animate-spin" />}
                                 <span>{savingPermissions ? t('pages.roles.saving') : t('pages.roles.saveChanges')}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Batch Delete Confirmation Modal */}
+            {isBatchDeleteModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+                        <div className="p-6 border-b border-gray-200">
+                            <h2 className="text-xl font-bold text-gray-900">Xóa nhiều vai trò</h2>
+                        </div>
+                        <div className="p-6">
+                            <p className="text-gray-700 mb-4">
+                                Bạn có chắc chắn muốn xóa {selectedIds.size} vai trò đã chọn không?
+                            </p>
+                            <p className="text-sm text-red-600">
+                                Hành động này không thể hoàn tác và sẽ xóa vĩnh viễn các vai trò này.
+                            </p>
+                        </div>
+                        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+                            <button
+                                type="button"
+                                onClick={() => setIsBatchDeleteModalOpen(false)}
+                                disabled={batchDeleting}
+                                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleBatchDeleteConfirm}
+                                disabled={batchDeleting}
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                {batchDeleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                                <span>{batchDeleting ? t('common.deleting') : t('common.delete')}</span>
                             </button>
                         </div>
                     </div>
