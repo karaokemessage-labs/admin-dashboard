@@ -86,16 +86,19 @@ export const API_ENDPOINTS = {
   KARAOKE: {
     BASE: '/karaokes',
     BY_ID: (id: string) => `/karaokes/${id}`,
+    BATCH: '/karaokes/batch',
   },
   // Massage endpoints
   MASSAGE: {
     BASE: '/massages',
     BY_ID: (id: string) => `/massages/${id}`,
+    BATCH: '/massages/batch',
   },
   // Club endpoints
   CLUBS: {
     BASE: '/clubs',
     BY_ID: (id: string) => `/clubs/${id}`,
+    BATCH: '/clubs/batch',
   },
   // Rating endpoints (admin)
   RATINGS: {

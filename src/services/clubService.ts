@@ -81,6 +81,7 @@ export interface ClubService {
   getClubs: (page?: number, pageSize?: number) => Promise<{ clubs: Club[]; page: number; total: number }>;
   updateClub: (id: string, data: UpdateClubRequest) => Promise<CreateClubResponse>;
   deleteClub: (id: string) => Promise<void>;
+  deleteClubs: (ids: string[]) => Promise<{ successCount: number; failedCount: number; failedIds: string[] }>;
 }
 
 class ClubServiceImpl implements ClubService {
@@ -98,7 +99,7 @@ class ClubServiceImpl implements ClubService {
           description: data.description,
         }
       );
-      
+
       console.log('Create club response:', response);
       return response.data;
     } catch (error) {
@@ -115,7 +116,7 @@ class ClubServiceImpl implements ClubService {
       const response = await apiClient.get<GetClubResponse>(
         API_ENDPOINTS.CLUBS.BY_ID(id)
       );
-      
+
       // Ensure response includes ratings and comments
       const data = response.data;
       if (data && typeof data === 'object' && 'data' in data && data.data && typeof data.data === 'object' && 'facility' in data.data) {
@@ -131,7 +132,7 @@ class ClubServiceImpl implements ClubService {
           }
         };
       }
-      
+
       return response.data;
     } catch (error) {
       const apiError = error as ApiError;
@@ -146,7 +147,7 @@ class ClubServiceImpl implements ClubService {
       const response = await apiClient.get<{ success: boolean; data: FacilityWithRatingsAndComments; message?: string }>(
         API_ENDPOINTS.CLUBS.BY_ID(id)
       );
-      
+
       // Extract data from response
       let data: any = null;
       if (response.data && typeof response.data === 'object') {
@@ -156,7 +157,7 @@ class ClubServiceImpl implements ClubService {
           data = response.data;
         }
       }
-      
+
       // Ensure we have the correct structure
       if (data && typeof data === 'object' && 'facility' in data) {
         const facilityData = data as any;
@@ -170,7 +171,7 @@ class ClubServiceImpl implements ClubService {
           limit: facilityData.limit || 50,
         };
       }
-      
+
       throw new Error('Response format không đúng. Vui lòng thử lại.');
     } catch (error) {
       const apiError = error as ApiError;
@@ -186,13 +187,13 @@ class ClubServiceImpl implements ClubService {
       const params = new URLSearchParams();
       params.append('page', page.toString());
       params.append('limit', limit.toString());
-      
+
       const response = await apiClient.get<GetClubResponse>(
         `${API_ENDPOINTS.CLUBS.BASE}?${params.toString()}`
       );
-      
+
       console.log('Get clubs response:', response);
-      
+
       // Handle different response formats
       const responseData = response.data;
       let clubs: Club[] = [];
@@ -269,6 +270,28 @@ class ClubServiceImpl implements ClubService {
       console.error('deleteClub API error:', apiError);
       throw new Error(
         apiError.message || 'Xóa Club thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async deleteClubs(ids: string[]): Promise<{ successCount: number; failedCount: number; failedIds: string[] }> {
+    try {
+      console.log('Calling bulk delete with ids:', ids);
+      await apiClient.delete(
+        API_ENDPOINTS.CLUBS.BATCH,
+        { body: JSON.stringify({ ids }) }
+      );
+
+      return {
+        successCount: ids.length,
+        failedCount: 0,
+        failedIds: [],
+      };
+    } catch (error) {
+      const apiError = error as ApiError;
+      console.error('Bulk delete API error:', apiError);
+      throw new Error(
+        apiError.message || 'Xóa nhiều Club thất bại. Vui lòng thử lại.'
       );
     }
   }

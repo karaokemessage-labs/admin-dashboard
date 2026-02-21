@@ -66,6 +66,7 @@ export interface KaraokeService {
   getKaraokes: (page?: number, pageSize?: number, status?: string, search?: string) => Promise<{ karaokes: Karaoke[]; page: number; total: number }>;
   updateKaraoke: (id: string, data: UpdateKaraokeRequest) => Promise<CreateKaraokeResponse>;
   deleteKaraoke: (id: string) => Promise<void>;
+  deleteKaraokes: (ids: string[]) => Promise<{ successCount: number; failedCount: number; failedIds: string[] }>;
 }
 
 class KaraokeServiceImpl implements KaraokeService {
@@ -76,7 +77,7 @@ class KaraokeServiceImpl implements KaraokeService {
         API_ENDPOINTS.KARAOKE.BASE,
         data
       );
-      
+
       console.log('Create karaoke response:', response);
       return response.data;
     } catch (error) {
@@ -120,9 +121,9 @@ class KaraokeServiceImpl implements KaraokeService {
       const response = await apiClient.get<GetKaraokeResponse>(
         `${API_ENDPOINTS.KARAOKE.BASE}?${params.toString()}`
       );
-      
+
       console.log('Get karaokes response:', response);
-      
+
       // Handle different response formats
       const responseData = response.data;
       let karaokes: Karaoke[] = [];
@@ -196,6 +197,28 @@ class KaraokeServiceImpl implements KaraokeService {
       console.error('deleteKaraoke API error:', apiError);
       throw new Error(
         apiError.message || 'Xóa Karaoke thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async deleteKaraokes(ids: string[]): Promise<{ successCount: number; failedCount: number; failedIds: string[] }> {
+    try {
+      console.log('Calling bulk delete with ids:', ids);
+      await apiClient.delete(
+        API_ENDPOINTS.KARAOKE.BATCH,
+        { body: JSON.stringify({ ids }) }
+      );
+
+      return {
+        successCount: ids.length,
+        failedCount: 0,
+        failedIds: [],
+      };
+    } catch (error) {
+      const apiError = error as ApiError;
+      console.error('Bulk delete API error:', apiError);
+      throw new Error(
+        apiError.message || 'Xóa nhiều Karaoke thất bại. Vui lòng thử lại.'
       );
     }
   }

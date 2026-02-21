@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit, Trash2, MoreVertical, Filter, X, Loader2, RefreshCw, UserCog } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, MoreVertical, Filter, X, Loader2, RefreshCw, UserCog, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { massageService, Massage } from '../../../services/massageService';
@@ -26,6 +26,24 @@ const MassagesManagement = () => {
   const [pageSize] = useState<number>(7);
   const [totalItems, setTotalItems] = useState<number>(0);
 
+  // Bulk Selection States
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  // Localized labels for bulk delete
+  const labels = {
+    bulkDeleteTitle: 'Xóa nhiều Massage',
+    bulkDeleteWarning: 'Hành động này không thể hoàn tác. Dữ liệu sẽ bị xóa vĩnh viễn khỏi hệ thống.',
+    bulkDeleteConfirm: (count: number) => `Bạn có chắc chắn muốn xóa ${count} massage đã chọn?`,
+    bulkDeleteList: 'Danh sách sẽ bị xóa:',
+    bulkDeletingLabel: (count: number) => `Đang xóa ${count} massage...`,
+    bulkDeleteBtn: (count: number) => `Xóa ${count} massage`,
+    deleteSelected: 'Xóa đã chọn',
+    bulkDeleteSuccess: (count: number) => `Đã xóa thành công ${count} massage`,
+    deleteFailed: 'Xóa thất bại. Vui lòng thử lại.',
+  };
+
   // Fetch massages on component mount
   useEffect(() => {
     fetchMassages(1);
@@ -50,11 +68,11 @@ const MassagesManagement = () => {
     const prefixes = ['provider', 'admin', 'manager', 'account', 'user'];
     const suffixes = ['test', 'demo', 'temp', 'new', 'dev'];
     const domains = ['example.com', 'test.com', 'demo.com', 'provider.com', 'admin.com'];
-    
+
     const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
     const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
     const domain = domains[Math.floor(Math.random() * domains.length)];
-    
+
     return {
       code: `${prefix}${randomNum}`,
       name: `${prefix} ${suffix} ${randomNum}`,
@@ -94,7 +112,7 @@ const MassagesManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.code.trim() || !formData.name.trim() || !formData.email.trim()) {
       toast.error(t('common.pleaseFillAllFields'));
       return;
@@ -126,7 +144,7 @@ const MassagesManagement = () => {
         });
         toast.success(t('pages.providerAccounts.createSuccess'));
       }
-      
+
       handleCloseModal();
       await fetchMassages(currentPage);
     } catch (error: any) {
@@ -163,6 +181,61 @@ const MassagesManagement = () => {
     setAccountToDelete(null);
   };
 
+  // ── Bulk Selection Handlers ──
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === accounts.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(accounts.map(acc => String(acc.id))));
+    }
+  };
+
+  const handleBulkDeleteClick = () => {
+    if (selectedIds.size === 0) return;
+    setIsBulkDeleteModalOpen(true);
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      const bulkResult = await massageService.deleteMassages(Array.from(selectedIds));
+      if (bulkResult.failedCount === 0) {
+        toast.success(labels.bulkDeleteSuccess(bulkResult.successCount));
+      } else {
+        toast.warning(
+          `Xóa thành công ${bulkResult.successCount} massage. ${bulkResult.failedCount} xóa thất bại.`
+        );
+      }
+      setSelectedIds(new Set());
+      setIsBulkDeleteModalOpen(false);
+      await fetchMassages(currentPage);
+    } catch (error: any) {
+      toast.error(error.message || labels.deleteFailed);
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const handleBulkDeleteCancel = () => {
+    setIsBulkDeleteModalOpen(false);
+  };
+
+  const isAllSelected = accounts.length > 0 && selectedIds.size === accounts.length;
+  const isSomeSelected = selectedIds.size > 0 && selectedIds.size < accounts.length;
+
   const filteredAccounts = accounts.filter(account =>
     account.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     account.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -195,6 +268,15 @@ const MassagesManagement = () => {
 
             {/* Action Buttons */}
             <div className="flex gap-2 w-full sm:w-auto">
+              {selectedIds.size > 0 && (
+                <button
+                  onClick={handleBulkDeleteClick}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors animate-fade-in"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>{labels.deleteSelected} ({selectedIds.size})</span>
+                </button>
+              )}
               <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
                 <Filter className="w-4 h-4" />
                 <span>{t('common.filter')}</span>
@@ -263,6 +345,15 @@ const MassagesManagement = () => {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
+                    <th className="px-4 py-3 text-center w-10">
+                      <input
+                        type="checkbox"
+                        checked={isAllSelected}
+                        ref={el => { if (el) el.indeterminate = isSomeSelected; }}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                      />
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('pages.providerAccounts.providerAccount')}
                     </th>
@@ -288,7 +379,15 @@ const MassagesManagement = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredAccounts.map((account) => (
-                    <tr key={account.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={account.id} className={`transition-colors ${selectedIds.has(String(account.id)) ? 'bg-purple-50' : 'hover:bg-gray-50'}`}>
+                      <td className="px-4 py-3 text-center w-10">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(String(account.id))}
+                          onChange={() => handleToggleSelect(String(account.id))}
+                          className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                        />
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
@@ -309,11 +408,10 @@ const MassagesManagement = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            account.status?.toUpperCase() === 'ACTIVE'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${account.status?.toUpperCase() === 'ACTIVE'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                            }`}
                         >
                           {account.status?.toUpperCase() === 'ACTIVE' ? t('common.active') : t('common.inactive')}
                         </span>
@@ -584,6 +682,73 @@ const MassagesManagement = () => {
               >
                 {deletingId === accountToDelete.id && <Loader2 className="w-4 h-4 animate-spin" />}
                 <span>{deletingId === accountToDelete.id ? t('common.deleting') : t('common.delete')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Confirmation Modal */}
+      {isBulkDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-200 flex items-center gap-3 text-red-600">
+              <AlertTriangle className="w-6 h-6" />
+              <h2 className="text-xl font-bold">{labels.bulkDeleteTitle}</h2>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              <p className="text-gray-700 mb-4 font-medium">
+                {labels.bulkDeleteConfirm(selectedIds.size)}
+              </p>
+              <p className="text-sm text-gray-500 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                {labels.bulkDeleteWarning}
+              </p>
+
+              <div className="max-h-32 overflow-y-auto mb-2">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                  {labels.bulkDeleteList}
+                </p>
+                <div className="space-y-1">
+                  {accounts.filter(acc => selectedIds.has(String(acc.id))).map(acc => (
+                    <div key={acc.id} className="text-sm text-gray-600 flex items-center gap-2">
+                      <div className="w-1 h-1 bg-gray-400 rounded-full" />
+                      {acc.name}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={handleBulkDeleteCancel}
+                disabled={bulkDeleting}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleBulkDeleteConfirm}
+                disabled={bulkDeleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {bulkDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>{labels.bulkDeletingLabel(selectedIds.size)}</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>{labels.bulkDeleteBtn(selectedIds.size)}</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

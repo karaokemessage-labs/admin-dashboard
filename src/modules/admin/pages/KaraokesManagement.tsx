@@ -1,13 +1,37 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Edit, Trash2, Filter, X, Loader2, Eye } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Filter, X, Loader2, Eye, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { karaokeService, CreateKaraokeRequest, Karaoke } from '../../../services/karaokeService';
 
 const KaraokesManagement = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
+
+  // Localized labels for this page
+  const labels = language === 'vi' ? {
+    bulkDeleteTitle: 'Xóa nhiều Karaoke',
+    bulkDeleteWarning: 'Hành động này không thể hoàn tác. Dữ liệu sẽ bị xóa vĩnh viễn khỏi hệ thống.',
+    bulkDeleteConfirm: (count: number) => `Bạn có chắc chắn muốn xóa ${count} karaoke đã chọn?`,
+    bulkDeleteList: 'Danh sách sẽ bị xóa:',
+    bulkDeleting: (count: number) => `Đang xóa ${count} karaoke...`,
+    bulkDeleteBtn: (count: number) => `Xóa ${count} karaoke`,
+    deleteSelected: 'Xóa đã chọn',
+    bulkDeleteSuccess: (count: number) => `Đã xóa thành công ${count} karaoke`,
+    deleteFailed: 'Xóa thất bại. Vui lòng thử lại.',
+  } : {
+    bulkDeleteTitle: 'Delete Multiple Karaokes',
+    bulkDeleteWarning: 'This action cannot be undone. Data will be permanently removed from the system.',
+    bulkDeleteConfirm: (count: number) => `Are you sure you want to delete ${count} selected karaokes?`,
+    bulkDeleteList: 'Karaokes to be deleted:',
+    bulkDeleting: (count: number) => `Deleting ${count} karaokes...`,
+    bulkDeleteBtn: (count: number) => `Delete ${count} karaokes`,
+    deleteSelected: 'Delete Selected',
+    bulkDeleteSuccess: (count: number) => `Successfully deleted ${count} karaokes`,
+    deleteFailed: 'Deletion failed. Please try again.',
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,6 +47,12 @@ const KaraokesManagement = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(7);
   const [totalItems, setTotalItems] = useState<number>(0);
+
+  // Bulk Selection States
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
   const [formData, setFormData] = useState<CreateKaraokeRequest>({
     name: '',
     email: '',
@@ -124,7 +154,7 @@ const KaraokesManagement = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-    
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : type === 'number' ? (value ? Number(value) : 0) : value,
@@ -225,6 +255,61 @@ const KaraokesManagement = () => {
     navigate(`/dashboard/karaoke/${karaoke.id}`);
   };
 
+  // ── Bulk Selection Handlers ──
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === operators.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(operators.map(op => String(op.id))));
+    }
+  };
+
+  const handleBulkDeleteClick = () => {
+    if (selectedIds.size === 0) return;
+    setIsBulkDeleteModalOpen(true);
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      const bulkResult = await karaokeService.deleteKaraokes(Array.from(selectedIds));
+      if (bulkResult.failedCount === 0) {
+        toast.success(labels.bulkDeleteSuccess(bulkResult.successCount));
+      } else {
+        toast.warning(
+          `Xóa thành công ${bulkResult.successCount}/${bulkResult.successCount + bulkResult.failedCount} karaoke. ${bulkResult.failedCount} xóa thất bại.`
+        );
+      }
+      setSelectedIds(new Set());
+      setIsBulkDeleteModalOpen(false);
+      await fetchKaraokes(currentPage);
+    } catch (error: any) {
+      toast.error(error.message || labels.deleteFailed);
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const handleBulkDeleteCancel = () => {
+    setIsBulkDeleteModalOpen(false);
+  };
+
+  const isAllSelected = operators.length > 0 && selectedIds.size === operators.length;
+  const isSomeSelected = selectedIds.size > 0 && selectedIds.size < operators.length;
+
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
 
   return (
@@ -270,6 +355,15 @@ const KaraokesManagement = () => {
 
             {/* Action Buttons */}
             <div className="flex gap-2 w-full sm:w-auto">
+              {selectedIds.size > 0 && (
+                <button
+                  onClick={handleBulkDeleteClick}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors animate-fade-in"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>{labels.deleteSelected} ({selectedIds.size})</span>
+                </button>
+              )}
               <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
                 <Filter className="w-4 h-4" />
                 <span>{t('common.filter')}</span>
@@ -336,133 +430,149 @@ const KaraokesManagement = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('pages.operators.title')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('common.email')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Username
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('common.status')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Region
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('common.createdAt')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('common.lastLogin')}
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('common.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {operators.map((karaoke) => (
-                  <tr key={karaoke.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                          <span className="text-purple-600 font-semibold">
-                            {karaoke.name.charAt(0).toUpperCase()}
-                          </span>
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-4 py-3 text-center w-10">
+                      <input
+                        type="checkbox"
+                        checked={isAllSelected}
+                        ref={el => { if (el) el.indeterminate = isSomeSelected; }}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                      />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('pages.operators.title')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('common.email')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Username
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('common.status')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Region
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('common.createdAt')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('common.lastLogin')}
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('common.actions')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {operators.map((karaoke) => (
+                    <tr key={karaoke.id} className={`transition-colors ${selectedIds.has(String(karaoke.id)) ? 'bg-purple-50' : 'hover:bg-gray-50'}`}>
+                      <td className="px-4 py-3 text-center w-10">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(String(karaoke.id))}
+                          onChange={() => handleToggleSelect(String(karaoke.id))}
+                          className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                            <span className="text-purple-600 font-semibold">
+                              {karaoke.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{karaoke.name}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{karaoke.name}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{karaoke.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-600">{(karaoke as any).username || '-'}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          karaoke.status?.toUpperCase() === 'ACTIVE'
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{karaoke.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-600">{(karaoke as any).username || '-'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${karaoke.status?.toUpperCase() === 'ACTIVE'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {karaoke.status?.toUpperCase() === 'ACTIVE' ? t('common.active') : t('common.inactive')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-600">{(karaoke as any).region || '-'}</div>
-                    </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {karaoke.createdAt ? new Date(karaoke.createdAt).toLocaleDateString('vi-VN') : '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {(karaoke as any).lastLogin || (karaoke as any).activeAt 
-                      ? new Date((karaoke as any).lastLogin || (karaoke as any).activeAt).toLocaleDateString('vi-VN') 
-                      : '-'}
-                  </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleViewDetail(karaoke)}
-                          className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded"
-                          title={t('pages.operators.viewDetails')}
+                            }`}
                         >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setIsModalOpen(true);
-                            setIsEditMode(true);
-                            setEditingOperatorId(karaoke.id);
-                            setEditStatus((karaoke.status || 'inactive').toLowerCase());
-                            setEditRegion((karaoke as any).region || '');
-                            setTagInput('');
-                            setFormData({
-                              name: karaoke.name,
-                              email: karaoke.email || '',
-                              description: karaoke.description || '',
-                              address: (karaoke as any).address || '',
-                              phone: (karaoke as any).phone || '',
-                              district: (karaoke as any).district || '',
-                              rating: (karaoke as any).rating || 0,
-                              reviewCount: (karaoke as any).reviewCount || 0,
-                              qualityLevel: (karaoke as any).qualityLevel || 'STANDARD',
-                              tags: (karaoke as any).tags || [],
-                              views: (karaoke as any).views || 0,
-                              featured: (karaoke as any).featured || false,
-                              imageUrl: (karaoke as any).imageUrl || '',
-                            });
-                          }}
-                          className="text-purple-600 hover:text-purple-900 p-2 hover:bg-purple-50 rounded"
-                          title={t('pages.operators.edit')}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(String(karaoke.id), karaoke.name)}
-                          disabled={deletingId === String(karaoke.id)}
-                          className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                          title={t('pages.operators.deleteOperator')}
-                        >
-                          {deletingId === String(karaoke.id) ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-              ))}
-            </tbody>
-          </table>
+                          {karaoke.status?.toUpperCase() === 'ACTIVE' ? t('common.active') : t('common.inactive')}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-600">{(karaoke as any).region || '-'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {karaoke.createdAt ? new Date(karaoke.createdAt).toLocaleDateString('vi-VN') : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {(karaoke as any).lastLogin || (karaoke as any).activeAt
+                          ? new Date((karaoke as any).lastLogin || (karaoke as any).activeAt).toLocaleDateString('vi-VN')
+                          : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleViewDetail(karaoke)}
+                            className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded"
+                            title={t('pages.operators.viewDetails')}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setIsModalOpen(true);
+                              setIsEditMode(true);
+                              setEditingOperatorId(karaoke.id);
+                              setEditStatus((karaoke.status || 'inactive').toLowerCase());
+                              setEditRegion((karaoke as any).region || '');
+                              setTagInput('');
+                              setFormData({
+                                name: karaoke.name,
+                                email: karaoke.email || '',
+                                description: karaoke.description || '',
+                                address: (karaoke as any).address || '',
+                                phone: (karaoke as any).phone || '',
+                                district: (karaoke as any).district || '',
+                                rating: (karaoke as any).rating || 0,
+                                reviewCount: (karaoke as any).reviewCount || 0,
+                                qualityLevel: (karaoke as any).qualityLevel || 'STANDARD',
+                                tags: (karaoke as any).tags || [],
+                                views: (karaoke as any).views || 0,
+                                featured: (karaoke as any).featured || false,
+                                imageUrl: (karaoke as any).imageUrl || '',
+                              });
+                            }}
+                            className="text-purple-600 hover:text-purple-900 p-2 hover:bg-purple-50 rounded"
+                            title={t('pages.operators.edit')}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(String(karaoke.id), karaoke.name)}
+                            disabled={deletingId === String(karaoke.id)}
+                            className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={t('pages.operators.deleteOperator')}
+                          >
+                            {deletingId === String(karaoke.id) ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
@@ -793,7 +903,7 @@ const KaraokesManagement = () => {
                   <span className="text-sm font-medium text-gray-700">Nổi bật (Featured)</span>
                 </label>
               </div>
-              
+
               {/* When editing, allow changing status & region */}
 
               {isEditMode && (
@@ -906,6 +1016,71 @@ const KaraokesManagement = () => {
         </div>
       )}
 
+      {/* Bulk Delete Confirmation Modal */}
+      {isBulkDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+                {labels.bulkDeleteTitle}
+              </h2>
+            </div>
+
+            <div className="p-6">
+              <p className="text-gray-700 mb-4">
+                {labels.bulkDeleteConfirm(selectedIds.size)}
+              </p>
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                <p className="text-sm text-red-700">
+                  {labels.bulkDeleteWarning}
+                </p>
+              </div>
+              <div className="max-h-40 overflow-y-auto border border-gray-100 rounded-lg p-2 bg-gray-50">
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-2 px-1">
+                  {labels.bulkDeleteList}
+                </p>
+                <div className="space-y-1">
+                  {operators
+                    .filter(op => selectedIds.has(String(op.id)))
+                    .map(op => (
+                      <div key={op.id} className="text-sm text-gray-600 px-2 py-1 bg-white rounded border border-gray-100 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                        <span className="truncate">{op.name}</span>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={handleBulkDeleteCancel}
+                disabled={bulkDeleting}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleBulkDeleteConfirm}
+                disabled={bulkDeleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {bulkDeleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                <span>
+                  {bulkDeleting
+                    ? labels.bulkDeleting(selectedIds.size)
+                    : labels.bulkDeleteBtn(selectedIds.size)
+                  }
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

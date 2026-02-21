@@ -46,6 +46,7 @@ export interface MassageService {
   getMassages: (page?: number, pageSize?: number) => Promise<{ massages: Massage[]; page: number; total: number }>;
   updateMassage: (id: string, data: UpdateMassageRequest) => Promise<CreateMassageResponse>;
   deleteMassage: (id: string) => Promise<void>;
+  deleteMassages: (ids: string[]) => Promise<{ successCount: number; failedCount: number; failedIds: string[] }>;
 }
 
 class MassageServiceImpl implements MassageService {
@@ -60,7 +61,7 @@ class MassageServiceImpl implements MassageService {
           email: data.email,
         }
       );
-      
+
       console.log('Create massage response:', response);
       return response.data;
     } catch (error) {
@@ -92,13 +93,13 @@ class MassageServiceImpl implements MassageService {
       const params = new URLSearchParams();
       params.append('page', page.toString());
       params.append('limit', limit.toString());
-      
+
       const response = await apiClient.get<GetMassageResponse>(
         `${API_ENDPOINTS.MASSAGE.BASE}?${params.toString()}`
       );
-      
+
       console.log('Get massages response:', response);
-      
+
       // Handle different response formats
       const responseData = response.data;
       let massages: Massage[] = [];
@@ -167,6 +168,27 @@ class MassageServiceImpl implements MassageService {
       console.error('deleteMassage API error:', apiError);
       throw new Error(
         apiError.message || 'Xóa Massage thất bại. Vui lòng thử lại.'
+      );
+    }
+  }
+
+  async deleteMassages(ids: string[]): Promise<{ successCount: number; failedCount: number; failedIds: string[] }> {
+    try {
+      console.log('Calling deleteMassages API for ids:', ids);
+      await apiClient.delete(API_ENDPOINTS.MASSAGE.BATCH, {
+        body: JSON.stringify({ ids })
+      });
+
+      return {
+        successCount: ids.length,
+        failedCount: 0,
+        failedIds: [],
+      };
+    } catch (error) {
+      const apiError = error as ApiError;
+      console.error('deleteMassages API error:', apiError);
+      throw new Error(
+        apiError.message || 'Xóa danh sách Massage thất bại. Vui lòng thử lại.'
       );
     }
   }
