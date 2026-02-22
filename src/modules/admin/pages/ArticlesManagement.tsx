@@ -3,11 +3,12 @@ import { Search, Filter, Plus, X, Loader2, Edit, Trash2, Eye } from 'lucide-reac
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { articleService } from '../../../services/articleService';
-import { 
-  CreateArticleRequestDto, 
-  UpdateArticleRequestDto, 
-  ArticleResponseDto, 
-  ArticleStatus 
+import RichTextEditor from '../../../components/RichTextEditor';
+import {
+  CreateArticleRequestDto,
+  UpdateArticleRequestDto,
+  ArticleResponseDto,
+  ArticleStatus
 } from '../../../types/api';
 
 const ArticlesManagement = () => {
@@ -82,7 +83,7 @@ const ArticlesManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate required fields
     if (!formData.title.trim() || !formData.slug.trim() || !formData.content.trim()) {
       toast.error(t('common.pleaseFillAllFields'));
@@ -110,7 +111,7 @@ const ArticlesManagement = () => {
         });
         toast.success('Tạo bài viết thành công');
       }
-      
+
       handleCloseModal();
       await fetchArticles(currentPage);
     } catch (error: any) {
@@ -433,15 +434,11 @@ const ArticlesManagement = () => {
                 <label htmlFor="excerpt" className="block text-sm font-medium text-gray-700 mb-2">
                   Tóm tắt
                 </label>
-                <textarea
-                  id="excerpt"
-                  name="excerpt"
-                  value={formData.excerpt}
-                  onChange={handleInputChange}
-                  disabled={loading}
-                  rows={2}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
+                <RichTextEditor
+                  value={formData.excerpt || ''}
+                  onChange={(value) => setFormData({ ...formData, excerpt: value })}
                   placeholder="Nhập tóm tắt bài viết (tùy chọn)..."
+                  disabled={loading}
                 />
               </div>
 
@@ -449,16 +446,11 @@ const ArticlesManagement = () => {
                 <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
                   Nội dung <span className="text-red-500">*</span>
                 </label>
-                <textarea
-                  id="content"
-                  name="content"
+                <RichTextEditor
                   value={formData.content}
-                  onChange={handleInputChange}
-                  required
-                  disabled={loading}
-                  rows={10}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
+                  onChange={(value) => setFormData({ ...formData, content: value })}
                   placeholder="Nhập nội dung bài viết..."
+                  disabled={loading}
                 />
               </div>
 

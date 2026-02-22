@@ -3,7 +3,7 @@ import { Search, Filter, Plus, Play, Pause, X, Loader2, Edit, Trash2, AlertTrian
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { clubService, CreateClubRequest, Club } from '../../../services/clubService';
-
+import RichTextEditor from '../../../components/RichTextEditor';
 const ClubsManagement = () => {
   const { t, language } = useLanguage();
   // Localized labels for this page
@@ -522,15 +522,11 @@ const ClubsManagement = () => {
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                   Mô tả
                 </label>
-                <textarea
-                  id="description"
-                  name="description"
+                <RichTextEditor
                   value={formData.description || ''}
-                  onChange={handleInputChange}
-                  disabled={loading}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
+                  onChange={(value) => setFormData({ ...formData, description: value })}
                   placeholder="Nhập mô tả (tùy chọn)..."
+                  disabled={loading}
                 />
               </div>
 

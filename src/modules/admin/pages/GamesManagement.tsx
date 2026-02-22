@@ -3,7 +3,7 @@ import { Search, Filter, Plus, MoreVertical, Play, Pause, X, Loader2 } from 'luc
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { clubService, CreateClubRequest } from '../../../services/clubService';
-
+import RichTextEditor from '../../../components/RichTextEditor';
 const GamesManagement = () => {
   const { t } = useLanguage();
   const [games] = useState([
@@ -51,7 +51,7 @@ const GamesManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate required fields
     if (!formData.name.trim() || !formData.type.trim() || !formData.address.trim() || !formData.phone.trim() || !formData.email.trim()) {
       toast.error(t('common.pleaseFillAllFields'));
@@ -75,7 +75,7 @@ const GamesManagement = () => {
         email: formData.email,
         description: formData.description,
       });
-      
+
       toast.success(t('pages.games.createSuccess') || 'Tạo Club thành công');
       handleCloseModal();
       // TODO: Refresh list after create
@@ -149,21 +149,19 @@ const GamesManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <div className="text-sm font-medium text-gray-900">{game.name}</div>
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        game.type === 'karaoke' ? 'bg-pink-100 text-pink-800' :
-                        game.type === 'massage' ? 'bg-blue-100 text-blue-800' :
-                        'bg-purple-100 text-purple-800'
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${game.type === 'karaoke' ? 'bg-pink-100 text-pink-800' :
+                          game.type === 'massage' ? 'bg-blue-100 text-blue-800' :
+                            'bg-purple-100 text-purple-800'
+                        }`}>
                         {game.type === 'karaoke' ? t('pages.games.venueTypeKaraoke') : game.type === 'massage' ? t('pages.games.venueTypeMassage') : t('pages.games.venueTypeClub')}
                       </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      game.status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${game.status === 'active'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
-                    }`}>
+                      }`}>
                       {game.status === 'active' ? (
                         <>
                           <Play className="w-3 h-3" />
@@ -300,15 +298,11 @@ const GamesManagement = () => {
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                   Mô tả
                 </label>
-                <textarea
-                  id="description"
-                  name="description"
+                <RichTextEditor
                   value={formData.description || ''}
-                  onChange={handleInputChange}
-                  disabled={loading}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
+                  onChange={(value) => setFormData({ ...formData, description: value })}
                   placeholder="Nhập mô tả (tùy chọn)..."
+                  disabled={loading}
                 />
               </div>
 

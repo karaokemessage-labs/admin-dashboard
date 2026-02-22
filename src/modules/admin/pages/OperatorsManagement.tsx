@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { karaokeService, CreateKaraokeRequest, Karaoke } from '../../../services/karaokeService';
 import { operatorService } from '../../../services/operatorService';
+import RichTextEditor from '../../../components/RichTextEditor';
 
 const OperatorsManagement = () => {
   const { t } = useLanguage();
@@ -160,7 +161,7 @@ const OperatorsManagement = () => {
     setIsDetailModalOpen(true);
     setFetchingDetail(true);
     setSelectedOperator(null);
-    
+
     try {
       const response = await karaokeService.getKaraoke(karaoke.id);
       if (response.data) {
@@ -279,108 +280,107 @@ const OperatorsManagement = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('pages.operators.title')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('common.email')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('common.status')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('common.createdAt')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('common.lastLogin')}
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('common.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredOperators.map((karaoke) => (
-                  <tr key={karaoke.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                          <span className="text-purple-600 font-semibold">
-                            {karaoke.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{karaoke.name}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{karaoke.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          karaoke.status?.toUpperCase() === 'ACTIVE'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {karaoke.status?.toUpperCase() === 'ACTIVE' ? t('common.active') : t('common.inactive')}
-                      </span>
-                    </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {karaoke.createdAt ? new Date(karaoke.createdAt).toLocaleDateString('vi-VN') : '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {(karaoke as any).lastLogin ? new Date((karaoke as any).lastLogin).toLocaleDateString('vi-VN') : '-'}
-                  </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleViewDetail(karaoke)}
-                          className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded"
-                          title={t('pages.operators.viewDetails')}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setIsModalOpen(true);
-                            setIsEditMode(true);
-                            setEditingOperatorId(karaoke.id);
-                            setEditStatus(karaoke.status || 'inactive');
-                            setEditRegion((karaoke as any).region || '');
-                            setFormData({
-                              name: karaoke.name,
-                              email: karaoke.email || '',
-                              description: karaoke.description || '',
-                            });
-                          }}
-                          className="text-purple-600 hover:text-purple-900 p-2 hover:bg-purple-50 rounded"
-                          title={t('pages.operators.edit')}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(String(karaoke.id), karaoke.name)}
-                          disabled={deletingId === String(karaoke.id)}
-                          className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                          title={t('pages.operators.deleteOperator')}
-                        >
-                          {deletingId === String(karaoke.id) ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
-                    </td>
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('pages.operators.title')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('common.email')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('common.status')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('common.createdAt')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('common.lastLogin')}
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('common.actions')}
+                    </th>
                   </tr>
-              ))}
-            </tbody>
-          </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredOperators.map((karaoke) => (
+                    <tr key={karaoke.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                            <span className="text-purple-600 font-semibold">
+                              {karaoke.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{karaoke.name}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{karaoke.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${karaoke.status?.toUpperCase() === 'ACTIVE'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                            }`}
+                        >
+                          {karaoke.status?.toUpperCase() === 'ACTIVE' ? t('common.active') : t('common.inactive')}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {karaoke.createdAt ? new Date(karaoke.createdAt).toLocaleDateString('vi-VN') : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {(karaoke as any).lastLogin ? new Date((karaoke as any).lastLogin).toLocaleDateString('vi-VN') : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleViewDetail(karaoke)}
+                            className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded"
+                            title={t('pages.operators.viewDetails')}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setIsModalOpen(true);
+                              setIsEditMode(true);
+                              setEditingOperatorId(karaoke.id);
+                              setEditStatus(karaoke.status || 'inactive');
+                              setEditRegion((karaoke as any).region || '');
+                              setFormData({
+                                name: karaoke.name,
+                                email: karaoke.email || '',
+                                description: karaoke.description || '',
+                              });
+                            }}
+                            className="text-purple-600 hover:text-purple-900 p-2 hover:bg-purple-50 rounded"
+                            title={t('pages.operators.edit')}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(String(karaoke.id), karaoke.name)}
+                            disabled={deletingId === String(karaoke.id)}
+                            className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={t('pages.operators.deleteOperator')}
+                          >
+                            {deletingId === String(karaoke.id) ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
@@ -498,18 +498,14 @@ const OperatorsManagement = () => {
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                   Mô tả
                 </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  disabled={loading}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
+                <RichTextEditor
+                  value={formData.description || ''}
+                  onChange={(value) => setFormData({ ...formData, description: value })}
                   placeholder="Nhập mô tả (tùy chọn)"
+                  disabled={loading}
                 />
               </div>
-              
+
               {/* When editing, allow changing status & region */}
 
               {isEditMode && (
@@ -656,11 +652,10 @@ const OperatorsManagement = () => {
                     <div>
                       <h3 className="text-2xl font-bold text-gray-900">{selectedOperator.name}</h3>
                       <span
-                        className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full mt-2 ${
-                          selectedOperator.status?.toUpperCase() === 'ACTIVE'
+                        className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full mt-2 ${selectedOperator.status?.toUpperCase() === 'ACTIVE'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
-                        }`}
+                          }`}
                       >
                         {selectedOperator.status?.toUpperCase() === 'ACTIVE' ? t('common.active') : t('common.inactive')}
                       </span>
@@ -710,12 +705,12 @@ const OperatorsManagement = () => {
                       <p className="text-base text-gray-900">
                         {selectedOperator.createdAt
                           ? new Date(selectedOperator.createdAt).toLocaleDateString('vi-VN', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
                           : '-'}
                       </p>
                     </div>
@@ -725,12 +720,12 @@ const OperatorsManagement = () => {
                       <p className="text-base text-gray-900">
                         {selectedOperator.updatedAt
                           ? new Date(selectedOperator.updatedAt).toLocaleDateString('vi-VN', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
                           : '-'}
                       </p>
                     </div>

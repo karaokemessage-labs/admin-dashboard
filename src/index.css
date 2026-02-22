@@ -15,3 +15,35 @@ body {
   min-height: 100vh;
 }
 
+/* Rich Text Editor (Quill) Styles */
+.rich-text-editor-wrapper .ql-toolbar.ql-snow {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  border-color: #d1d5db;
+}
+
+.rich-text-editor-wrapper .ql-container.ql-snow {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  border-color: #d1d5db;
+  min-height: 120px;
+  font-size: 0.875rem;
+}
+
+.rich-text-editor-wrapper .ql-editor {
+  min-height: 120px;
+}
+
+.rich-text-editor-wrapper .ql-editor.ql-blank::before {
+  font-style: normal;
+  color: #9ca3af;
+}
+
+.rich-text-editor-wrapper .ql-container.ql-snow:focus-within {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+}
+
+.rich-text-editor-wrapper .ql-toolbar.ql-snow:has(+ .ql-container:focus-within) {
+  border-color: #a855f7;
+}

@@ -3,6 +3,7 @@ import { Search, Filter, Plus, X, Loader2, Edit, Trash2, Rss } from 'lucide-reac
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { feedService } from '../../../services/feedService';
+import RichTextEditor from '../../../components/RichTextEditor';
 import {
   CreateFeedRequestDto,
   UpdateFeedRequestDto,
@@ -500,16 +501,11 @@ const FeedsManagement = () => {
                 <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
                   Nội dung <span className="text-red-500">*</span>
                 </label>
-                <textarea
-                  id="content"
-                  name="content"
+                <RichTextEditor
                   value={formData.content}
-                  onChange={handleInputChange}
-                  required
-                  disabled={loading}
-                  rows={8}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  onChange={(value) => setFormData({ ...formData, content: value })}
                   placeholder="Nhập nội dung feed..."
+                  disabled={loading}
                 />
               </div>
 
