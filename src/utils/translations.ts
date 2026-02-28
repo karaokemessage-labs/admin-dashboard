@@ -625,6 +625,8 @@ export interface Translations {
     apiManagement: string;
     alerts: string;
     auditLogs: string;
+    cachingManagement: string;
+    systemStatus: string;
     systemSettings: string;
   };
   languages: {
@@ -1271,6 +1273,8 @@ const translations: Record<AllLanguages, Translations> = {
       apiManagement: 'API Management',
       alerts: 'Alerts & Warnings',
       auditLogs: 'Audit Logs',
+      cachingManagement: 'Caching Management',
+      systemStatus: 'System Status',
       systemSettings: 'System Settings',
     },
     languages: {
@@ -1908,6 +1912,8 @@ const translations: Record<AllLanguages, Translations> = {
       apiManagement: 'API Management',
       alerts: 'Cảnh báo & Alerts',
       auditLogs: 'Audit Logs',
+      cachingManagement: 'Quản lý Cache',
+      systemStatus: 'Trạng thái hệ thống',
       systemSettings: 'Cài đặt hệ thống',
     },
     languages: {
@@ -2545,6 +2551,8 @@ const translations: Record<AllLanguages, Translations> = {
       apiManagement: 'API管理',
       alerts: '警报和警告',
       auditLogs: '审计日志',
+      cachingManagement: '缓存管理',
+      systemStatus: '系统状态',
       systemSettings: '系统设置',
     },
     languages: {
@@ -3182,6 +3190,8 @@ const translations: Record<AllLanguages, Translations> = {
       apiManagement: 'การจัดการ API',
       alerts: 'การแจ้งเตือนและคำเตือน',
       auditLogs: 'บันทึกการตรวจสอบ',
+      cachingManagement: 'การจัดการแคช',
+      systemStatus: 'สถานะระบบ',
       systemSettings: 'การตั้งค่าระบบ',
     },
     languages: {
@@ -3819,6 +3829,8 @@ const translations: Record<AllLanguages, Translations> = {
       apiManagement: 'API管理',
       alerts: 'アラートと警告',
       auditLogs: '監査ログ',
+      cachingManagement: 'キャッシュ管理',
+      systemStatus: 'システムステータス',
       systemSettings: 'システム設定',
     },
     languages: {
@@ -4456,6 +4468,8 @@ const translations: Record<AllLanguages, Translations> = {
       apiManagement: 'API 관리',
       alerts: '경고 및 알림',
       auditLogs: '감사 로그',
+      cachingManagement: '캐시 관리',
+      systemStatus: '시스템 상태',
       systemSettings: '시스템 설정',
     },
     languages: {

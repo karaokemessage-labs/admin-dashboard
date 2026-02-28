@@ -12,6 +12,8 @@ import {
   FileCheck,
   Bell,
   Rss,
+  HardDrive,
+  Activity,
   LucideIcon
 } from 'lucide-react';
 
@@ -52,6 +54,8 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
   // { id: 'api', label: 'API Management', path: '/dashboard/api', icon: Network, translationKey: 'menu.apiManagement' },
   // { id: 'alerts', label: 'Alerts & Warnings', path: '/dashboard/alerts', icon: AlertTriangle, translationKey: 'menu.alerts' },
   // { id: 'logs', label: 'Audit Logs', path: '/dashboard/logs', icon: FileText, translationKey: 'menu.auditLogs' },
+  { id: 'caching', label: 'Caching Management', path: '/dashboard/caching', icon: HardDrive, translationKey: 'menu.cachingManagement' },
+  { id: 'system-status', label: 'System Status', path: '/dashboard/system-status', icon: Activity, translationKey: 'menu.systemStatus' },
   { id: 'settings', label: 'System Settings', path: '/dashboard/settings', icon: Settings, translationKey: 'menu.systemSettings' },
 ];
 

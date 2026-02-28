@@ -32,6 +32,8 @@ import AdminUserSettings from '../modules/admin/pages/UserSettings';
 import HelpSupport from '../modules/admin/pages/HelpSupport';
 import NotificationsManagement from '../modules/admin/pages/NotificationsManagement';
 import FeedsManagement from '../modules/admin/pages/FeedsManagement';
+import CacheManagement from '../modules/admin/pages/CacheManagement';
+import SystemStatus from '../modules/admin/pages/SystemStatus';
 
 /**
  * Get all routes for admin portal
@@ -65,6 +67,8 @@ export const getRoutesByRole = (): ReactElement[] => {
     // <Route key="api" path="/api" element={<ApiManagement />} />,
     // <Route key="alerts" path="/alerts" element={<AdminAlerts />} />,
     // <Route key="logs" path="/logs" element={<AdminAuditLogs />} />,
+    <Route key="caching" path="/caching" element={<CacheManagement />} />,
+    <Route key="system-status" path="/system-status" element={<SystemStatus />} />,
     <Route key="settings" path="/settings" element={<AdminSystemSettings />} />,
     <Route key="profile" path="/profile" element={<AdminMyProfile />} />,
     <Route key="user-settings" path="/user-settings" element={<AdminUserSettings />} />,

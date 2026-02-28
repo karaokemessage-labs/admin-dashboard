@@ -35,6 +35,15 @@ export const API_ENDPOINTS = {
     LOGIN: '/admin/login',
     DASHBOARD_STATS: '/admin/dashboard/stats',
   },
+  // Cache endpoints
+  CACHE: {
+    BASE: '/cache',
+    BY_KEY: (key: string) => `/cache/${encodeURIComponent(key)}`,
+  },
+  // Health endpoints
+  HEALTH: {
+    BASE: '/system-status',
+  },
   // System Settings endpoints
   SYSTEM_SETTINGS: {
     BASE: '/system-settings',
